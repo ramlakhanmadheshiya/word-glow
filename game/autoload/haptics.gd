@@ -15,7 +15,7 @@ func error() -> void:
 
 
 func _buzz(ms: int) -> void:
-	if not Profile.setting("haptics"):
+	if not bool(Profile.setting("haptics", true)):
 		return
 	if OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("web_android") or OS.has_feature("web_ios"):
 		Input.vibrate_handheld(ms)

@@ -49,8 +49,14 @@ func _stream(name: String) -> AudioStream:
 	return _streams[name]
 
 
+## Player volume settings (0..1).
+func _volume(key: String) -> float:
+	return clampf(float(Profile.setting(key, 0.8)), 0.0, 1.0)
+
+
 func play(name: String, pitch: float = 1.0, volume_db: float = 0.0) -> void:
-	if not Profile.setting("sfx"):
+	var vol: float = _volume("sound_volume")
+	if vol <= 0.01:
 		return
 	var s: AudioStream = _stream(name)
 	if s == null:
@@ -59,7 +65,7 @@ func play(name: String, pitch: float = 1.0, volume_db: float = 0.0) -> void:
 	_next = (_next + 1) % POOL_SIZE
 	p.stream = s
 	p.pitch_scale = pitch
-	p.volume_db = volume_db
+	p.volume_db = volume_db + linear_to_db(vol)
 	p.play()
 
 
@@ -72,7 +78,7 @@ func tap(index: int) -> void:
 func music(name: String) -> void:
 	_music_name = name
 	# Headless runs (tests, CI) have no audio output; skip the long-lived stream.
-	if not Profile.setting("music") or DisplayServer.get_name() == "headless":
+	if _volume("music_volume") <= 0.01 or DisplayServer.get_name() == "headless":
 		_music.stop()
 		return
 	var path: String = MUSIC_DIR + name + ".wav"
@@ -89,12 +95,18 @@ func music(name: String) -> void:
 	_music.stream = s
 	_music.volume_db = -40.0
 	_music.play()
-	create_tween().tween_property(_music, "volume_db", MUSIC_DB, 1.5)
+	create_tween().tween_property(_music, "volume_db", _music_db(), 1.5)
+
+
+func _music_db() -> float:
+	return MUSIC_DB + linear_to_db(maxf(0.001, _volume("music_volume")))
 
 
 func _apply_settings() -> void:
-	if Profile.setting("music"):
-		if not _music.playing and not _music_name.is_empty():
+	if _volume("music_volume") <= 0.01:
+		_music.stop()
+	elif not _music.playing:
+		if not _music_name.is_empty():
 			music(_music_name)
 	else:
-		_music.stop()
+		_music.volume_db = _music_db()

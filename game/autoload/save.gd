@@ -5,7 +5,7 @@ extends Node
 
 signal saved
 
-const VERSION: int = 1
+const VERSION: int = 2
 const DEFAULT_PATH: String = "user://word_lantern_save.json"
 
 var path: String = DEFAULT_PATH
@@ -24,14 +24,25 @@ static func defaults() -> Dictionary:
 	return {
 		"version": VERSION,
 		"coins": Economy.START_COINS,
+		# level id -> {"stars": 1..3}
 		"cleared": {},
+		# level id -> LevelState.to_dict() for half-played levels
 		"progress": {},
+		# level ids opened early with a level key
+		"unlocked": {},
+		"keys": 0,
+		# coins bought with real money (kept on a progress reset)
+		"coins_bought": 0,
+		"owned": {},
+		"trials": {},
+		"tips": 0,
+		"video": {"day": "", "coins": 0, "keys": 0},
+		"sparks": {"day": "", "used": 0},
 		"daily": {"done": {}, "streak": 0, "best_streak": 0, "last_date": ""},
 		"achievements": {},
-		"stats": {"levels": 0, "words": 0, "flawless": 0, "dailies": 0, "best_streak": 0, "beacons": 0, "worlds": 1, "hints": 0},
-		"settings": {"music": true, "sfx": true, "haptics": true},
+		"stats": {"levels": 0, "stars": 0, "perfect": 0, "words": 0, "dailies": 0, "best_streak": 0, "beacons": 0, "hints": 0},
+		"settings": {"music_volume": 0.6, "sound_volume": 0.8, "haptics": true, "theme": "chapters", "style": "classic"},
 		"seen": {},
-		"free_spark_date": "",
 		"last_level": "",
 	}
 
@@ -42,8 +53,29 @@ func load_data() -> void:
 	if loaded == null and FileAccess.file_exists(path):
 		loaded = _read(path + ".bak")
 		recovered_from = "backup" if loaded != null else "fresh"
-	data = _merge(defaults(), loaded if loaded is Dictionary else {})
+	var d: Dictionary = loaded if loaded is Dictionary else {}
+	if not d.is_empty() and int(d.get("version", 1)) < 2:
+		_migrate_v1(d)
+	data = _merge(defaults(), d)
 	data["version"] = VERSION
+
+
+## Version 1 had 8 worlds of 20 different levels: keep coins, settings, dailies,
+## achievements and word stats, but level progress no longer applies.
+static func _migrate_v1(d: Dictionary) -> void:
+	for k: String in ["cleared", "progress", "last_level", "free_spark_date"]:
+		d.erase(k)
+	var st: Variant = d.get("stats", {})
+	if st is Dictionary:
+		for k: String in ["levels", "flawless", "worlds"]:
+			(st as Dictionary).erase(k)
+	var old: Variant = d.get("settings", {})
+	if old is Dictionary:
+		var o: Dictionary = old
+		o["music_volume"] = 0.6 if bool(o.get("music", true)) else 0.0
+		o["sound_volume"] = 0.8 if bool(o.get("sfx", true)) else 0.0
+		o.erase("music")
+		o.erase("sfx")
 
 
 func _read(p: String) -> Variant:
@@ -97,10 +129,17 @@ func flush() -> void:
 	saved.emit()
 
 
+## Erases progress (levels, stars, streaks, achievements, earned coins) but keeps
+## settings and everything paid for: packs, trials, keys and bought coins.
 func reset() -> void:
-	var keep: Dictionary = (data.get("settings", {}) as Dictionary).duplicate()
+	var keep: Dictionary = {}
+	for k: String in ["settings", "owned", "trials", "tips", "keys", "coins_bought"]:
+		keep[k] = data.get(k)
 	data = defaults()
-	data["settings"] = _merge(data["settings"], keep)
+	for k: String in keep:
+		if keep[k] != null:
+			data[k] = keep[k]
+	data["coins"] = Economy.START_COINS + int(data["coins_bought"])
 	flush()
 
 

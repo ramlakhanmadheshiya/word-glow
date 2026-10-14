@@ -14,7 +14,32 @@ func _init() -> void:
 	_shadows_and_beacons()
 	_hints()
 	_save_and_restore()
+	_stars()
 	quit(t.report())
+
+
+## Stars: 3 for a perfect solve, 2 for up to TWO_STAR_EXTRA extra moves, else 1.
+func _stars() -> void:
+	t.eq(Economy.stars_for(0), 3, "perfect is 3 stars")
+	t.eq(Economy.stars_for(1), 2, "one extra move is 2 stars")
+	t.eq(Economy.stars_for(Economy.TWO_STAR_EXTRA), 2, "the last 2-star extra move")
+	t.eq(Economy.stars_for(Economy.TWO_STAR_EXTRA + 1), 1, "then 1 star")
+	var s: LevelState = LevelState.new(_simple())
+	t.eq(s.stars(), 3, "a fresh level offers 3 stars")
+	t.eq(s.par(), 2, "par is one move per word")
+	s.submit(PackedInt32Array([0, 1, 4]))
+	t.eq(s.mistakes, 1, "a wrong word counts as a mistake")
+	t.eq(s.stars(), 2, "a wrong word costs a star")
+	s.submit(PackedInt32Array([0, 1]))
+	t.eq(s.mistakes, 1, "a too-short trace is not a move")
+	s.submit(PackedInt32Array([0, 1, 2]))
+	s.apply_spark()
+	t.eq(s.extra_moves(), 2, "hints are extra moves")
+	t.eq(s.moves(), 3, "moves = words found + extra")
+	var p: LevelState = LevelState.new(_simple())
+	p.submit(PackedInt32Array([0, 1, 2]))
+	p.submit(PackedInt32Array([5, 4, 3]))
+	t.ok(p.is_complete() and p.stars() == 3 and p.moves() == p.par(), "a perfect solve: 3 stars in par moves")
 
 
 ## 2x3 grid:  C A T
@@ -109,7 +134,7 @@ func _save_and_restore() -> void:
 	var s: LevelState = LevelState.new(p)
 	s.submit(PackedInt32Array([0, 1, 2]))
 	s.apply_spark()
-	s.record_mistake()
+	s.submit(PackedInt32Array([3, 4, 5]))
 	var d: Dictionary = JSON.parse_string(JSON.stringify(s.to_dict()))
 	var s2: LevelState = LevelState.new(p)
 	s2.restore(d)

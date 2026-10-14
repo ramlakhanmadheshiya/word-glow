@@ -67,6 +67,7 @@ func submit(cells: PackedInt32Array) -> Dictionary:
 			return {"result": Result.ALREADY_FOUND, "word": text}
 		if LanternRules.same_cells(cells, w["cells"]):
 			return _mark_found(i)
+	mistakes += 1
 	return {"result": Result.NOT_A_WORD, "word": text}
 
 
@@ -84,8 +85,24 @@ func _mark_found(i: int) -> Dictionary:
 	return {"result": Result.FOUND, "word_index": i, "word": puzzle.words[i]["word"], "revealed": revealed, "beacons": beams}
 
 
-func record_mistake() -> void:
-	mistakes += 1
+## Moves beyond a perfect solve: each wrong word and each hint is one.
+func extra_moves() -> int:
+	return mistakes + hints_used
+
+
+## Moves made so far (a perfect solve takes exactly one per word).
+func moves() -> int:
+	return found_count() + extra_moves()
+
+
+## The best number of words in a perfect solve.
+func par() -> int:
+	return puzzle.words.size()
+
+
+## Stars still on offer (and earned, once complete).
+func stars() -> int:
+	return Economy.stars_for(extra_moves())
 
 
 ## Unfound words that can be traced right now (all tiles visible).
