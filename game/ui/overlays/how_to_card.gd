@@ -42,7 +42,7 @@ var _dots: HBoxContainer
 
 func build() -> void:
 	name = "HowTo"
-	add_title("How to play" if pages.size() > 1 else "New idea")
+	add_title("How to play" if pages.size() > 1 or pages == ["basics"] else "New idea")
 	_holder = UIKit.vbox(14)
 	body.add_child(_holder)
 	var nav: HBoxContainer = UIKit.hbox(16)

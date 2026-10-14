@@ -27,7 +27,7 @@ body {
   min-height: 100vh;
 }
 a { color: var(--amber); }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }
 .container { width: min(1080px, 100% - 2 * var(--gutter)); margin-inline: auto; }
 .skip { position: absolute; left: -999px; }
 .skip:focus { left: 12px; top: 12px; background: var(--paper); color: var(--paper-ink); padding: 8px 12px; border-radius: 10px; z-index: 9; }
