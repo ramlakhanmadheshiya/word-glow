@@ -1,7 +1,10 @@
 class_name ResultCard
 extends Overlay
-## Shown when a level or daily is cleared: the lantern lights, coins count up,
-## badges for flawless clears, streaks and unlocks, then Next.
+## Shown when a level or daily is cleared: the stars pop in, coins count up,
+## and notes for a new best, a finished chapter or a newly opened one.
+## Next goes on; Again, Levels and Home sit underneath, like Single Shot.
+
+const TITLES: Array[String] = ["", "Cleared", "Nicely done", "Perfect!"]
 
 var play: Node
 var reward: Dictionary = {}
@@ -14,93 +17,109 @@ func _init() -> void:
 
 func build() -> void:
 	name = "Result"
-	body.add_theme_constant_override("separation", 14)
+	body.add_theme_constant_override("separation", 12)
 	var daily: bool = not play.daily_key.is_empty()
-	var art: LanternArt = LanternArt.new(200)
-	art.color = play.accent
-	art.lit = 0.0
-	art.letter = ""
-	body.add_child(art)
-	create_tween().tween_property(art, "lit", 1.0, 0.9).set_delay(0.15)
-	var title: String = "Daily lantern lit!" if daily else "Lantern lit!"
-	body.add_child(UIKit.label(title, Style.SIZE_H1, Style.INK, 600))
-	var sub: String
-	if daily:
-		sub = "%s · %d words" % [play.puzzle.theme_name, play.puzzle.words.size()]
-	else:
-		sub = "%s · Level %d · %s" % [Catalog.world(play.world_idx)["name"], play.level_n, play.puzzle.theme_name]
-	body.add_child(UIKit.caption(sub))
-	body.add_child(UIKit.gap(4))
-
-	var badges: HBoxContainer = UIKit.hbox(12)
-	if bool(reward.get("flawless", false)):
-		badges.add_child(_badge("star-filled", "No hints", Style.GOLD))
-	if daily:
-		badges.add_child(_badge("flame", "%d-day streak" % int(reward.get("streak", 1)), Color("FF8A3D")))
-	if play.state.mistakes == 0:
-		badges.add_child(_badge("check", "No misses", Style.SUCCESS))
-	if badges.get_child_count() > 0:
-		body.add_child(badges)
+	var stars: int = int(reward.get("stars", play.state.stars()))
+	var acc: Color = play.accent()
+	var where: String = "Daily lantern" if daily else "%s · Level %d" % [Catalog.chapter(play.chapter_idx)["name"], play.level_n]
+	body.add_child(UIKit.caption(where, acc))
+	var title: Label = UIKit.label(TITLES[clampi(stars, 1, 3)], Style.SIZE_H1 + 6, Style.INK, 600)
+	title.name = "ResultTitle"
+	body.add_child(title)
+	var row: StarRow = StarRow.new()
+	row.name = "Stars"
+	body.add_child(row)
+	row.play(stars)
+	body.add_child(UIKit.label(_verdict(), Style.SIZE_BODY - 2, Style.INK, 500))
+	body.add_child(UIKit.label("%s · %d words · %d moves" % [play.puzzle.theme_name, play.puzzle.words.size(), play.state.moves()], Style.SIZE_SMALL, Style.MUTED, 500))
 
 	var coins: int = int(reward.get("coins", 0))
 	if coins > 0:
 		var coin_row: HBoxContainer = UIKit.hbox(12)
-		coin_row.add_child(UIKit.icon_rect("coin", 48, Style.GOLD))
-		var amount: Label = UIKit.label("+0", 44, Style.GOLD, 700)
+		coin_row.add_child(UIKit.icon_rect("coin", 44, Style.GOLD))
+		var amount: Label = UIKit.label("+0", 40, Style.GOLD, 700)
 		amount.name = "Reward"
 		coin_row.add_child(amount)
 		body.add_child(coin_row)
 		var tw: Tween = create_tween()
-		tw.tween_interval(0.5)
-		tw.tween_method(func(v: float) -> void: amount.text = "+%d" % int(v), 0.0, float(coins), 0.7)
+		tw.tween_interval(1.1)
+		tw.tween_method(func(v: float) -> void: amount.text = "+%d" % int(v), 0.0, float(coins), 0.6)
 		tw.tween_callback(func() -> void: Audio.play("coin"))
 	elif not bool(reward.get("first", true)):
-		body.add_child(UIKit.para("Already cleared before: rewards are paid once.", Style.SIZE_SMALL))
-
-	if bool(reward.get("world_done", false)):
-		body.add_child(_note("trophy", "World complete! +%d bonus" % Economy.WORLD_BONUS, Style.GOLD))
-	if bool(reward.get("world_unlocked", false)):
-		var nw: Dictionary = Catalog.world(play.world_idx + 1)
-		if not nw.is_empty():
-			body.add_child(_note("lock", "New world unlocked: %s" % nw["name"], nw["accent"]))
-			get_tree().create_timer(0.9).timeout.connect(func() -> void: Audio.play("unlock"))
+		body.add_child(UIKit.para("Rewards are paid once per level, and for each new star.", Style.SIZE_CAPTION))
+	if not daily and not bool(reward.get("first", true)) and int(reward.get("new_stars", 0)) > 0:
+		body.add_child(_note("star-filled", "New best: %d stars" % int(reward["best"]), Style.GOLD))
 	if daily:
-		body.add_child(UIKit.para("A new daily lantern arrives tomorrow.", Style.SIZE_SMALL))
+		body.add_child(_note("flame", "%d-day streak · a new daily arrives tomorrow" % int(reward.get("streak", 1)), Color("FF8A3D")))
+	if bool(reward.get("chapter_done", false)):
+		body.add_child(_note("trophy", "Chapter complete! +%d bonus coins" % Economy.CHAPTER_BONUS, Style.GOLD))
+	if bool(reward.get("chapter_unlocked", false)):
+		var nc: Dictionary = Catalog.chapter(play.chapter_idx + 1)
+		if not nc.is_empty():
+			body.add_child(_note("lock", "New chapter open: %s" % nc["name"], nc["accent"]))
+			get_tree().create_timer(1.0).timeout.connect(func() -> void: Audio.play("unlock"))
 
-	body.add_child(UIKit.gap(6))
-	var next_text: String = "Home" if daily else ("Next level" if play.level_n < Catalog.LEVELS_PER_WORLD else "Continue")
-	var next: Button = UIKit.button(next_text, "primary", play.accent, 100, 34, "arrow-right")
+	body.add_child(UIKit.gap(4))
+	var next_text: String = "Home"
+	if not daily:
+		next_text = "Next level" if play.level_n < Catalog.levels_per_chapter else "Next chapter"
+	var next: Button = UIKit.button(next_text, "primary", acc, 100, 34, "arrow-right")
 	next.name = "Next"
 	next.pressed.connect(func() -> void:
 		close()
 		play.go_next()
 	)
 	body.add_child(next)
+	var actions: HBoxContainer = UIKit.hbox(30)
+	actions.add_child(_action("rotate-ccw", "AGAIN", "Again", func() -> void:
+		close()
+		play.restart()
+	))
 	if not daily:
-		var levels: Button = UIKit.button("Level list", "soft", play.accent, 84, 28, "layout-grid")
-		levels.name = "Levels"
-		levels.pressed.connect(func() -> void:
+		actions.add_child(_action("layout-grid", "LEVELS", "Levels", func() -> void:
 			close()
-			app.back()
-		)
-		body.add_child(levels)
+			app.go("levels", {"chapter": play.chapter_idx})
+		))
+	actions.add_child(_action("house", "HOME", "Home", func() -> void:
+		close()
+		app.go("home")
+	))
+	body.add_child(actions)
 
 
-func _badge(icon_name: String, text: String, tint: Color) -> PanelContainer:
-	var row: HBoxContainer = UIKit.hbox(8)
-	row.add_child(UIKit.icon_rect(icon_name, 28, tint))
-	row.add_child(UIKit.label(text, Style.SIZE_CAPTION, Style.INK, 600))
-	return UIKit.panel(row, Color(tint, 0.16), 24, Vector2(16, 8))
+## How the solve went, in a few words.
+func _verdict() -> String:
+	var m: int = play.state.mistakes
+	var h: int = play.state.hints_used
+	if m == 0 and h == 0:
+		return "No wrong words, no hints."
+	var parts: PackedStringArray = PackedStringArray()
+	if m > 0:
+		parts.append("%d wrong %s" % [m, "word" if m == 1 else "words"])
+	if h > 0:
+		parts.append("%d %s" % [h, "hint" if h == 1 else "hints"])
+	return " · ".join(parts)
+
+
+func _action(icon_name: String, caption: String, node_name: String, cb: Callable) -> VBoxContainer:
+	var box: VBoxContainer = UIKit.vbox(6)
+	var b: Button = UIKit.icon_button(icon_name, 76)
+	b.name = node_name
+	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	b.pressed.connect(cb)
+	box.add_child(b)
+	box.add_child(UIKit.caption(caption, Style.MUTED, 15))
+	return box
 
 
 func _note(icon_name: String, text: String, tint: Color) -> PanelContainer:
 	var row: HBoxContainer = UIKit.hbox(12)
-	row.add_child(UIKit.icon_rect(icon_name, 36, tint))
+	row.add_child(UIKit.icon_rect(icon_name, 34, tint))
 	var l: Label = UIKit.label(text, Style.SIZE_SMALL, Style.INK, 600)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(l)
-	return UIKit.panel(row, Color(tint, 0.14), 26, Vector2(20, 12))
+	return UIKit.panel(row, Color(tint, 0.14), 26, Vector2(20, 10))
 
 
 func on_back() -> void:

@@ -46,7 +46,7 @@ func setup(s: LevelState, accent_color: Color) -> void:
 	accent = accent_color
 	_colors.clear()
 	for k: int in s.found_order.size():
-		_colors[s.found_order[k]] = Style.lantern_color(k)
+		_colors[s.found_order[k]] = Look.lantern(k)
 	_layout()
 	queue_redraw()
 
@@ -173,7 +173,7 @@ func cancel_trace() -> void:
 # --- Feedback the play screen triggers ----------------------------------------
 
 func show_found(word_idx: int, revealed: PackedInt32Array, beacons: PackedInt32Array) -> void:
-	_colors[word_idx] = Style.lantern_color(state.found_order.size() - 1)
+	_colors[word_idx] = Look.lantern(state.found_order.size() - 1)
 	var cells: PackedInt32Array = state.puzzle.words[word_idx]["cells"]
 	for k: int in cells.size():
 		_fx_start(cells[k], "lit", k * 0.05)
@@ -247,7 +247,7 @@ func _draw() -> void:
 	var font: Font = UIKit.font(700)
 	var fs: int = int(_tile * 0.5)
 	var small_fs: int = maxi(12, int(_tile * 0.2))
-	var radius: float = _tile * 0.22
+	var radius: float = _tile * Look.radius()
 	var glow: Texture2D = Style.glow_texture()
 	var sparked: Dictionary = state.sparked_cells()
 	var in_path: Dictionary = {}
@@ -266,7 +266,7 @@ func _draw() -> void:
 		var col: Color = _colors.get(i, accent)
 		for c: int in p.words[i]["cells"]:
 			var lk: float = _fx_k(c, "lit", 0.5)
-			var a: float = 0.28 if lk < 0.0 else 0.28 + 0.5 * (1.0 - lk)
+			var a: float = (0.28 if lk < 0.0 else 0.28 + 0.5 * (1.0 - lk)) * Look.glow()
 			var r: Rect2 = cell_rect(c).grow(_tile * 0.45)
 			draw_texture_rect(glow, r, false, Color(col, a))
 	for i: int in p.words.size():
@@ -274,6 +274,9 @@ func _draw() -> void:
 			_draw_ribbon(p.words[i]["cells"], _colors.get(i, accent), radius, 1.0)
 	if _path.size() >= 1:
 		_draw_ribbon(_path, accent, radius, 0.95)
+		# A white rim tells the live trace apart from words already lit.
+		for c: int in _path:
+			draw_style_box(UIKit.box(Color.TRANSPARENT, int(radius + 2), Color(1, 1, 1, 0.9), maxi(3, int(_tile * 0.05))), cell_rect(c).grow(1))
 
 	# Tiles.
 	for c: int in p.cell_count():
@@ -307,18 +310,18 @@ func _draw() -> void:
 				_draw_flame(rect, Color(1, 1, 1, 0.9), small_fs)
 			continue
 		if in_path.has(c):
-			_draw_letter(font, fs, letter, rect, Style.PAPER_INK)
+			_draw_letter(font, fs, letter, rect, Look.tile_ink())
 			continue
-		var tile_col: Color = Style.PAPER
+		var tile_col: Color = Look.tile()
 		if shake >= 0.0:
-			tile_col = Style.PAPER.lerp(Style.ERROR, 0.55 * (1.0 - shake))
+			tile_col = Look.tile().lerp(Style.ERROR, 0.55 * (1.0 - shake))
 		var a: float = 1.0
 		if reveal > 0.0:
 			a = reveal
 			_draw_shadow_tile(rect, radius, c, 1.0 - reveal)
-		draw_style_box(UIKit.box(Color(Style.PAPER_EDGE, a), int(radius)), Rect2(rect.position + Vector2(0, _tile * 0.05), rect.size))
+		draw_style_box(UIKit.box(Color(Look.tile_edge(), a), int(radius)), Rect2(rect.position + Vector2(0, _tile * 0.05), rect.size))
 		draw_style_box(UIKit.box(Color(tile_col, a), int(radius)), rect)
-		_draw_letter(font, fs, letter, rect, Color(Style.PAPER_INK, a))
+		_draw_letter(font, fs, letter, rect, Color(Look.tile_ink(), a))
 		if p.beacons.has(c):
 			_draw_flame(rect, Color(Color("FF8A3D"), a), small_fs)
 		if sparked.has(c):

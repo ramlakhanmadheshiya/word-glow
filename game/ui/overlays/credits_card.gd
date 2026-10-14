@@ -12,7 +12,12 @@ const SECTIONS: Array = [
 	["Icons", [["Lucide", "By the Lucide contributors. ISC licence. lucide.dev", "https://lucide.dev/"],
 		["Lantern, coin, flame and other game icons", "Drawn for Word Lantern.", ""]]],
 	["Sound and music", [["Synthesised for Word Lantern", "Every sound and both music loops are generated in code for this game, no samples.", ""]]],
-	["Words and levels", [["Handpicked theme words", "46 themes chosen for this game. Every level is generated from them and checked by a solver.", ""]]],
+	["Words and levels", [["Handpicked theme words", "61 themes chosen for this game. All 640 levels are generated from them and checked by a solver.", ""]]],
+	["Ads and purchases, on Android", [
+		["Godot AdMob Plugin", "By Poing Studios. MIT licence.", ""],
+		["Godot Google Play Billing", "By the Godot Engine contributors. MIT licence.", ""],
+		["Google Mobile Ads SDK, User Messaging Platform and Play Billing Library", "By Google, under Google's terms.", ""],
+	]],
 ]
 
 

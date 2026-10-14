@@ -6,9 +6,10 @@ extends Control
 
 const SCREENS: Dictionary = {
 	"home": "res://game/ui/screens/home_screen.tscn",
-	"worlds": "res://game/ui/screens/worlds_screen.tscn",
+	"chapters": "res://game/ui/screens/chapters_screen.tscn",
 	"levels": "res://game/ui/screens/levels_screen.tscn",
 	"play": "res://game/ui/screens/play_screen.tscn",
+	"shop": "res://game/ui/screens/shop_screen.tscn",
 }
 
 static var instance: App
@@ -19,7 +20,6 @@ var screen_name: String = ""
 var _screen_host: Control
 var _overlay_host: Control
 var _toast_host: Control
-var _history: Array[Dictionary] = []
 var _busy: bool = false
 
 
@@ -77,13 +77,14 @@ func _boot() -> void:
 	tw.tween_property(art, "lit", 1.0, 0.8).set_trans(Tween.TRANS_SINE)
 	await tw.finished
 	loading.queue_free()
-	if not Catalog.last_error.is_empty() or Catalog.world_count() == 0:
+	if not Catalog.last_error.is_empty() or Catalog.chapter_count() == 0:
 		_show_error(Catalog.last_error if not Catalog.last_error.is_empty() else "No levels were found.")
 		return
 	if Save.recovered_from != "":
 		toast("Your save was repaired" if Save.recovered_from == "backup" else "Save data could not be read, starting fresh", "info", Style.AMBER)
 	Audio.music("menu")
 	go("home")
+	AdManager.refresh_banner()
 
 
 func _show_error(message: String) -> void:
@@ -102,29 +103,31 @@ func _show_error(message: String) -> void:
 
 # --- Screens -----------------------------------------------------------------
 
-## Shows a screen. `remember` keeps the current one in the Back history;
-## `via` adds a screen that Back should pass through (e.g. a world's level list).
-func go(name: String, args: Dictionary = {}, remember: bool = true, via: Dictionary = {}) -> void:
+## Shows a screen. Back always goes one step up a fixed chain
+## (level -> its chapter's levels -> chapters -> home), like Single Shot.
+func go(name: String, args: Dictionary = {}) -> void:
 	if _busy or not SCREENS.has(name):
 		return
-	if remember and screen != null:
-		_history.append({"name": screen_name, "args": screen.args})
-	if not via.is_empty():
-		_history.append(via)
-	if name == "home":
-		_history.clear()
 	_swap(name, args, 1.0)
 
 
+## The screen one step "up" from the current one.
+func parent_route() -> Array:
+	match screen_name:
+		"levels":
+			return ["chapters", {}]
+		"play":
+			if screen != null and screen.args.has("chapter"):
+				return ["levels", {"chapter": screen.args["chapter"]}]
+			return ["home", {}]
+	return ["home", {}]
+
+
 func back() -> void:
-	if _busy:
+	if _busy or screen_name == "home":
 		return
-	if _history.is_empty():
-		if screen_name != "home":
-			_swap("home", {}, -1.0)
-		return
-	var prev: Dictionary = _history.pop_back()
-	_swap(prev["name"], prev["args"], -1.0)
+	var route: Array = parent_route()
+	_swap(route[0], route[1], -1.0)
 
 
 func _swap(name: String, args: Dictionary, direction: float) -> void:
@@ -151,6 +154,17 @@ func _swap(name: String, args: Dictionary, direction: float) -> void:
 	if old != null:
 		old.queue_free()
 	_busy = false
+
+
+## Shows the current screen again (e.g. after a colour theme change).
+func reload_screen() -> void:
+	if screen != null and not _busy:
+		_swap(screen_name, screen.args, 0.0)
+
+
+## Settings, from anywhere. In a level, Reset progress is hidden.
+func open_settings() -> void:
+	open(SettingsCard.new())
 
 
 # --- Overlays and toasts -------------------------------------------------------

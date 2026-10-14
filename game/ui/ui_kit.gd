@@ -15,6 +15,7 @@ static func clear_caches() -> void:
 	_fonts.clear()
 	_icons.clear()
 	_switches.clear()
+	_knobs.clear()
 
 
 static func font(weight: int = 400) -> Font:
@@ -251,6 +252,67 @@ static func toggle_row(text: String, icon_name: String, value: bool, on_change: 
 	return row
 
 
+## A labelled 0..1 volume slider (Music, Sound). Plays a tick while dragging
+## so you hear the level.
+static func slider_row(text: String, icon_name: String, value: float, on_change: Callable, accent: Color = Style.AMBER) -> HBoxContainer:
+	var row: HBoxContainer = hbox(18, BoxContainer.ALIGNMENT_BEGIN)
+	row.custom_minimum_size = Vector2(0, 76)
+	row.add_child(icon_rect(icon_name, 40, Style.MUTED))
+	var l: Label = label(text, Style.SIZE_BODY, Style.INK, 500, HORIZONTAL_ALIGNMENT_LEFT)
+	l.custom_minimum_size = Vector2(110, 0)
+	row.add_child(l)
+	var s: HSlider = HSlider.new()
+	s.name = text.replace(" ", "") + "Slider"
+	s.min_value = 0.0
+	s.max_value = 1.0
+	s.step = 0.05
+	s.value = value
+	s.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	s.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	s.custom_minimum_size = Vector2(0, 48)
+	s.focus_mode = Control.FOCUS_ALL
+	var track: StyleBoxFlat = box(Color(1, 1, 1, 0.14), 6, Color.TRANSPARENT, 0, Vector2(0, 6))
+	var fill: StyleBoxFlat = box(accent, 6, Color.TRANSPARENT, 0, Vector2(0, 6))
+	s.add_theme_stylebox_override("slider", track)
+	s.add_theme_stylebox_override("grabber_area", fill)
+	s.add_theme_stylebox_override("grabber_area_highlight", fill)
+	s.add_theme_icon_override("grabber", _knob(false, accent))
+	s.add_theme_icon_override("grabber_highlight", _knob(true, accent))
+	s.add_theme_icon_override("grabber_disabled", _knob(false, accent))
+	var pct: Label = label("%d%%" % int(round(value * 100)), Style.SIZE_SMALL, Style.MUTED, 600, HORIZONTAL_ALIGNMENT_RIGHT)
+	pct.custom_minimum_size = Vector2(70, 0)
+	s.value_changed.connect(func(v: float) -> void:
+		pct.text = "%d%%" % int(round(v * 100))
+		on_change.call(v)
+		Audio.play("tap", 1.0 + v * 0.5, -8.0)
+	)
+	row.add_child(s)
+	row.add_child(pct)
+	return row
+
+
+static var _knobs: Dictionary = {}
+
+
+static func _knob(focused: bool, accent: Color) -> Texture2D:
+	var key: String = "%s%s" % [focused, accent.to_html()]
+	if _knobs.has(key):
+		return _knobs[key]
+	var d: int = 44
+	var img: Image = Image.create(d, d, false, Image.FORMAT_RGBA8)
+	var c: Vector2 = Vector2(d, d) * 0.5
+	for y: int in d:
+		for x: int in d:
+			var dist: float = Vector2(x + 0.5, y + 0.5).distance_to(c)
+			var ring: float = clampf(d * 0.5 - dist + 0.5, 0.0, 1.0)
+			var inner: float = clampf(d * 0.5 - 5.0 - dist + 0.5, 0.0, 1.0)
+			var edge: Color = accent if focused else Color(accent, 0.75)
+			img.set_pixel(x, y, Color(edge, edge.a * ring).blend(Color(1, 1, 1, inner)))
+	var tex: ImageTexture = ImageTexture.create_from_image(img)
+	_knobs[key] = tex
+	return tex
+
+
 static var _switches: Dictionary = {}
 
 
@@ -281,6 +343,15 @@ static func _switch_icon(on: bool) -> Texture2D:
 	return tex
 
 
-## Coin balance pill that animates when the amount changes.
-static func coin_chip() -> CoinChip:
-	return CoinChip.new()
+## Coin balance pill; tapping it opens the shop.
+static func coin_chip() -> CounterChip:
+	var c: CounterChip = CounterChip.new("coins")
+	c.pressed.connect(func() -> void: App.instance.go("shop"))
+	return c
+
+
+## Level-key balance pill; tapping it opens the key shop.
+static func key_chip() -> CounterChip:
+	var c: CounterChip = CounterChip.new("keys")
+	c.pressed.connect(func() -> void: App.instance.open(KeysCard.new()))
+	return c

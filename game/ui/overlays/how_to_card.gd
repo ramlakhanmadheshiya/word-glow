@@ -3,7 +3,7 @@ extends Overlay
 ## How to play, one page per idea, each with a small live demo board (the real
 ## BoardView with a ghost finger tracing the word). `pages` picks which ideas to show.
 
-const ALL_PAGES: Array[String] = ["basics", "shadows", "beacons", "hints"]
+const ALL_PAGES: Array[String] = ["basics", "stars", "shadows", "beacons", "hints"]
 
 const PAGES: Dictionary = {
 	"basics": {
@@ -24,9 +24,15 @@ const PAGES: Dictionary = {
 		"grid": ["OWL", "BEE", "SUN", "CAT"], "words": [["OWL", [0, 1, 2]], ["BEE", [3, 4, 5]], ["SUN", [6, 7, 8]], ["CAT", [9, 10, 11]]],
 		"found": [], "ghost": 0, "shadows": [3, 4, 6, 7, 8, 9, 10, 11], "beacons": [2],
 	},
+	"stars": {
+		"title": "Three stars",
+		"text": "Solve a level with no wrong words and no hints for three stars. Up to %d extra moves (a wrong word or a hint is one each) still earns two. Each new star pays %d coins, and Restart puts all three back on offer." % [Economy.TWO_STAR_EXTRA, Economy.STAR_REWARD],
+		"grid": ["BEA", "HSM", "INE"], "words": [["BEAM", [0, 1, 2, 5]], ["SHINE", [4, 3, 6, 7, 8]]],
+		"found": [0, 1], "ghost": -1, "shadows": [], "beacons": [],
+	},
 	"hints": {
 		"title": "Hints and coins",
-		"text": "Stuck? A Spark (%d coins) reveals the next letter of a word, and your first Spark each day is free. A Lantern (%d coins) lights a whole word. Earn coins by clearing levels, daily lanterns and achievements." % [Economy.SPARK_COST, Economy.LANTERN_COST],
+		"text": "Stuck? A Spark (%d coins) reveals the next letter of a word, and your first Spark each day is free. A Lantern (%d coins) lights a whole word. Out of coins? Watch a short video for the hint, or earn coins from levels, chapters, daily lanterns and achievements." % [Economy.SPARK_COST, Economy.LANTERN_COST],
 		"grid": ["BEA", "HSM", "INE"], "words": [["BEAM", [0, 1, 2, 5]], ["SHINE", [4, 3, 6, 7, 8]]],
 		"found": [0], "ghost": -1, "shadows": [], "beacons": [], "sparks": {1: 2},
 	},

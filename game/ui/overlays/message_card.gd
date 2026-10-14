@@ -11,7 +11,8 @@ var buttons: Array = []
 
 
 func build() -> void:
-	name = "Message"
+	if name.is_empty() or name.begins_with("@"):
+		name = "Message"
 	body.add_theme_constant_override("separation", 18)
 	if not icon_name.is_empty():
 		body.add_child(UIKit.icon_rect(icon_name, 88, icon_color))

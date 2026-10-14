@@ -25,7 +25,7 @@ func _ready() -> void:
 		_lanterns.append({
 			"x": rng.randf(), "y": rng.randf(), "speed": rng.randf_range(0.006, 0.016),
 			"size": rng.randf_range(10.0, 22.0), "phase": rng.randf() * TAU,
-			"color": Style.lantern_color(rng.randi_range(0, 9)).lerp(Style.AMBER, 0.55),
+			"color": Look.lantern(rng.randi_range(0, 9), "classic").lerp(Style.AMBER, 0.55),
 		})
 
 

@@ -21,13 +21,13 @@ func setup(s: LevelState) -> void:
 	state = s
 	_colors.clear()
 	for k: int in s.found_order.size():
-		_colors[s.found_order[k]] = Style.lantern_color(k)
+		_colors[s.found_order[k]] = Look.lantern(k)
 	_last_width = -1.0
 	_relayout()
 
 
 func mark_found(word_idx: int) -> void:
-	_colors[word_idx] = Style.lantern_color(state.found_order.size() - 1)
+	_colors[word_idx] = Look.lantern(state.found_order.size() - 1)
 	_pop[word_idx] = _now
 	queue_redraw()
 

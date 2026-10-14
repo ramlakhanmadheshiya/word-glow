@@ -7,12 +7,12 @@ func build() -> void:
 	name = "Achievements"
 	add_title("Achievements")
 	var done: int = 0
-	for a: Dictionary in Achievements.LIST:
+	for a: Dictionary in Achievements.all():
 		if Profile.achievement_done(a["id"]):
 			done += 1
-	body.add_child(UIKit.caption("%d of %d unlocked" % [done, Achievements.LIST.size()]))
+	body.add_child(UIKit.caption("%d of %d unlocked" % [done, Achievements.all().size()]))
 	var stats: HBoxContainer = UIKit.hbox(10)
-	for s: Array in [["Levels", "levels"], ["Words", "words"], ["Dailies", "dailies"], ["Best streak", "best_streak"]]:
+	for s: Array in [["Levels", "levels"], ["Stars", "stars"], ["Words", "words"], ["Best streak", "best_streak"]]:
 		var col: VBoxContainer = UIKit.vbox(0)
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		col.add_child(UIKit.label(str(Profile.stat(s[1])), Style.SIZE_H2, Style.INK, 700))
@@ -21,7 +21,7 @@ func build() -> void:
 	body.add_child(UIKit.panel(stats, Style.FIELD, 26, Vector2(12, 14)))
 	if done == 0:
 		body.add_child(UIKit.para("Nothing unlocked yet. Clear your first level to earn First Light.", Style.SIZE_SMALL))
-	for a: Dictionary in Achievements.LIST:
+	for a: Dictionary in Achievements.all():
 		body.add_child(_row(a))
 
 

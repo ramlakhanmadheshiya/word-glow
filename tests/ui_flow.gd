@@ -1,27 +1,39 @@
 extends Node
-## End-to-end flow through the real app with a throwaway save: menus, a full
-## level (with a wrong guess and a hint), rewards, Next, Back, a daily, and an
-## app restart that must keep everything.
+## End-to-end flow through the real app with a throwaway save, the simulated
+## store and the mock ad provider: home, chapters, levels, a locked level and a
+## key, a full level with a wrong guess, stars and rewards, Restart, hints
+## (free, paid, and by video when coins run out), the shop, settings, the daily,
+## the ad banner's reserved space, and an app restart.
 ##
 ##   godot --headless --path . res://tests/ui_flow.tscn
 
 const SAVE: String = "user://ui_flow_save.json"
+const MockProvider: GDScript = preload("res://game/ads/providers/mock_ad_provider.gd")
 
 var t: Check = Check.new("UI FLOW")
 var app: App
+var mock: Node
 
 
 func _ready() -> void:
 	_wipe()
 	Save.path = SAVE
 	Save.load_data()
-	Profile.set_setting("music", false)
-	Profile.set_setting("sfx", false)
+	Profile.set_setting("music_volume", 0.0)
+	Profile.set_setting("sound_volume", 0.0)
+	Store.simulate = true
+	mock = MockProvider.new()
+	mock.auto_finish = true
+	AdManager.use_provider(mock)
 	await _boot()
+	await _banner_space()
 	await _menus()
 	await _first_level()
-	await _next_and_back()
-	await _hints_and_coins()
+	await _locked_and_keys()
+	await _hints_and_ads()
+	await _restart_button()
+	await _shop()
+	await _settings()
 	await _daily()
 	await _restart_app()
 	_wipe()
@@ -45,7 +57,7 @@ func _boot() -> void:
 
 
 func _find(root: Node, n: String) -> Node:
-	return root.find_child(n, true, false)
+	return root.find_child(n, true, false) if root != null else null
 
 
 func _press(root: Node, n: String) -> bool:
@@ -57,46 +69,55 @@ func _press(root: Node, n: String) -> bool:
 	return true
 
 
+func _play() -> Node:
+	return app.screen
+
+
+func _solve(play: Node) -> void:
+	for i: int in LanternRules.solve_order(play.puzzle):
+		if play.state.found[i] == 0:
+			play.board.traced.emit(play.puzzle.words[i]["cells"])
+			await _wait(0.05)
+
+
+func _banner_space() -> void:
+	t.ok(AdManager.banner_height > 0.0, "the banner is showing")
+	var frame: MarginContainer = app.screen.get_child(0) as MarginContainer
+	t.ok(frame.get_theme_constant("margin_bottom") >= int(AdManager.banner_height), "screens keep room for the banner")
+	for n: String in ["Play", "Shop", "SettingsButton", "Chapters", "Daily"]:
+		t.ok(_find(app.screen, n) != null, "home has %s" % n)
+
+
 func _menus() -> void:
-	t.ok(_find(app.screen, "Play") != null, "home has Play")
-	t.ok(_find(app.screen, "Daily") != null, "home has the daily card")
-	_press(app.screen, "Worlds")
+	_press(app.screen, "Chapters")
 	await _wait(0.6)
-	t.eq(app.screen_name, "worlds", "Worlds opens")
+	t.eq(app.screen_name, "chapters", "Chapters opens")
+	var list: Node = _find(app.screen, "List")
+	var cards: int = 0
+	for c: Node in list.get_children():
+		if c is ChapterCard:
+			cards += 1
+	t.eq(cards, 16, "16 chapter cards")
+	_press(list, "Chapter_harbor")
+	await _wait(0.6)
+	t.eq(app.screen_name, "chapters", "a locked chapter does not open")
+	_press(list, "Chapter_meadow")
+	await _wait(0.6)
+	t.eq(app.screen_name, "levels", "an open chapter shows its levels")
 	var grid: Node = _find(app.screen, "Grid")
-	t.eq(grid.get_child_count(), Catalog.world_count(), "every world has a tile")
-	_press(grid, "World_harbor")
-	await _wait(0.6)
-	t.eq(app.screen_name, "worlds", "a locked world does not open")
-	_press(grid, "World_meadow")
-	await _wait(0.6)
-	t.eq(app.screen_name, "levels", "an open world shows its levels")
-	var levels: Node = _find(app.screen, "Grid")
-	t.eq(levels.get_child_count(), 20, "20 level tiles")
-	_press(levels, "Level2")
-	await _wait(0.6)
-	t.eq(app.screen_name, "levels", "a locked level does not open")
+	t.eq(grid.get_child_count(), 40, "all 40 levels are shown, locked ones too")
+	var locked: int = 0
+	for tile: LevelTile in grid.get_children():
+		if not tile.open:
+			locked += 1
+	t.eq(locked, 39, "39 locked levels are visible")
+	t.ok((_find(app.screen, "Legend") as Label).text.contains("39 locked"), "the hero card counts locked levels")
 	app.handle_back()
 	await _wait(0.6)
-	t.eq(app.screen_name, "worlds", "Back returns to worlds")
+	t.eq(app.screen_name, "chapters", "Back returns to chapters")
 	app.handle_back()
 	await _wait(0.6)
 	t.eq(app.screen_name, "home", "Back returns home")
-	# Settings, about, credits open and close.
-	_press(app.screen, "Settings")
-	await _wait(0.5)
-	t.ok(app.top_overlay() is SettingsCard, "settings opens")
-	_press(app.top_overlay(), "About")
-	await _wait(0.5)
-	t.ok(app.top_overlay() is AboutCard, "about opens from settings")
-	t.ok(_find(app.top_overlay(), "Author") != null, "about credits the author")
-	app.handle_back()
-	await _wait(0.5)
-	t.ok(app.top_overlay() == null, "Back closes the card")
-
-
-func _play() -> Node:
-	return app.screen
 
 
 func _first_level() -> void:
@@ -108,91 +129,160 @@ func _first_level() -> void:
 	app.top_overlay().close()
 	await _wait(0.5)
 	var play: Node = _play()
-	var p: Puzzle = play.puzzle
-	t.eq(p.id, "meadow-01", "it is Meadow 1")
-	# A wrong guess: tiles are adjacent but do not spell an answer.
+	t.eq(play.puzzle.id, "meadow-01", "it is Meadow 1")
+	for n: String in ["LevelsButton", "Spark", "Lantern", "Restart", "SettingsButton", "Back"]:
+		t.ok(_find(play, n) != null, "the game screen has %s" % n)
 	var wrong: PackedInt32Array = _wrong_path(play.state)
 	play.board.traced.emit(wrong)
 	await _wait(0.1)
 	t.eq(play.state.found_count(), 0, "a wrong guess finds nothing")
-	t.eq(play.state.mistakes, 1, "the mistake is counted")
-	t.eq(Profile.coins(), coins0, "a wrong guess costs nothing")
-	# Find every word by tracing it.
-	for i: int in LanternRules.solve_order(p):
-		play.board.traced.emit(p.words[i]["cells"])
-		await _wait(0.1)
-	t.ok(play.state.is_complete(), "all words found")
+	t.eq(play.state.stars(), 2, "a wrong guess costs a star")
+	t.eq(Profile.coins(), coins0, "a wrong guess costs no coins")
+	await _solve(play)
 	await _wait(2.6)
-	t.ok(app.top_overlay() is ResultCard, "the result card appears")
-	t.ok(Profile.is_cleared("meadow-01"), "level marked cleared")
-	t.ok(Profile.coins() >= coins0 + Economy.LEVEL_REWARD + Economy.FLAWLESS_BONUS, "clear reward paid (plus any achievement)")
-	t.ok(Profile.achievement_done("first_light"), "First Light unlocked")
-	t.ok(Profile.saved_progress("meadow-01").is_empty(), "finished level leaves no half-progress")
-
-
-func _next_and_back() -> void:
+	var card: Overlay = app.top_overlay()
+	t.ok(card is ResultCard, "the result card appears")
+	t.eq((_find(card, "ResultTitle") as Label).text, "Nicely done", "2-star title")
+	t.eq(Profile.stars_for("meadow-01"), 2, "2 stars recorded")
+	t.ok(Profile.coins() >= coins0 + Economy.LEVEL_REWARD + 2 * Economy.STAR_REWARD, "clear reward paid")
+	_press(card, "Again")
+	await _wait(0.8)
+	play = _play()
+	t.eq(play.state.stars(), 3, "Again starts fresh with 3 stars on offer")
+	await _solve(play)
+	await _wait(2.6)
+	t.eq(Profile.stars_for("meadow-01"), 3, "a perfect replay records 3 stars")
+	t.eq((_find(app.top_overlay(), "ResultTitle") as Label).text, "Perfect!", "3-star title")
 	_press(app.top_overlay(), "Next")
 	await _wait(0.9)
 	t.eq(_play().puzzle.id, "meadow-02", "Next opens level 2")
-	var play: Node = _play()
-	var first: int = LanternRules.solve_order(play.puzzle)[0]
-	play.board.traced.emit(play.puzzle.words[first]["cells"])
-	await _wait(0.2)
-	t.eq(Profile.saved_progress("meadow-02").get("found", []).size(), 1, "progress saved mid-level")
-	app.handle_back()
+
+
+func _locked_and_keys() -> void:
+	app.go("levels", {"chapter": 0})
+	await _wait(0.7)
+	_press(_find(app.screen, "Grid"), "Level9")
 	await _wait(0.5)
-	t.ok(app.top_overlay() is PauseCard, "Back in a level opens Pause")
-	_press(app.top_overlay(), "Levels")
-	await _wait(0.8)
-	t.eq(app.screen_name, "levels", "Pause > Levels returns to the level list")
-	_press(_find(app.screen, "Grid"), "Level2")
-	await _wait(0.8)
-	t.eq(_play().state.found_count(), 1, "re-opening the level resumes it")
+	var card: Overlay = app.top_overlay()
+	t.ok(card is LockedCard, "a locked level explains how it opens")
+	t.ok((_find(card, "UseKey") as Button).disabled, "no keys: Use a key is disabled")
+	card.close()
+	await _wait(0.4)
+	Profile.add_keys(1)
+	_press(_find(app.screen, "Grid"), "Level9")
+	await _wait(0.5)
+	_press(app.top_overlay(), "UseKey")
+	await _wait(0.9)
+	t.eq(app.screen_name, "play", "a key opens the level and plays it")
+	t.eq(_play().puzzle.id, "meadow-09", "it is level 9")
+	t.eq(Profile.keys(), 0, "the key is spent")
 
 
-func _hints_and_coins() -> void:
+func _hints_and_ads() -> void:
 	var play: Node = _play()
-	Save.data["free_spark_date"] = ""
+	Save.data["sparks"]["day"] = ""
 	var coins0: int = Profile.coins()
-	play.use_spark()
+	_press(play, "Spark")
 	await _wait(0.1)
 	t.eq(Profile.coins(), coins0, "the first spark of the day is free")
-	t.eq(play.state.hints_used, 1, "spark counted")
-	play.use_spark()
+	t.eq(play.state.stars(), 2, "a hint costs a star")
+	_press(play, "Spark")
 	await _wait(0.1)
-	t.eq(Profile.coins(), coins0 - Economy.SPARK_COST, "the second spark costs coins")
+	t.eq(Profile.coins(), coins0 - Economy.SPARK_COST, "the next spark costs coins")
+	# Out of coins: the game offers a video for the hint.
 	Save.data["coins"] = 5
-	Profile.coins_changed.emit(5)
 	var hints: int = play.state.hints_used
-	play.use_lantern()
+	_press(play, "Lantern")
 	await _wait(0.5)
-	t.eq(Profile.coins(), 5, "no coins taken when you cannot afford a hint")
-	t.eq(play.state.hints_used, hints, "and no hint given")
-	t.ok(app.top_overlay() is MessageCard, "the not-enough-coins card explains how to earn")
-	app.top_overlay().close()
+	var card: Overlay = app.top_overlay()
+	t.ok(card is MessageCard and card.name == "OutOfCoins", "out of coins: a video is offered")
+	t.eq(play.state.hints_used, hints, "no hint before the video")
+	_press(card, "Watchavideo")
+	await _wait(0.5)
+	t.eq(play.state.hints_used, hints + 1, "after the video, the hint is given")
+	t.eq(Profile.coins(), 5, "and no coins are taken")
+	mock.earn = false
+	_press(play, "Lantern")
 	await _wait(0.4)
+	_press(app.top_overlay(), "Watchavideo")
+	await _wait(0.5)
+	t.eq(play.state.hints_used, hints + 1, "a skipped video gives no hint")
+	mock.earn = true
 	Save.data["coins"] = 500
-	var before: int = play.state.found_count()
-	play.use_lantern()
-	await _wait(0.2)
-	t.eq(play.state.found_count(), before + 1, "a lantern finds a word")
-	t.eq(Profile.coins(), 500 - Economy.LANTERN_COST, "lantern cost deducted once")
-	for i: int in LanternRules.solve_order(play.puzzle):
-		if play.state.found[i] == 0:
-			play.board.traced.emit(play.puzzle.words[i]["cells"])
-			await _wait(0.05)
-	await _wait(2.6)
-	t.ok(not Profile.is_flawless("meadow-02"), "a hinted clear is not flawless")
-	var coins_after: int = Profile.coins()
-	app.top_overlay().close()
+
+
+func _restart_button() -> void:
+	var play: Node = _play()
+	t.ok(play.state.found_count() > 0 or play.state.extra_moves() > 0, "the level has progress")
+	_press(play, "Restart")
 	await _wait(0.4)
-	play.restart()
+	t.ok(app.top_overlay() is MessageCard, "Restart asks first")
+	_press(app.top_overlay(), "Restart")
+	await _wait(0.9)
+	t.eq(_play().state.found_count(), 0, "Restart clears found words")
+	t.eq(_play().state.stars(), 3, "Restart puts 3 stars back on offer")
+	t.ok(Profile.saved_progress("meadow-09").is_empty(), "Restart clears saved progress")
+
+
+func _shop() -> void:
+	app.go("shop")
+	await _wait(0.7)
+	t.eq(app.screen_name, "shop", "the shop opens")
+	for id: String in Store.PRODUCTS:
+		t.ok(_find(app.screen, "Product_" + id) != null, "the shop lists %s" % id)
+	var coins: int = Profile.coins()
+	_press(app.screen, "Buy_coins_300")
+	await _wait(0.2)
+	t.eq(Profile.coins(), coins + 300, "buying a coin bag adds coins")
+	_press(app.screen, "FreeCoins")
+	await _wait(0.3)
+	t.eq(Profile.coins(), coins + 300 + Economy.VIDEO_COINS, "a free-coins video pays")
+	_press(app.screen, "Product_theme_pack")
+	await _wait(0.5)
+	var card: Overlay = app.top_overlay()
+	t.ok(card is ProductCard, "a pack opens its card")
+	_press(card, "Trial")
+	await _wait(0.6)
+	t.ok(Profile.owns("theme_pack") and not Profile.bought("theme_pack"), "the video starts a trial")
+	t.ok(app.top_overlay() is PickerCard, "and opens the theme picker")
+	_press(app.top_overlay(), "Pick_ocean")
 	await _wait(0.8)
-	for i: int in LanternRules.solve_order(_play().puzzle):
-		_play().board.traced.emit(_play().puzzle.words[i]["cells"])
-		await _wait(0.05)
-	await _wait(2.6)
-	t.eq(Profile.coins(), coins_after, "replaying a cleared level pays nothing")
+	t.eq(Look.theme_id(), "ocean", "a theme can be picked during the trial")
+	app.top_overlay().close()
+	await _wait(0.3)
+	_press(app.screen, "Product_supporter_pack")
+	await _wait(0.4)
+	_press(app.top_overlay(), "Buy")
+	await _wait(0.3)
+	t.ok(Profile.is_supporter(), "the Supporter pack can be bought")
+	t.eq(AdManager.banner_height, 0.0, "supporters see no banner")
+	app.top_overlay().close()
+	await _wait(0.3)
+
+
+func _settings() -> void:
+	app.go("home")
+	await _wait(0.6)
+	_press(app.screen, "SettingsButton")
+	await _wait(0.5)
+	var card: Overlay = app.top_overlay()
+	t.ok(card is SettingsCard, "settings opens")
+	var music: HSlider = _find(card, "MusicSlider") as HSlider
+	t.ok(music != null, "music is a slider")
+	t.ok(_find(card, "SoundSlider") is HSlider, "sound is a slider")
+	music.value = 0.4
+	t.eq(float(Profile.setting("music_volume")), 0.4, "moving the slider sets the volume")
+	t.ok(_find(card, "Reset") != null, "Reset progress is offered from home")
+	_press(card, "PickLanterns")
+	await _wait(0.5)
+	t.ok(app.top_overlay() is PickerCard, "the lantern style picker opens")
+	app.top_overlay().close()
+	await _wait(0.3)
+	app.go("play", {"chapter": 0, "level": 2})
+	await _wait(0.8)
+	_press(app.screen, "SettingsButton")
+	await _wait(0.5)
+	t.ok(_find(app.top_overlay(), "Reset") == null, "Reset progress is hidden in a level")
 	app.top_overlay().close()
 	await _wait(0.3)
 
@@ -202,16 +292,13 @@ func _daily() -> void:
 	await _wait(0.6)
 	var coins0: int = Profile.coins()
 	_press(app.screen, "Daily")
-	await _wait(0.8)
+	await _wait(0.9)
 	var play: Node = _play()
 	t.ok(play.puzzle != null and play.puzzle.id == "daily-" + Catalog.today_key(), "the daily opens today's puzzle")
-	for i: int in LanternRules.solve_order(play.puzzle):
-		play.board.traced.emit(play.puzzle.words[i]["cells"])
-		await _wait(0.05)
-	await _wait(2.6)
+	await _solve(play)
+	await _wait(2.8)
 	t.ok(Profile.daily_done(Catalog.today_key()), "daily marked done")
 	t.ok(Profile.coins() >= coins0 + Economy.daily_reward(1), "daily reward paid")
-	t.eq(Profile.current_streak(), 1, "streak started")
 	_press(app.top_overlay(), "Next")
 	await _wait(0.8)
 	t.eq(app.screen_name, "home", "after the daily, Home")
@@ -227,10 +314,9 @@ func _restart_app() -> void:
 	Save.load_data()
 	await _boot()
 	t.eq(Profile.coins(), coins, "coins survive a restart")
-	t.ok(Profile.is_cleared("meadow-02"), "cleared levels survive a restart")
-	t.ok(Profile.daily_done(Catalog.today_key()), "the daily stays done after a restart")
-	t.ok(not Profile.setting("sfx"), "settings survive a restart")
-	t.eq(Profile.next_level(), [0, 3] as Array[int], "Continue points at level 3")
+	t.eq(Profile.stars_for("meadow-01"), 3, "stars survive a restart")
+	t.ok(Profile.is_supporter(), "purchases survive a restart")
+	t.eq(float(Profile.setting("music_volume")), 0.4, "settings survive a restart")
 
 
 ## A path of adjacent visible tiles that spells nothing in the puzzle.
@@ -242,7 +328,6 @@ func _wrong_path(live: LevelState) -> PackedInt32Array:
 				if c == a:
 					continue
 				var path: PackedInt32Array = PackedInt32Array([a, b, c])
-				# Probe on a scratch copy so the live level is untouched.
 				if LevelState.new(p).submit(path)["result"] == LevelState.Result.NOT_A_WORD:
 					return path
 	return PackedInt32Array()

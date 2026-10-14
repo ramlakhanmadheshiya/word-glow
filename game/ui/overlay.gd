@@ -11,13 +11,14 @@ var dismissable: bool = true
 var body: VBoxContainer
 var card: PanelContainer
 var _dim: ColorRect
-var _scroll: ScrollContainer
+var _scroll: TouchScroll
 var _closing: bool = false
 
 
 func _init() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	add_to_group("modal")
 
 
 func _ready() -> void:
@@ -29,14 +30,11 @@ func _ready() -> void:
 	card = PanelContainer.new()
 	card.add_theme_stylebox_override("panel", UIKit.card_style())
 	add_child(card)
-	_scroll = ScrollContainer.new()
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	# Scrolls by drag or wheel; no visible bar over the content.
-	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	# Drag anywhere (even on a button) or use the wheel to scroll; no scrollbar.
+	_scroll = TouchScroll.new()
 	card.add_child(_scroll)
 	body = UIKit.vbox(16)
-	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.add_child(body)
+	_scroll.set_content(body)
 	build()
 	resized.connect(_fit)
 	_fit.call_deferred()
@@ -89,12 +87,12 @@ func _fit() -> void:
 	if not is_inside_tree():
 		return
 	var insets: Vector4 = App.safe_insets(self)
-	var max_h: float = size.y - insets.y - insets.w - 80.0
+	var max_h: float = size.y - insets.y - insets.w - AdManager.banner_height - 80.0
 	var content_h: float = body.get_combined_minimum_size().y
 	_scroll.custom_minimum_size.y = minf(content_h, max_h - pad)
 	card.size = Vector2(w, 0)
 	card.reset_size()
-	card.position = ((size - card.size) / 2.0).round()
+	card.position = ((size - Vector2(0, AdManager.banner_height) - card.size) / 2.0).round()
 	card.pivot_offset = card.size / 2.0
 
 
