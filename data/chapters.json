@@ -1,0 +1,35 @@
+{
+	"levels_per_chapter": 40,
+	"unlock_clears": 15,
+	"chapters": [
+		{"id": "meadow", "name": "Meadow", "tagline": "Where the first lanterns are lit", "sky_top": "#2E2A6B", "sky_bottom": "#141235", "accent": "#FFB547"},
+		{"id": "harbor", "name": "Harbor", "tagline": "Lights along the water", "sky_top": "#1F3A6E", "sky_bottom": "#0E1A38", "accent": "#5FD4E8"},
+		{"id": "orchard", "name": "Orchard", "tagline": "Shadows between the branches", "sky_top": "#3B2457", "sky_bottom": "#1A0F2E", "accent": "#FF8A7A"},
+		{"id": "bamboo", "name": "Bamboo", "tagline": "Green light through the stalks", "sky_top": "#173F35", "sky_bottom": "#081C17", "accent": "#8FE08A"},
+		{"id": "canyon", "name": "Canyon", "tagline": "Beacons on the red rocks", "sky_top": "#4A2140", "sky_bottom": "#1F0C1E", "accent": "#FFA25C"},
+		{"id": "glacier", "name": "Glacier", "tagline": "Blue glow beneath the ice", "sky_top": "#163E5C", "sky_bottom": "#081A2C", "accent": "#8FE3FF"},
+		{"id": "bazaar", "name": "Bazaar", "tagline": "A thousand lamps for sale", "sky_top": "#4B2A1A", "sky_bottom": "#1E0F09", "accent": "#FFCF5C"},
+		{"id": "lagoon", "name": "Lagoon", "tagline": "Lanterns floating on still water", "sky_top": "#0F4250", "sky_bottom": "#051A22", "accent": "#5EF0D2"},
+		{"id": "temple", "name": "Temple", "tagline": "Candles on a thousand steps", "sky_top": "#4A1E2E", "sky_bottom": "#1C0911", "accent": "#FF7F9E"},
+		{"id": "aurora", "name": "Aurora", "tagline": "Ribbons of light in the north", "sky_top": "#103F45", "sky_bottom": "#06171C", "accent": "#7DF2B4"},
+		{"id": "dunes", "name": "Dunes", "tagline": "Camp fires across the sand", "sky_top": "#4D3A1C", "sky_bottom": "#1D1508", "accent": "#FFD27A"},
+		{"id": "moonwell", "name": "Moonwell", "tagline": "Silver light at the bottom of the well", "sky_top": "#2A2D52", "sky_bottom": "#0E0F21", "accent": "#C9D4FF"},
+		{"id": "lotus", "name": "Lotus", "tagline": "Lamps that drift and open", "sky_top": "#4A2453", "sky_bottom": "#1A0B20", "accent": "#F5A3FF"},
+		{"id": "comet", "name": "Comet", "tagline": "Follow the long bright tail", "sky_top": "#1A2C5C", "sky_bottom": "#070C21", "accent": "#7FB2FF"},
+		{"id": "starfall", "name": "Starfall", "tagline": "The lanterns rise to the stars", "sky_top": "#241A4F", "sky_bottom": "#07061A", "accent": "#C9A7FF"},
+		{"id": "eclipse", "name": "Eclipse", "tagline": "Light the darkest night", "sky_top": "#2B1630", "sky_bottom": "#050207", "accent": "#FF6B5B"}
+	],
+	"difficulty": {
+		"shadows_from_chapter": 3,
+		"beacons_from_chapter": 5,
+		"tiers": [
+			{"name": "Easy", "from": 1, "to": 5, "early": [4, 4], "late": [5, 4], "len": [3, 5], "shadows": 0.0, "beacons": 0},
+			{"name": "Easy–medium", "from": 6, "to": 10, "early": [5, 4], "late": [5, 5], "len": [3, 6], "shadows": 0.08, "beacons": 0},
+			{"name": "Medium", "from": 11, "to": 20, "early": [5, 5], "late": [6, 5], "len": [4, 6], "shadows": 0.14, "beacons": 1},
+			{"name": "Medium–hard", "from": 21, "to": 30, "early": [6, 5], "late": [6, 6], "len": [4, 7], "shadows": 0.2, "beacons": 1},
+			{"name": "Hard", "from": 31, "to": 39, "early": [6, 6], "late": [7, 6], "len": [5, 7], "shadows": 0.26, "beacons": 2},
+			{"name": "Extreme", "from": 40, "to": 40, "early": [7, 6], "late": [8, 7], "len": [5, 8], "shadows": 0.34, "beacons": 3}
+		]
+	},
+	"daily": {"count": 120}
+}

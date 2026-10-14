@@ -1,6 +1,6 @@
 extends SceneTree
 ## Builds every level from the curated theme word lists and the plan in
-## data/worlds.json, then writes data/levels/<world>.json and daily.json.
+## data/chapters.json, then writes data/levels/<chapter>.json and daily.json.
 ##
 ##   godot --headless --path . -s res://tools/generate_levels.gd
 ##   godot --headless --path . -s res://tools/generate_levels.gd -- harbor
@@ -9,76 +9,113 @@ extends SceneTree
 ## random Hamiltonian path over the grid (so every tile is used once) cut into
 ## theme words. It is kept only if every answer can be traced in exactly one place,
 ## the shadows can all be lit, and beacons genuinely help.
+##
+## Difficulty follows the same curve in every chapter (levels 1-5 easy, 6-10
+## easy-medium, 11-20 medium, 21-30 medium-hard, 31-39 hard, 40 extreme), and
+## later chapters sit higher on it: bigger grids sooner, longer words, and more
+## shadows (from chapter 3) and beacons (from chapter 5).
 
-const LEVELS_PER_WORLD: int = 20
 const OUT_DIR: String = "res://data/levels/"
+const RECENT_THEMES: int = 14
 
 var _themes: Dictionary = {}
 var _recent_themes: Array[String] = []
+var _plan: Dictionary = {}
 
 
 func _init() -> void:
 	_themes = JSON.parse_string(FileAccess.get_file_as_string("res://data/themes.json"))
-	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/worlds.json"))
+	_plan = JSON.parse_string(FileAccess.get_file_as_string("res://data/chapters.json"))
 	var only: PackedStringArray = OS.get_cmdline_user_args()
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT_DIR))
 	var t0: int = Time.get_ticks_msec()
-	for w: Dictionary in catalog["worlds"]:
-		if not only.is_empty() and not only.has(w["id"]):
+	var per: int = int(_plan["levels_per_chapter"])
+	var chapters: Array = _plan["chapters"]
+	for ci: int in chapters.size():
+		var ch: Dictionary = chapters[ci]
+		if not only.is_empty() and not only.has(ch["id"]):
 			continue
 		var levels: Array = []
 		_recent_themes.clear()
-		for n: int in range(1, LEVELS_PER_WORLD + 1):
-			var spec: Dictionary = _spec(w["gen"], n, LEVELS_PER_WORLD, false, 0)
-			var p: Puzzle = _generate(spec, "%s-%02d" % [w["id"], n])
+		for n: int in range(1, per + 1):
+			var spec: Dictionary = spec_for(_plan, ci, n)
+			var p: Puzzle = _generate(spec, "%s-%02d" % [ch["id"], n])
 			if p == null:
-				push_error("FAILED %s level %d" % [w["id"], n])
+				push_error("FAILED %s level %d %s" % [ch["id"], n, str(spec)])
 				quit(1)
 				return
 			levels.append(p.to_dict())
-			print("%s-%02d  %dx%d  %-12s words=%d shadows=%d beacons=%d depth=%d" % [w["id"], n, p.rows, p.cols, p.theme_id, p.words.size(), p.shadows.size(), p.beacons.size(), LanternRules.light_depth(p)])
-		_write(OUT_DIR + w["id"] + ".json", {"world": w["id"], "levels": levels})
+			print("%s-%02d  %-12s %dx%d  %-12s words=%d shadows=%d beacons=%d depth=%d" % [ch["id"], n, spec["tier"], p.rows, p.cols, p.theme_id, p.words.size(), p.shadows.size(), p.beacons.size(), LanternRules.light_depth(p)])
+		_write(OUT_DIR + ch["id"] + ".json", {"chapter": ch["id"], "levels": levels})
 	if only.is_empty() or only.has("daily"):
-		var daily: Dictionary = catalog["daily"]
 		var levels: Array = []
 		_recent_themes.clear()
-		for n: int in range(1, int(daily["count"]) + 1):
-			var spec: Dictionary = _spec(daily["gen"], n, int(daily["count"]), true, hash("daily-%d" % n))
+		var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+		rng.seed = hash("daily-pool")
+		for n: int in range(1, int(_plan["daily"]["count"]) + 1):
+			# A daily is a medium to medium-hard level from the middle chapters.
+			var spec: Dictionary = spec_for(_plan, rng.randi_range(4, 11), rng.randi_range(11, 30))
 			var p: Puzzle = _generate(spec, "daily-%03d" % n)
 			if p == null:
 				push_error("FAILED daily %d" % n)
 				quit(1)
 				return
 			levels.append(p.to_dict())
-		_write(OUT_DIR + "daily.json", {"world": "daily", "levels": levels})
+		_write(OUT_DIR + "daily.json", {"chapter": "daily", "levels": levels})
 		print("daily: %d puzzles" % levels.size())
 	print("GENERATED in %.1fs" % ((Time.get_ticks_msec() - t0) / 1000.0))
 	quit(0)
 
 
-## The size, word lengths, shadow and beacon counts for level n of a plan.
-## Stages are [from_level, rows, cols, min_len, max_len]; shadows and beacons are
-## [first_count, last_count, from_level], ramping linearly (or random per day for the daily pool).
-func _spec(gen: Dictionary, n: int, total: int, randomized: bool, seed_v: int) -> Dictionary:
-	var stage: Array = gen["stages"][0]
-	for s: Array in gen["stages"]:
-		if n >= int(s[0]):
-			stage = s
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.seed = seed_v
-	var counts: Array[int] = []
-	for key: String in ["shadows", "beacons"]:
-		var r: Array = gen[key]
-		var from: int = int(r[2])
-		var k: int = 0
-		if n >= from:
-			if randomized:
-				k = rng.randi_range(int(r[0]), int(r[1]))
-			else:
-				var t: float = 0.0 if total == from else float(n - from) / float(total - from)
-				k = int(round(lerpf(float(r[0]), float(r[1]), t)))
-		counts.append(k)
-	return {"rows": int(stage[1]), "cols": int(stage[2]), "min": int(stage[3]), "max": int(stage[4]), "shadows": counts[0], "beacons": counts[1]}
+## The tier a level number falls in.
+static func tier_for(plan: Dictionary, n: int) -> Dictionary:
+	for t: Dictionary in plan["difficulty"]["tiers"]:
+		if n >= int(t["from"]) and n <= int(t["to"]):
+			return t
+	return plan["difficulty"]["tiers"][0]
+
+
+## Grid size, word lengths, shadows and beacons for level n (1-based) of chapter ci (0-based).
+static func spec_for(plan: Dictionary, ci: int, n: int) -> Dictionary:
+	var diff: Dictionary = plan["difficulty"]
+	var tier: Dictionary = tier_for(plan, n)
+	var count: int = (plan["chapters"] as Array).size()
+	var c: float = float(ci) / float(maxi(1, count - 1))
+	var span: int = int(tier["to"]) - int(tier["from"])
+	var p: float = 0.0 if span == 0 else float(n - int(tier["from"])) / float(span)
+	var size: Array = tier["late"] if 0.6 * c + 0.4 * p >= 0.5 else tier["early"]
+	var lo: int = int(tier["len"][0])
+	var hi: int = int(tier["len"][1])
+	if c >= 0.6 and lo + 2 <= hi:
+		lo += 1
+	# The finale of every chapter is the biggest grid with only long words.
+	if int(tier["from"]) == int(tier["to"]) and n == int(tier["to"]):
+		size = tier["late"]
+		lo = maxi(lo, 6)
+	var rows: int = int(size[0])
+	var cols: int = int(size[1])
+	# The very first levels teach the game on tiny grids.
+	if ci == 0 and n <= 2:
+		rows = 3
+		cols = 3
+		lo = 3
+		hi = 3
+	elif ci == 0 and n <= 5:
+		rows = 4
+		cols = 3
+		lo = 3
+		hi = 4
+	var shadows: int = 0
+	var chapter: int = ci + 1
+	var sf: int = int(diff["shadows_from_chapter"])
+	if chapter >= sf:
+		var ramp: float = minf(1.0, float(chapter - sf + 1) / 4.0)
+		shadows = int(round(rows * cols * float(tier["shadows"]) * ramp * (0.85 + 0.3 * p)))
+	var beacons: int = 0
+	var bf: int = int(diff["beacons_from_chapter"])
+	if chapter >= bf and shadows >= 4:
+		beacons = mini(int(tier["beacons"]), 1 + (chapter - bf) / 2)
+	return {"rows": rows, "cols": cols, "min": lo, "max": hi, "shadows": shadows, "beacons": beacons, "tier": str(tier["name"])}
 
 
 func _generate(spec: Dictionary, id: String) -> Puzzle:
@@ -94,7 +131,7 @@ func _generate(spec: Dictionary, id: String) -> Puzzle:
 		p.id = id
 		if _place_lights(p, spec, rng):
 			_recent_themes.append(theme_id)
-			if _recent_themes.size() > 8:
+			if _recent_themes.size() > RECENT_THEMES:
 				_recent_themes.pop_front()
 			return p
 	return null

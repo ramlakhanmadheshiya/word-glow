@@ -1,11 +1,12 @@
 extends Node
-## Read-only game content: worlds, theme names and the level files in data/.
-## Missing or broken files are reported through `last_error` instead of crashing.
+## Read-only game content: chapters, difficulty tiers, theme names and the level
+## files in data/. Missing or broken files are reported through `last_error`.
 
-const LEVELS_PER_WORLD: int = 20
 const DAILY_EPOCH: Dictionary = {"year": 2026, "month": 1, "day": 1}
 
-var worlds: Array[Dictionary] = []
+var chapters: Array[Dictionary] = []
+var tiers: Array = []
+var levels_per_chapter: int = 40
 var unlock_clears: int = 15
 var theme_names: Dictionary = {}
 var last_error: String = ""
@@ -19,7 +20,7 @@ func _ready() -> void:
 
 ## Drops cached content and reads it again (used by the error card's Retry).
 func reload() -> void:
-	worlds.clear()
+	chapters.clear()
 	theme_names.clear()
 	_level_cache.clear()
 	last_error = ""
@@ -27,15 +28,17 @@ func reload() -> void:
 
 
 func _load_meta() -> void:
-	var catalog: Variant = _json("res://data/worlds.json")
+	var catalog: Variant = _json("res://data/chapters.json")
 	if catalog is Dictionary:
+		levels_per_chapter = int(catalog.get("levels_per_chapter", 40))
 		unlock_clears = int(catalog.get("unlock_clears", 15))
-		for w: Variant in catalog.get("worlds", []):
-			var d: Dictionary = w
+		tiers = catalog.get("difficulty", {}).get("tiers", [])
+		for c: Variant in catalog.get("chapters", []):
+			var d: Dictionary = c
 			d["sky_top"] = Color(str(d.get("sky_top", "#2E2A6B")))
 			d["sky_bottom"] = Color(str(d.get("sky_bottom", "#141235")))
 			d["accent"] = Color(str(d.get("accent", "#FFB547")))
-			worlds.append(d)
+			chapters.append(d)
 	var themes: Variant = _json("res://data/themes.json")
 	if themes is Dictionary:
 		for k: Variant in themes:
@@ -52,31 +55,43 @@ func _json(p: String) -> Variant:
 	return v
 
 
-func world_count() -> int:
-	return worlds.size()
+func chapter_count() -> int:
+	return chapters.size()
 
 
-func world(index: int) -> Dictionary:
-	return worlds[index] if index >= 0 and index < worlds.size() else {}
+func chapter(index: int) -> Dictionary:
+	return chapters[index] if index >= 0 and index < chapters.size() else {}
 
 
-func world_index(id: String) -> int:
-	for i: int in worlds.size():
-		if worlds[i]["id"] == id:
+func chapter_index(id: String) -> int:
+	for i: int in chapters.size():
+		if chapters[i]["id"] == id:
 			return i
 	return -1
 
 
-static func level_id(world_id: String, n: int) -> String:
-	return "%s-%02d" % [world_id, n]
+func total_levels() -> int:
+	return chapters.size() * levels_per_chapter
 
 
-## Splits "harbor-07" into [world index, 7]; [-1, 0] if unknown.
+## "Easy", "Medium"... for level n of any chapter.
+func tier_name(n: int) -> String:
+	for t: Variant in tiers:
+		if n >= int(t["from"]) and n <= int(t["to"]):
+			return str(t["name"])
+	return ""
+
+
+static func level_id(chapter_id: String, n: int) -> String:
+	return "%s-%02d" % [chapter_id, n]
+
+
+## Splits "harbor-07" into [chapter index, 7]; [-1, 0] if unknown.
 func parse_level_id(id: String) -> Array[int]:
 	var dash: int = id.rfind("-")
 	if dash <= 0:
 		return [-1, 0]
-	return [world_index(id.substr(0, dash)), int(id.substr(dash + 1))]
+	return [chapter_index(id.substr(0, dash)), int(id.substr(dash + 1))]
 
 
 func _levels(file_id: String) -> Array:
@@ -86,16 +101,16 @@ func _levels(file_id: String) -> Array:
 	return _level_cache[file_id]
 
 
-## The puzzle for level n (1-based) of a world, or null if it cannot be loaded.
-func puzzle(world_idx: int, n: int) -> Puzzle:
-	var w: Dictionary = world(world_idx)
-	if w.is_empty():
-		last_error = "Unknown world"
+## The puzzle for level n (1-based) of a chapter, or null if it cannot be loaded.
+func puzzle(chapter_idx: int, n: int) -> Puzzle:
+	var c: Dictionary = chapter(chapter_idx)
+	if c.is_empty():
+		last_error = "Unknown chapter"
 		return null
-	var levels: Array = _levels(w["id"])
+	var levels: Array = _levels(c["id"])
 	if n < 1 or n > levels.size():
 		if last_error.is_empty():
-			last_error = "Level %d of %s is missing" % [n, w["name"]]
+			last_error = "Level %d of %s is missing" % [n, c["name"]]
 		return null
 	return Puzzle.from_dict(levels[n - 1], theme_names)
 
@@ -103,8 +118,8 @@ func puzzle(world_idx: int, n: int) -> Puzzle:
 func puzzle_by_id(id: String) -> Puzzle:
 	if id.begins_with("daily-"):
 		return daily_puzzle(id.substr(6))
-	var wn: Array[int] = parse_level_id(id)
-	return puzzle(wn[0], wn[1])
+	var cn: Array[int] = parse_level_id(id)
+	return puzzle(cn[0], cn[1])
 
 
 ## Days since the daily epoch for a "YYYY-MM-DD" key.

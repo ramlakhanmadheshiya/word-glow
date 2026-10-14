@@ -4,7 +4,8 @@ extends SceneTree
 ## - each level is structurally valid (full coverage, adjacency, words from its theme,
 ##   no duplicate answers, each answer traceable in only one place, solvable with shadows);
 ## - every level can be played to completion through the real game logic;
-## - difficulty never steps backwards within a world.
+## - difficulty follows the chapter curve: easy (1-5), easy-medium (6-10),
+##   medium (11-20), medium-hard (21-30), hard (31-39), extreme (40).
 ##
 ##   godot --headless --path . -s res://tests/levels_test.gd
 
@@ -12,39 +13,66 @@ extends SceneTree
 func _init() -> void:
 	var t: Check = Check.new("LEVELS")
 	var themes: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/themes.json"))
-	var catalog: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/worlds.json"))
+	var plan: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/chapters.json"))
 	var vocab: Dictionary = {}
 	var names: Dictionary = {}
 	_check_themes(t, themes, vocab, names)
 	var ids: Dictionary = {}
-	var prev_world_area: int = 0
-	for w: Dictionary in catalog["worlds"]:
-		var levels: Array = _load(t, w["id"])
-		t.eq(levels.size(), 20, "%s has 20 levels" % w["id"])
+	var per: int = int(plan["levels_per_chapter"])
+	var chapters: Array = plan["chapters"]
+	t.eq(chapters.size(), 16, "16 chapters")
+	t.eq(per, 40, "40 levels per chapter")
+	var tiers: Array = plan["difficulty"]["tiers"]
+	for ci: int in chapters.size():
+		var ch: Dictionary = chapters[ci]
+		var levels: Array = _load(t, ch["id"])
+		t.eq(levels.size(), per, "%s has %d levels" % [ch["id"], per])
 		var prev_area: int = 0
 		var prev_theme: String = ""
-		var prev_shadows: int = 0
-		var first_area: int = 0
+		var scores: Array[float] = []
 		for i: int in levels.size():
 			var p: Puzzle = Puzzle.from_dict(levels[i], names)
 			_check_puzzle(t, p, vocab, ids)
-			t.eq(p.id, "%s-%02d" % [w["id"], i + 1], "level id order")
-			var area: int = p.cell_count()
-			t.ok(area >= prev_area, "%s: grid never shrinks within a world" % p.id)
-			t.ok(p.shadows.size() >= prev_shadows - 1, "%s: shadows do not drop sharply" % p.id)
+			t.eq(p.id, "%s-%02d" % [ch["id"], i + 1], "level id order")
+			t.ok(p.cell_count() >= prev_area, "%s: grid never shrinks within a chapter" % p.id)
 			t.ok(p.theme_id != prev_theme, "%s: theme differs from the previous level" % p.id)
-			if i == 0:
-				first_area = area
-			prev_area = area
+			if ci + 1 < int(plan["difficulty"]["shadows_from_chapter"]):
+				t.ok(p.shadows.is_empty(), "%s: no shadows before chapter %d" % [p.id, plan["difficulty"]["shadows_from_chapter"]])
+			if ci + 1 < int(plan["difficulty"]["beacons_from_chapter"]):
+				t.ok(p.beacons.is_empty(), "%s: no beacons before chapter %d" % [p.id, plan["difficulty"]["beacons_from_chapter"]])
+			prev_area = p.cell_count()
 			prev_theme = p.theme_id
-			prev_shadows = p.shadows.size()
-		t.ok(first_area >= prev_world_area, "%s starts at least as big as the previous world began" % w["id"])
-		prev_world_area = first_area
+			scores.append(difficulty(p))
+		# The curve: every tier is harder on average than the one before, and
+		# level 40 is the hardest level in its chapter.
+		var prev_mean: float = -1.0
+		for tier: Dictionary in tiers:
+			var sum: float = 0.0
+			var n: int = 0
+			for lv: int in range(int(tier["from"]), int(tier["to"]) + 1):
+				sum += scores[lv - 1]
+				n += 1
+			var mean: float = sum / n
+			t.ok(mean > prev_mean, "%s: %s levels are harder than the tier before (%.1f > %.1f)" % [ch["id"], tier["name"], mean, prev_mean])
+			prev_mean = mean
+		var top: float = scores[per - 1]
+		for k: int in per - 1:
+			t.ok(scores[k] < top, "%s: level 40 is harder than level %d" % [ch["id"], k + 1])
 	var daily: Array = _load(t, "daily")
-	t.eq(daily.size(), int(catalog["daily"]["count"]), "daily pool size")
+	t.eq(daily.size(), int(plan["daily"]["count"]), "daily pool size")
 	for d: Variant in daily:
 		_check_puzzle(t, Puzzle.from_dict(d, names), vocab, ids)
 	quit(t.report())
+
+
+## A rough difficulty score: bigger grids, longer words, more shadows and more
+## waves of light are all harder.
+static func difficulty(p: Puzzle) -> float:
+	var letters: int = 0
+	for w: Dictionary in p.words:
+		letters += str(w["word"]).length()
+	var avg: float = float(letters) / float(maxi(1, p.words.size()))
+	return p.cell_count() + 3.0 * avg + 1.5 * p.shadows.size() + 2.0 * maxi(0, LanternRules.light_depth(p) - 1)
 
 
 func _load(t: Check, id: String) -> Array:
@@ -57,7 +85,7 @@ func _load(t: Check, id: String) -> Array:
 
 func _check_themes(t: Check, themes: Dictionary, vocab: Dictionary, names: Dictionary) -> void:
 	var re: RegEx = RegEx.create_from_string("^[A-Z]{3,12}$")
-	t.ok(themes.size() >= 40, "at least 40 themes")
+	t.ok(themes.size() >= 60, "at least 60 themes")
 	for k: Variant in themes:
 		var words: Array = themes[k]["words"]
 		names[k] = themes[k]["name"]
