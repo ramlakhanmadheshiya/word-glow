@@ -24,6 +24,7 @@ func _ready() -> void:
 	_restart_keeps_progress()
 	_corrupt_save_recovers()
 	_migrates_v1_saves()
+	_glyphs()
 	_cleanup()
 	get_tree().quit(t.report())
 
@@ -272,3 +273,25 @@ func _migrates_v1_saves() -> void:
 	t.eq(Profile.stat("words"), 50, "v1 word stats kept")
 	t.eq(Profile.stat("levels"), 0, "v1 level stats reset")
 	t.eq(int(Save.data["version"]), 2, "saved as version 2")
+
+
+## Every character the UI can show (including every fallback price) must be in
+## Outfit or one of its bundled fallbacks, or the web build shows boxes.
+func _glyphs() -> void:
+	var base: FontFile = (UIKit.font(600) as FontVariation).base_font as FontFile
+	var fonts: Array[Font] = [base]
+	fonts.append_array(base.fallbacks)
+	var text: String = "★☆♥✓…→–—×·%"
+	for region: Variant in Store.REGIONAL_TIERS:
+		for price: Variant in Store.REGIONAL_TIERS[region]:
+			text += str(price)
+	for region: Variant in Store.KEY_UNIT:
+		text += str(Store.KEY_UNIT[region][0])
+	for i: int in text.length():
+		var code: int = text.unicode_at(i)
+		var ok: bool = false
+		for f: Font in fonts:
+			if f.has_char(code):
+				ok = true
+				break
+		t.ok(ok, "the fonts can draw '%s' (U+%04X)" % [text[i], code])

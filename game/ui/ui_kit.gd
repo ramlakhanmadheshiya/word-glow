@@ -18,10 +18,25 @@ static func clear_caches() -> void:
 	_knobs.clear()
 
 
+## Small Noto subsets (SIL OFL) for glyphs Outfit lacks: ★ ♥, currency signs such
+## as ₹ in Google Play prices, and ৳. Without them the web build shows boxes.
+const FALLBACK_FONTS: Array[String] = [
+	"res://assets/fonts/NotoSans-Currency.ttf",
+	"res://assets/fonts/NotoSansSymbols2-Subset.ttf",
+	"res://assets/fonts/NotoSansBengali-Taka.ttf",
+]
+
+
 static func font(weight: int = 400) -> Font:
 	if not _fonts.has(weight):
 		var fv: FontVariation = FontVariation.new()
-		fv.base_font = load(FONT_PATH) as FontFile
+		var base: FontFile = load(FONT_PATH) as FontFile
+		if base.fallbacks.is_empty():
+			var chain: Array[Font] = []
+			for path: String in FALLBACK_FONTS:
+				chain.append(load(path) as Font)
+			base.fallbacks = chain
+		fv.base_font = base
 		var ts: TextServer = TextServerManager.get_primary_interface()
 		fv.variation_opentype = {ts.name_to_tag("wght"): weight}
 		_fonts[weight] = fv
