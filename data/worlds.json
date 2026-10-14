@@ -1,0 +1,57 @@
+{
+	"unlock_clears": 15,
+	"worlds": [
+		{
+			"id": "meadow", "name": "Meadow", "tagline": "Where the first lanterns are lit",
+			"sky_top": "#2E2A6B", "sky_bottom": "#141235", "accent": "#FFB547",
+			"intros": {"1": "basics"},
+			"gen": {"stages": [[1, 3, 3, 3, 3], [3, 4, 3, 3, 4], [7, 4, 4, 3, 5], [13, 5, 4, 3, 5]], "shadows": [0, 0, 1], "beacons": [0, 0, 1]}
+		},
+		{
+			"id": "harbor", "name": "Harbor", "tagline": "Lights along the water",
+			"sky_top": "#1F3A6E", "sky_bottom": "#0E1A38", "accent": "#5FD4E8",
+			"intros": {"6": "shadows"},
+			"gen": {"stages": [[1, 5, 4, 3, 6], [8, 5, 5, 3, 6], [15, 6, 5, 4, 6]], "shadows": [2, 5, 6], "beacons": [0, 0, 1]}
+		},
+		{
+			"id": "orchard", "name": "Orchard", "tagline": "Paper lanterns in the branches",
+			"sky_top": "#3B2457", "sky_bottom": "#1A0F2E", "accent": "#FF8A7A",
+			"intros": {},
+			"gen": {"stages": [[1, 5, 5, 4, 6], [9, 6, 5, 4, 6], [16, 6, 5, 4, 7]], "shadows": [4, 8, 1], "beacons": [0, 0, 1]}
+		},
+		{
+			"id": "canyon", "name": "Canyon", "tagline": "Beacons on the red rocks",
+			"sky_top": "#4A2140", "sky_bottom": "#1F0C1E", "accent": "#FFA25C",
+			"intros": {"1": "beacons"},
+			"gen": {"stages": [[1, 6, 5, 4, 7], [11, 6, 6, 4, 7]], "shadows": [6, 10, 1], "beacons": [1, 1, 1]}
+		},
+		{
+			"id": "glacier", "name": "Glacier", "tagline": "Blue glow beneath the ice",
+			"sky_top": "#163E5C", "sky_bottom": "#081A2C", "accent": "#8FE3FF",
+			"intros": {},
+			"gen": {"stages": [[1, 6, 6, 4, 7], [13, 7, 6, 4, 7]], "shadows": [8, 13, 1], "beacons": [1, 2, 1]}
+		},
+		{
+			"id": "bazaar", "name": "Bazaar", "tagline": "A thousand lamps for sale",
+			"sky_top": "#4B2A1A", "sky_bottom": "#1E0F09", "accent": "#FFCF5C",
+			"intros": {},
+			"gen": {"stages": [[1, 7, 6, 4, 8], [11, 7, 6, 5, 8]], "shadows": [10, 15, 1], "beacons": [1, 2, 1]}
+		},
+		{
+			"id": "aurora", "name": "Aurora", "tagline": "Ribbons of light in the north",
+			"sky_top": "#103F45", "sky_bottom": "#06171C", "accent": "#7DF2B4",
+			"intros": {},
+			"gen": {"stages": [[1, 7, 6, 5, 8], [9, 7, 7, 5, 8]], "shadows": [12, 18, 1], "beacons": [2, 2, 1]}
+		},
+		{
+			"id": "starfall", "name": "Starfall", "tagline": "The last lanterns rise to the stars",
+			"sky_top": "#241A4F", "sky_bottom": "#07061A", "accent": "#C9A7FF",
+			"intros": {},
+			"gen": {"stages": [[1, 7, 7, 5, 8], [11, 8, 7, 5, 8]], "shadows": [15, 22, 1], "beacons": [2, 3, 1]}
+		}
+	],
+	"daily": {
+		"count": 120,
+		"gen": {"stages": [[1, 6, 5, 4, 7], [41, 6, 6, 4, 7], [81, 7, 6, 4, 7]], "shadows": [5, 9, 1], "beacons": [0, 1, 1]}
+	}
+}
