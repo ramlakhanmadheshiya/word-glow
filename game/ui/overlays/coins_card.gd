@@ -47,10 +47,10 @@ func _tile(id: String) -> Button:
 	b.name = "Buy_" + id
 	b.custom_minimum_size = Vector2(0, 220)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var lip_c: Color = Color("140F36")
-	b.add_theme_stylebox_override("normal", UIKit.lip_box(Color("2E2870"), 26, lip_c, 7, Vector2(8, 8)))
-	b.add_theme_stylebox_override("hover", UIKit.lip_box(Color("352E80"), 26, lip_c, 7, Vector2(8, 8)))
-	b.add_theme_stylebox_override("pressed", UIKit.lip_box(Color("2A2466"), 26, lip_c, 7, Vector2(8, 8), true))
+	var lip_c: Color = Style.LIP
+	b.add_theme_stylebox_override("normal", UIKit.lip_box(Style.SURFACE, 26, lip_c, 7, Vector2(8, 8)))
+	b.add_theme_stylebox_override("hover", UIKit.lip_box(Style.SURFACE.lightened(0.05), 26, lip_c, 7, Vector2(8, 8)))
+	b.add_theme_stylebox_override("pressed", UIKit.lip_box(Style.SURFACE.darkened(0.05), 26, lip_c, 7, Vector2(8, 8), true))
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	UIKit.juice(b)
 	b.pressed.connect(func() -> void:
@@ -58,7 +58,7 @@ func _tile(id: String) -> Button:
 		Store.buy(id)
 	)
 	var col: VBoxContainer = UIKit.vbox(2)
-	col.set_anchors_preset(Control.PRESET_FULL_RECT)
+	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(col)

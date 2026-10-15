@@ -257,7 +257,7 @@ func _draw() -> void:
 	# Board tray.
 	var grid_size: Vector2 = Vector2(p.cols * _tile + (p.cols - 1) * _gap, p.rows * _tile + (p.rows - 1) * _gap)
 	var tray: Rect2 = Rect2(_origin, grid_size).grow(_gap * 1.6)
-	draw_style_box(UIKit.box(Color(0, 0, 0, 0.22), int(radius * 1.6), Color(1, 1, 1, 0.06), 2), tray)
+	draw_style_box(UIKit.box(Color(0, 0, 0, 0.22) if Style.DARK else Color(Style.INK, 0.07), int(radius * 1.6), Color(Style.INK, 0.06), 2), tray)
 
 	# Glow under lit words, then their ribbons.
 	for i: int in p.words.size():

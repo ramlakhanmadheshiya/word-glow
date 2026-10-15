@@ -118,7 +118,7 @@ func _draw() -> void:
 		for k: int in word.length():
 			var br: Rect2 = Rect2(r.position + Vector2(k * (_box + gap), 0), Vector2(_box, _box))
 			br = Rect2(br.get_center() - br.size * s / 2.0, br.size * s)
-			var fill: Color = col if found else Color(1, 1, 1, 0.09)
+			var fill: Color = col if found else Color(Style.INK, 0.09)
 			draw_style_box(UIKit.box(fill, int(_box * 0.24)), br)
 			var text: String = ""
 			var tc: Color = Color.WHITE

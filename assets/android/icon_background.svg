@@ -1,31 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3D3591"/>
-      <stop offset="1" stop-color="#14103A"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#FFC861" stop-opacity="0.85"/>
-      <stop offset="0.5" stop-color="#FF9A3D" stop-opacity="0.25"/>
-      <stop offset="1" stop-color="#FF9A3D" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#FF7A2E"/>
-      <stop offset="0.5" stop-color="#FFD27A"/>
-      <stop offset="1" stop-color="#FF7A2E"/>
-    </linearGradient>
-    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFBF1"/>
-      <stop offset="1" stop-color="#F6E7CB"/>
-    </linearGradient>
-    <clipPath id="r"><rect width="1024" height="1024" rx="224"/></clipPath>
-  </defs>
-    <rect width="1024" height="1024" fill="url(#sky)"/>
-    <circle cx="820" cy="190" r="70" fill="#FFF4DA" opacity="0.95"/>
-    <circle cx="845" cy="172" r="60" fill="#3A3289"/>
-    <circle cx="180" cy="200" r="8" fill="#FFF4E3" opacity="0.75"/>
-    <circle cx="300" cy="120" r="6" fill="#FFF4E3" opacity="0.6"/>
-    <circle cx="700" cy="330" r="5" fill="#FFF4E3" opacity="0.55"/>
-    <circle cx="140" cy="430" r="5" fill="#FFF4E3" opacity="0.5"/>
-    <path d="M0 830 C 160 760 300 790 450 820 C 620 860 780 770 1024 800 L1024 1024 L0 1024 Z" fill="#251E5C"/>
-    <path d="M0 900 C 200 860 360 900 520 910 C 700 920 860 870 1024 890 L1024 1024 L0 1024 Z" fill="#120E30"/>
-    </svg>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2B2F7A"/><stop offset="1" stop-color="#120F35"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".52" r=".5"><stop offset="0" stop-color="#FFB547" stop-opacity=".55"/><stop offset=".6" stop-color="#FF7A45" stop-opacity=".12"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>
+<linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC24D"/><stop offset="1" stop-color="#FF6A3D"/></linearGradient>
+<linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#FCEBCB"/></linearGradient>
+<clipPath id="c"><rect width="1024" height="1024" rx="228"/></clipPath>
+</defs><rect width="1024" height="1024" fill="url(#bg)"/></svg>

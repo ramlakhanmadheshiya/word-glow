@@ -11,13 +11,13 @@ var _frame: MarginContainer
 
 
 func _init() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _ready() -> void:
 	_frame = MarginContainer.new()
-	_frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_frame)
 	body = UIKit.vbox(14)
@@ -80,7 +80,7 @@ func header(title: String, caption: String = "", on_back_pressed: Callable = Cal
 	var bar: HBoxContainer = UIKit.hbox(12, BoxContainer.ALIGNMENT_BEGIN)
 	bar.name = "Header"
 	bar.custom_minimum_size.y = 92
-	var back: Button = UIKit.icon_button("chevron-left", 80)
+	var back: Button = UIKit.icon_button("chevron-left", Style.TOP_BUTTON)
 	back.name = "Back"
 	back.pressed.connect(on_back_pressed if on_back_pressed.is_valid() else func() -> void: app.back())
 	bar.add_child(back)
@@ -94,7 +94,7 @@ func header(title: String, caption: String = "", on_back_pressed: Callable = Cal
 	t.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	mid.add_child(t)
 	bar.add_child(mid)
-	var settings: Button = UIKit.icon_button("settings", 80)
+	var settings: Button = UIKit.icon_button("settings", Style.TOP_BUTTON)
 	settings.name = "SettingsButton"
 	settings.pressed.connect(func() -> void: app.open_settings())
 	bar.add_child(settings)

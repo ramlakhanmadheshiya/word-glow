@@ -11,6 +11,12 @@ static var _fonts: Dictionary = {}
 static var _icons: Dictionary = {}
 
 
+## Drops textures drawn in theme colours (switches, slider knobs) after a theme change.
+static func clear_color_caches() -> void:
+	_switches.clear()
+	_knobs.clear()
+
+
 ## Drops cached fonts and textures (called on exit so nothing is reported as leaked).
 static func clear_caches() -> void:
 	_fonts.clear()
@@ -179,14 +185,14 @@ static func button(text: String, style: String = "primary", accent: Color = Styl
 			text_c = Color.WHITE
 			lip_c = Style.ERROR.darkened(0.35)
 		"soft":
-			fill = Color("2E2870")
+			fill = Style.SURFACE
 			text_c = Style.INK
-			lip_c = Color("16123A")
+			lip_c = Style.LIP
 		_:
-			fill = Color(1, 1, 1, 0.03)
+			fill = Color(Style.INK, 0.03)
 			text_c = Style.INK
-			lip_c = Color(1, 1, 1, 0.18)
-			outline = Color(1, 1, 1, 0.18)
+			lip_c = Color(Style.INK, 0.18)
+			outline = Color(Style.INK, 0.18)
 	var r: int = int(height * 0.36)
 	var lip: int = maxi(4, int(height * 0.07))
 	var pad: Vector2 = Vector2(28, 8)
@@ -194,7 +200,7 @@ static func button(text: String, style: String = "primary", accent: Color = Styl
 	b.add_theme_stylebox_override("hover", lip_box(fill.lightened(0.07), r, lip_c, lip, pad, false, outline))
 	b.add_theme_stylebox_override("pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true, outline))
 	b.add_theme_stylebox_override("hover_pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true, outline))
-	b.add_theme_stylebox_override("disabled", lip_box(Color("231E55"), r, Color("140F33"), lip, pad))
+	b.add_theme_stylebox_override("disabled", lip_box(Style.PANEL.darkened(0.1), r, Style.LIP, lip, pad))
 	var focus: StyleBoxFlat = box(Color.TRANSPARENT, r + 4, Color(Style.INK, 0.7), 3)
 	focus.set_expand_margin_all(5)
 	b.add_theme_stylebox_override("focus", focus)
@@ -214,29 +220,32 @@ static func button(text: String, style: String = "primary", accent: Color = Styl
 
 ## Round icon-only button with a pressable lip (44pt+ touch target).
 ## `icon_name` may be "art:<name>" for full-colour art.
-static func icon_button(icon_name: String, size: float = 84.0, fill: Color = Color("2E2870"), tint: Color = Style.INK) -> Button:
+static func icon_button(icon_name: String, size: float = 84.0, fill: Color = Style.SURFACE, tint: Color = Style.INK) -> Button:
 	var b: Button = Button.new()
 	var is_art: bool = icon_name.begins_with("art:")
 	b.icon = art(icon_name.substr(4)) if is_art else icon(icon_name)
 	b.custom_minimum_size = Vector2(size, size)
+	# Never stretch: the same button is the same size on every screen.
+	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	b.expand_icon = true
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.focus_mode = Control.FOCUS_ALL
 	var r: int = int(size * 0.36)
 	var lip: int = maxi(4, int(size * 0.07))
 	var pad: Vector2 = Vector2(size * (0.2 if is_art else 0.27), size * (0.2 if is_art else 0.25))
-	var lip_c: Color = Color("16123A")
+	var lip_c: Color = Style.LIP
 	b.add_theme_stylebox_override("normal", lip_box(fill, r, lip_c, lip, pad))
 	b.add_theme_stylebox_override("hover", lip_box(fill.lightened(0.07), r, lip_c, lip, pad))
 	b.add_theme_stylebox_override("pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true))
 	b.add_theme_stylebox_override("hover_pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true))
-	b.add_theme_stylebox_override("disabled", lip_box(Color("231E55"), r, Color("140F33"), lip, pad))
+	b.add_theme_stylebox_override("disabled", lip_box(Style.PANEL.darkened(0.1), r, Style.LIP, lip, pad))
 	var focus: StyleBoxFlat = box(Color.TRANSPARENT, r + 4, Color(Style.INK, 0.7), 3, pad)
 	focus.set_expand_margin_all(4)
 	b.add_theme_stylebox_override("focus", focus)
 	for key: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:
 		b.add_theme_color_override(key, Color.WHITE if is_art else tint)
-	b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
+	b.add_theme_color_override("icon_disabled_color", Color(Style.INK, 0.35))
 	juice(b)
 	return b
 
@@ -292,7 +301,7 @@ static func progress_bar(ratio: float, color: Color, height: int = 10) -> Progre
 	bar.show_percentage = false
 	bar.custom_minimum_size = Vector2(0, height)
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bar.add_theme_stylebox_override("background", box(Color(1, 1, 1, 0.1), height / 2, Color.TRANSPARENT, 0, Vector2.ZERO))
+	bar.add_theme_stylebox_override("background", box(Color(Style.INK, 0.1), height / 2, Color.TRANSPARENT, 0, Vector2.ZERO))
 	bar.add_theme_stylebox_override("fill", box(color, height / 2, Color.TRANSPARENT, 0, Vector2.ZERO))
 	return bar
 
@@ -343,7 +352,7 @@ static func slider_row(text: String, icon_name: String, value: float, on_change:
 	s.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	s.custom_minimum_size = Vector2(0, 48)
 	s.focus_mode = Control.FOCUS_ALL
-	var track: StyleBoxFlat = box(Color(1, 1, 1, 0.14), 6, Color.TRANSPARENT, 0, Vector2(0, 6))
+	var track: StyleBoxFlat = box(Color(Style.INK, 0.14), 6, Color.TRANSPARENT, 0, Vector2(0, 6))
 	var fill: StyleBoxFlat = box(accent, 6, Color.TRANSPARENT, 0, Vector2(0, 6))
 	s.add_theme_stylebox_override("slider", track)
 	s.add_theme_stylebox_override("grabber_area", fill)
@@ -395,7 +404,7 @@ static func _switch_icon(on: bool) -> Texture2D:
 	var w: int = 84
 	var h: int = 48
 	var img: Image = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	var track: Color = Style.AMBER if on else Color(1, 1, 1, 0.18)
+	var track: Color = Style.AMBER if on else Color(Style.INK, 0.18)
 	var knob: Color = Color.WHITE
 	var r: float = h / 2.0
 	var kx: float = w - r if on else r
@@ -419,6 +428,13 @@ static func _switch_icon(on: bool) -> Texture2D:
 static func coin_chip() -> CounterChip:
 	var c: CounterChip = CounterChip.new("coins")
 	c.pressed.connect(func() -> void: App.instance.go("shop"))
+	return c
+
+
+## Diamond-key balance pill; tapping it opens the diamond key card.
+static func diamond_chip() -> CounterChip:
+	var c: CounterChip = CounterChip.new("diamonds")
+	c.pressed.connect(func() -> void: App.instance.open(DiamondCard.new()))
 	return c
 
 

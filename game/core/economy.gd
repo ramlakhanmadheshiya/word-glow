@@ -23,6 +23,8 @@ const VIDEO_COINS: int = 25
 const VIDEO_COINS_PER_DAY: int = 5
 ## Level keys from videos.
 const VIDEO_KEYS_PER_DAY: int = 5
+## Diamond keys (open a whole locked chapter) from videos.
+const VIDEO_DIAMONDS_PER_DAY: int = 1
 ## Cosmetic pack trial from a video.
 const TRIAL_SECONDS: int = 3600
 

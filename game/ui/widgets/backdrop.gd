@@ -16,7 +16,8 @@ var _tween: Tween
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Offsets too: anchors alone keep the empty rect it was added with.
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = 7
 	for i: int in STAR_COUNT:
@@ -51,18 +52,23 @@ func _draw() -> void:
 	var s: Vector2 = size
 	draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(s.x, 0), s, Vector2(0, s.y)]),
 		PackedColorArray([top, top, bottom, bottom]))
-	for st: Vector4 in _stars:
-		var a: float = 0.25 + 0.45 * (0.5 + 0.5 * sin(_t * 1.3 + st.w))
-		draw_circle(Vector2(st.x * s.x, st.y * s.y * 0.7), st.z, Color(Style.INK, a))
 	var glow: Texture2D = Style.glow_texture()
-	# The moon.
 	var moon: Vector2 = Vector2(s.x * 0.84, s.y * 0.1)
 	var mr: float = minf(s.x, s.y) * 0.055
-	draw_texture_rect(glow, Rect2(moon - Vector2(mr, mr) * 5.0, Vector2(mr, mr) * 10.0), false, Color("FFF1C9", 0.16))
-	draw_circle(moon, mr, Color("FFF4DA", 0.92), true, -1.0, true)
-	draw_circle(moon + Vector2(mr * 0.35, -mr * 0.2), mr * 0.82, top.lerp(Color("FFF4DA"), 0.1), true, -1.0, true)
+	if Style.DARK:
+		for st: Vector4 in _stars:
+			var a: float = 0.25 + 0.45 * (0.5 + 0.5 * sin(_t * 1.3 + st.w))
+			draw_circle(Vector2(st.x * s.x, st.y * s.y * 0.7), st.z, Color("FFF4E3", a))
+		# A crescent moon.
+		draw_texture_rect(glow, Rect2(moon - Vector2(mr, mr) * 5.0, Vector2(mr, mr) * 10.0), false, Color("FFF1C9", 0.16))
+		draw_circle(moon, mr, Color("FFF4DA", 0.92), true, -1.0, true)
+		draw_circle(moon + Vector2(mr * 0.35, -mr * 0.2), mr * 0.82, top.lerp(Color("FFF4DA"), 0.1), true, -1.0, true)
+	else:
+		# Light themes get a soft sun instead of stars.
+		draw_texture_rect(glow, Rect2(moon - Vector2(mr, mr) * 6.0, Vector2(mr, mr) * 12.0), false, Color("FFE7A3", 0.55))
+		draw_circle(moon, mr * 1.1, Color("FFE7A3"), true, -1.0, true)
 	# Far hills, then the lanterns rising from behind the near hills.
-	_hills(s, s.y * 0.8, s.y * 0.05, 1.7, 0.3, bottom.lerp(top, 0.35).darkened(0.25))
+	_hills(s, s.y * 0.8, s.y * 0.05, 1.7, 0.3, bottom.lerp(top, 0.35).darkened(0.25 if Style.DARK else 0.08))
 	for l: Dictionary in _lanterns:
 		var p: Vector2 = Vector2((float(l["x"]) + 0.02 * sin(_t * 0.6 + float(l["phase"]))) * s.x, float(l["y"]) * s.y)
 		var r: float = l["size"]
@@ -75,7 +81,7 @@ func _draw() -> void:
 			pts.append(p + Vector2(cos(ang) * r * 0.55, sin(ang) * r * 0.7))
 		draw_colored_polygon(pts, Color(c, 0.8 * flicker))
 		draw_rect(Rect2(p - Vector2(r * 0.3, r * 0.82), Vector2(r * 0.6, r * 0.16)), Color(0.1, 0.07, 0.2, 0.7))
-	_hills(s, s.y * 0.88, s.y * 0.04, 2.6, 1.9, bottom.darkened(0.45))
+	_hills(s, s.y * 0.88, s.y * 0.04, 2.6, 1.9, bottom.darkened(0.45 if Style.DARK else 0.15))
 
 
 ## A soft ridge of hills across the bottom of the screen.

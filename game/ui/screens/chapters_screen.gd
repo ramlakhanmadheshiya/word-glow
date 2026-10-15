@@ -6,7 +6,7 @@ var _first: Control
 
 func build() -> void:
 	body.add_child(header("Chapters", "★ %d / %d" % [Profile.total_stars(), Catalog.total_levels() * 3]))
-	body.add_child(chip_row([UIKit.key_chip(), UIKit.coin_chip()]))
+	body.add_child(chip_row([UIKit.diamond_chip(), UIKit.key_chip(), UIKit.coin_chip()]))
 	var scroll: TouchScroll = TouchScroll.new()
 	scroll.name = "Scroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -26,14 +26,16 @@ func build() -> void:
 		card.unlocked = Profile.chapter_unlocked(i)
 		if not card.unlocked and i > 0:
 			var need: int = maxi(0, Catalog.unlock_clears - Profile.chapter_clears(i - 1))
-			card.lock_text = "Clear %d more in %s to open" % [need, Catalog.chapter(i - 1)["name"]]
+			card.lock_text = "Clear %d more in %s, or use a diamond key" % [need, Catalog.chapter(i - 1)["name"]]
 		var idx: int = i
 		card.pressed.connect(func() -> void:
 			if Profile.chapter_unlocked(idx):
 				app.go("levels", {"chapter": idx})
 			else:
 				Audio.play("error", 1.2, -8.0)
-				app.toast(card.lock_text, "lock", Style.MUTED)
+				var o: LockedChapterCard = LockedChapterCard.new()
+				o.chapter_idx = idx
+				app.open(o)
 		)
 		list.add_child(card)
 		if card.unlocked:

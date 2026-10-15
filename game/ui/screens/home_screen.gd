@@ -11,8 +11,8 @@ func build() -> void:
 	Audio.music("menu")
 	body.add_theme_constant_override("separation", 16)
 	var top: HBoxContainer = UIKit.hbox(12, BoxContainer.ALIGNMENT_BEGIN)
-	top.custom_minimum_size.y = 88
-	var shop: Button = UIKit.icon_button("art:bag", 84)
+	top.custom_minimum_size.y = 92
+	var shop: Button = UIKit.icon_button("art:bag", Style.TOP_BUTTON)
 	shop.name = "Shop"
 	shop.pressed.connect(func() -> void: app.go("shop"))
 	top.add_child(shop)
@@ -25,7 +25,7 @@ func build() -> void:
 	var coins: CounterChip = UIKit.coin_chip()
 	coins.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(coins)
-	var settings: Button = UIKit.icon_button("settings", 84)
+	var settings: Button = UIKit.icon_button("settings", Style.TOP_BUTTON)
 	settings.name = "SettingsButton"
 	settings.pressed.connect(func() -> void: app.open_settings())
 	top.add_child(settings)
@@ -108,7 +108,7 @@ func _daily_card() -> PanelContainer:
 	_daily_btn.pressed.connect(func() -> void: app.go("play", {"daily": Catalog.today_key()}))
 	row.add_child(_daily_btn)
 	var p: PanelContainer = PanelContainer.new()
-	p.add_theme_stylebox_override("panel", UIKit.lip_box(Color("2A2266"), 30, Color("15103A"), 6, Vector2(20, 14)))
+	p.add_theme_stylebox_override("panel", UIKit.lip_box(Style.PANEL, 30, Style.LIP, 6, Vector2(20, 14)))
 	p.add_child(row)
 	return p
 

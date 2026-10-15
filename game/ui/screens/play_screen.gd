@@ -84,7 +84,7 @@ func _build_ui() -> void:
 	coins.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	strip.add_child(coins)
 	var strip_panel: PanelContainer = PanelContainer.new()
-	strip_panel.add_theme_stylebox_override("panel", UIKit.lip_box(Color("231D5C"), 28, Color("120E33"), 5, Vector2(14, 2)))
+	strip_panel.add_theme_stylebox_override("panel", UIKit.lip_box(Style.PANEL, 28, Style.LIP, 5, Vector2(14, 2)))
 	strip_panel.add_child(strip)
 	body.add_child(strip_panel)
 
@@ -101,7 +101,7 @@ func _build_ui() -> void:
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_toast_box = PanelContainer.new()
 	_toast_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_toast_box.add_theme_stylebox_override("panel", UIKit.box(Color(0, 0, 0, 0.32), 30, Color(1, 1, 1, 0.08), 2, Vector2(26, 6)))
+	_toast_box.add_theme_stylebox_override("panel", UIKit.box(Color(0, 0, 0, 0.32), 30, Color(Style.INK, 0.08), 2, Vector2(26, 6)))
 	_toast = UIKit.label("", 30, Style.INK, 700)
 	_toast.name = "Toast"
 	_toast_box.add_child(_toast)

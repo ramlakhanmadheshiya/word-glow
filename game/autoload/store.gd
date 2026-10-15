@@ -16,8 +16,8 @@ const PRODUCTS: Dictionary = {
 		"perks": ["No banner ads", "3 free Sparks every day", "11 colour themes", "6 lantern styles", "1,000 coins and 5 level keys", "Yours to keep after one purchase"]},
 	"supporter_pack": {"name": "Supporter pack", "tier": 2, "blurb": "No ads, and 3 free Sparks a day",
 		"perks": ["No banner ads", "3 free Sparks every day", "Helps new chapters get made"]},
-	"theme_pack": {"name": "Theme pack", "tier": 1, "blurb": "Midnight, Ocean, Sakura and 8 more", "trial": true,
-		"perks": ["11 colour themes for sky and tiles", "Pick one any time in Settings", "Yours to keep after one purchase"]},
+	"theme_pack": {"name": "Theme pack", "tier": 1, "blurb": "Paper, Daylight, Ocean, Sakura and 7 more", "trial": true,
+		"perks": ["11 colour themes for the whole app", "Pick one any time in Settings", "Yours to keep after one purchase"]},
 	"style_pack": {"name": "Lantern styles", "tier": 1, "blurb": "Neon, Glass, Ember and 3 more", "trial": true,
 		"perks": ["6 new looks for tiles and lit words", "Pick one any time in Settings", "Yours to keep after one purchase"]},
 }
@@ -27,6 +27,11 @@ const COIN_PACKS: Dictionary = {
 	"coins_1000": [1000, 1, "Pouch"],
 	"coins_2500": [2500, 2, "Chest"],
 	"coins_6000": [6000, 3, "Treasure"],
+}
+## Diamond keys: consumable, each opens a whole locked chapter. id -> [count, tier].
+const DIAMOND_PACKS: Dictionary = {
+	"diamond_key_1": [1, 1],
+	"diamond_key_3": [3, 3],
 }
 const COMPLETE_COINS: int = 1000
 const COMPLETE_KEYS: int = 5
@@ -82,6 +87,8 @@ func _ready() -> void:
 		prices[id] = regional_price(tier_of(id))
 	for id: String in COIN_PACKS:
 		prices[id] = regional_price(tier_of(id))
+	for id: String in DIAMOND_PACKS:
+		prices[id] = regional_price(tier_of(id))
 	for n: int in range(1, KEY_MAX + 1):
 		prices["keys_%d" % n] = keys_price(n)
 	for n: int in range(TIP_MIN, TIP_MAX + 1, TIP_STEP):
@@ -108,7 +115,7 @@ static func tip_ids() -> Array:
 
 
 static func all_ids() -> Array:
-	return PRODUCTS.keys() + COIN_PACKS.keys() + key_ids() + tip_ids()
+	return PRODUCTS.keys() + COIN_PACKS.keys() + DIAMOND_PACKS.keys() + key_ids() + tip_ids()
 
 
 static func is_tip(product: String) -> bool:
@@ -123,8 +130,12 @@ static func is_coins(product: String) -> bool:
 	return COIN_PACKS.has(product)
 
 
+static func is_diamonds(product: String) -> bool:
+	return DIAMOND_PACKS.has(product)
+
+
 static func is_consumable(product: String) -> bool:
-	return is_tip(product) or is_keys(product) or is_coins(product)
+	return is_tip(product) or is_keys(product) or is_coins(product) or is_diamonds(product)
 
 
 static func key_count(product: String) -> int:
@@ -134,6 +145,8 @@ static func key_count(product: String) -> int:
 static func tier_of(product: String) -> int:
 	if COIN_PACKS.has(product):
 		return int(COIN_PACKS[product][1])
+	if DIAMOND_PACKS.has(product):
+		return int(DIAMOND_PACKS[product][1])
 	return int(PRODUCTS.get(product, {}).get("tier", 0))
 
 
@@ -237,6 +250,9 @@ func _thanks(product: String) -> String:
 		return "%d %s added" % [key_count(product), "key" if key_count(product) == 1 else "keys"]
 	if is_coins(product):
 		return "%d coins added" % int(COIN_PACKS[product][0])
+	if is_diamonds(product):
+		var n: int = int(DIAMOND_PACKS[product][0])
+		return "%d diamond %s added" % [n, "key" if n == 1 else "keys"]
 	return "Thank you for supporting Word Lantern!"
 
 
@@ -247,6 +263,8 @@ func _grant(product: String) -> void:
 		Profile.add_keys(key_count(product))
 	elif is_coins(product):
 		Profile.add_bought_coins(int(COIN_PACKS[product][0]))
+	elif is_diamonds(product):
+		Profile.add_diamonds(int(DIAMOND_PACKS[product][0]))
 	else:
 		Profile.set_owned(product, true)
 		# The Complete pack's coins and keys are granted once, ever.

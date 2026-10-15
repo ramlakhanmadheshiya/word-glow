@@ -93,7 +93,7 @@ func _ready() -> void:
 	scroll.scroll_to(900)
 	await _wait(0.4)
 	await _shot("shop_more")
-	for o: Overlay in [_product("complete_pack"), _product("theme_pack"), CoinsCard.new(), KeysCard.new(), TipCard.new(), _picker("themes"), _picker("styles"), SettingsCard.new(), AchievementsCard.new(), AboutCard.new(), CreditsCard.new()]:
+	for o: Overlay in [_product("complete_pack"), _product("theme_pack"), DiamondCard.new(), CoinsCard.new(), KeysCard.new(), TipCard.new(), _picker("themes"), _picker("styles"), SettingsCard.new(), AchievementsCard.new(), AboutCard.new(), CreditsCard.new()]:
 		app.open(o)
 		await _wait(0.8)
 		await _shot(o.name.to_lower() + ("_" + str(o.get("mode")) if o is PickerCard else ("_" + str(o.get("product")) if o is ProductCard else "")))
@@ -109,7 +109,7 @@ func _ready() -> void:
 	# The same level in a bought theme and lantern style.
 	Save.data["owned"]["theme_pack"] = true
 	Save.data["owned"]["style_pack"] = true
-	Profile.set_setting("theme", "sakura")
+	Profile.set_setting("theme", "paper")
 	Profile.set_setting("style", "neon")
 	app.go("play", {"chapter": 7, "level": 15})
 	await _wait(1.0)
@@ -122,6 +122,15 @@ func _ready() -> void:
 		await _wait(0.3)
 	await _wait(1.2)
 	await _shot("play_themed")
+	app.go("home")
+	await _wait(1.0)
+	await _shot("home_themed")
+	app.go("shop")
+	await _wait(1.0)
+	await _shot("shop_themed")
+	app.open_settings()
+	await _wait(0.8)
+	await _shot("settings_themed")
 	for s: String in ["", ".bak", ".tmp"]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE + s))
 	print("CAPTURE: %d screenshots in %s" % [_n, out_dir])

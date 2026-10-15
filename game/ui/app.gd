@@ -35,7 +35,7 @@ func _exit_tree() -> void:
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	get_tree().set_auto_accept_quit(false)
 	backdrop = Backdrop.new()
 	add_child(backdrop)
@@ -53,7 +53,7 @@ func _ready() -> void:
 func _layer(n: String) -> Control:
 	var c: Control = Control.new()
 	c.name = n
-	c.set_anchors_preset(Control.PRESET_FULL_RECT)
+	c.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(c)
 	return c
@@ -61,9 +61,10 @@ func _layer(n: String) -> Control:
 
 ## Loading state: a lantern lights up while content loads, then Home (or an error card).
 func _boot() -> void:
+	_apply_theme()
 	var loading: CenterContainer = CenterContainer.new()
 	loading.name = "Loading"
-	loading.set_anchors_preset(Control.PRESET_FULL_RECT)
+	loading.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	loading.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var col: VBoxContainer = UIKit.vbox(18)
 	loading.add_child(col)
@@ -132,6 +133,9 @@ func back() -> void:
 
 func _swap(name: String, args: Dictionary, direction: float) -> void:
 	_busy = true
+	# Cards belong to the screen they were opened on.
+	close_overlays()
+	_apply_theme()
 	var next: Screen = (load(SCREENS[name]) as PackedScene).instantiate()
 	next.app = self
 	next.args = args
@@ -160,6 +164,39 @@ func _swap(name: String, args: Dictionary, direction: float) -> void:
 func reload_screen() -> void:
 	if screen != null and not _busy:
 		_swap(screen_name, screen.args, 0.0)
+
+
+var _theme_key: String = ""
+
+
+## Sets the colour palette for the current theme (and style). Cheap when
+## nothing changed; when it did, theme-coloured textures are redrawn too.
+func _apply_theme() -> void:
+	var key: String = Look.theme_id() + "/" + Look.style_id()
+	Look.apply()
+	if key != _theme_key:
+		_theme_key = key
+		UIKit.clear_color_caches()
+
+
+## After a new theme or lantern style is picked: repaint the whole app, then
+## bring back Settings with the picker on top, so closing it returns there.
+func repaint_and_reopen(picker_mode: String) -> void:
+	_busy = false
+	_swap(screen_name, screen.args if screen != null else {}, 0.0)
+	await get_tree().process_frame
+	var settings: SettingsCard = SettingsCard.new()
+	open(settings)
+	await get_tree().process_frame
+	var p: PickerCard = PickerCard.new()
+	p.mode = picker_mode
+	settings.open_child(p)
+
+
+## Removes every open card at once (no animation).
+func close_overlays() -> void:
+	for c: Node in _overlay_host.get_children():
+		c.queue_free()
 
 
 ## Erases progress (keeping settings and purchases) and starts again from home.
@@ -199,7 +236,7 @@ func top_overlay() -> Overlay:
 func toast(text: String, icon_name: String = "", tint: Color = Style.AMBER) -> void:
 	var pill: PanelContainer = PanelContainer.new()
 	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pill.add_theme_stylebox_override("panel", UIKit.box(Color("1E1A4A"), 36, Color(tint, 0.6), 2, Vector2(28, 16)))
+	pill.add_theme_stylebox_override("panel", UIKit.box(Style.CARD, 36, Color(tint, 0.6), 2, Vector2(28, 16)))
 	var row: HBoxContainer = UIKit.hbox(12)
 	if not icon_name.is_empty():
 		row.add_child(UIKit.icon_rect(icon_name, 34, tint))

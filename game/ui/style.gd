@@ -3,27 +3,39 @@ extends RefCounted
 ## Design tokens: colours, sizes and shared textures. Night sky, paper tiles,
 ## warm lantern light.
 
-const INK: Color = Color("FFF4E3")
-const MUTED: Color = Color("C6BFEA")
-const CARD: Color = Color("272161")
-const CARD_EDGE: Color = Color(1, 1, 1, 0.10)
-const FIELD: Color = Color(1, 1, 1, 0.07)
+## Theme-driven colours. They start as the "Original" night palette and are
+## replaced as a set by Look.apply() when the player picks a colour theme, so
+## the whole app changes, not just the text: sky, cards, buttons, panels and tiles.
+static var INK: Color = Color("FFF4E3")
+static var MUTED: Color = Color("C6BFEA")
+static var CARD: Color = Color("272161")
+static var CARD_EDGE: Color = Color(1, 1, 1, 0.10)
+static var FIELD: Color = Color(1, 1, 1, 0.07)
+## Raised surfaces: soft buttons, shop rows, chips.
+static var SURFACE: Color = Color("2E2870")
+## The darker edge under raised surfaces.
+static var LIP: Color = Color("140F36")
+## Flat panels: the MOVES strip, the daily card.
+static var PANEL: Color = Color("231D5C")
+static var SHADOW_TILE: Color = Color("1A1540")
+static var AMBER: Color = Color("FFB547")
+static var DIM: Color = Color(0.03, 0.02, 0.10, 0.62)
+static var DEFAULT_SKY_TOP: Color = Color("2E2A6B")
+static var DEFAULT_SKY_BOTTOM: Color = Color("141235")
+## False for light themes (dark text, no stars in the sky).
+static var DARK: bool = true
+
+## Fixed colours that read on any theme.
 const PAPER: Color = Color("FBF1DE")
 const PAPER_EDGE: Color = Color("D9C9AE")
 const PAPER_INK: Color = Color("2A2350")
-const SHADOW_TILE: Color = Color("1A1540")
-const AMBER: Color = Color("FFB547")
 const GOLD: Color = Color("FFD45C")
 const ERROR: Color = Color("FF5D6C")
-const SUCCESS: Color = Color("7DE2A6")
-const DIM: Color = Color(0.03, 0.02, 0.10, 0.62)
+const SUCCESS: Color = Color("4FD18B")
 
-## Found words cycle through these lantern colours.
-const LANTERNS: Array[Color] = [
-	Color("FF9F43"), Color("FF6B81"), Color("A47CFF"), Color("4FB3FF"),
-	Color("2ECDB4"), Color("8CD64B"), Color("FFC93C"), Color("FF7AC6"),
-	Color("6C8CFF"), Color("FF8456"),
-]
+## Every round icon button in a top bar (Back, Settings, Shop) is this size on
+## every screen, so they never change size between pages.
+const TOP_BUTTON: float = 84.0
 
 const GUTTER: int = 24
 const MAX_WIDTH: int = 720
@@ -36,18 +48,12 @@ const SIZE_BODY: int = 28
 const SIZE_SMALL: int = 23
 const SIZE_CAPTION: int = 19
 
-const DEFAULT_SKY_TOP: Color = Color("2E2A6B")
-const DEFAULT_SKY_BOTTOM: Color = Color("141235")
 
 static var _glow: Texture2D
 
 
 static func clear_caches() -> void:
 	_glow = null
-
-
-static func lantern_color(i: int) -> Color:
-	return LANTERNS[posmod(i, LANTERNS.size())]
 
 
 ## Soft round light, white in the middle fading to nothing, tinted by modulate.

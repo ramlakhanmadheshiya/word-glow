@@ -15,6 +15,7 @@ func _ready() -> void:
 	_coins_and_free_sparks()
 	_stars_and_rewards()
 	_unlocks_keys_and_chapters()
+	_diamond_keys()
 	_daily_streaks()
 	_achievements_pay_once()
 	_video_rewards()
@@ -116,6 +117,27 @@ func _unlocks_keys_and_chapters() -> void:
 	t.eq(Profile.next_level(), [1, 1] as Array[int], "Play moves to the next chapter")
 
 
+## Diamond keys: earned once per chapter for level 40, open a locked chapter
+## at level 1 only, limited free ones from videos, and sold in packs.
+func _diamond_keys() -> void:
+	# Meadow was fully cleared above, so its level 40 has already paid a diamond.
+	t.eq(Profile.diamonds(), 1, "clearing level 40 earned a diamond key")
+	Profile.complete_level("meadow-40", _state("meadow-40"))
+	t.eq(Profile.diamonds(), 1, "replaying level 40 pays no second diamond")
+	t.ok(not Profile.chapter_unlocked(5), "chapter 6 is locked")
+	t.ok(not Profile.use_diamond(1), "a diamond is not spent on an open chapter")
+	t.ok(Profile.use_diamond(5), "a diamond key opens a locked chapter")
+	t.eq(Profile.diamonds(), 0, "the diamond is spent")
+	t.ok(Profile.chapter_unlocked(5), "chapter 6 is open")
+	t.ok(Profile.level_unlocked(5, 1), "its level 1 is open")
+	t.ok(not Profile.level_unlocked(5, 2), "but only level 1")
+	t.ok(not Profile.use_diamond(6), "no diamonds left")
+	t.ok(Profile.add_video_diamond(), "one free diamond from a video")
+	t.ok(not Profile.add_video_diamond(), "only one a day")
+	Store.buy("diamond_key_3")
+	t.eq(Profile.diamonds(), 4, "a pack of 3 diamond keys")
+
+
 func _daily_streaks() -> void:
 	var p: Puzzle = Catalog.daily_puzzle("2026-03-01")
 	t.ok(p != null, "daily puzzle loads")
@@ -181,7 +203,7 @@ func _store_purchases() -> void:
 	t.eq(Profile.keys(), keys + Store.COMPLETE_KEYS + 5, "keys bought")
 	Store.buy("tip_50")
 	t.eq(Profile.tips_given(), 1, "a tip is counted")
-	t.eq(Store.all_ids().size(), 4 + 4 + 10 + 100, "product catalogue size")
+	t.eq(Store.all_ids().size(), 4 + 4 + 2 + 10 + 100, "product catalogue size")
 	t.ok(Store.complete_saving() > 0, "the Complete pack is cheaper than its parts")
 	Store.simulate = false
 	var msg: Array[String] = [""]
@@ -212,8 +234,10 @@ func _reset_keeps_purchases() -> void:
 	Store.buy("supporter_pack")
 	Save.data["coins_bought"] = 2000
 	var keys: int = Profile.keys()
+	var diamonds: int = Profile.diamonds()
 	Profile.reset_all()
 	t.ok(Profile.is_supporter(), "a reset keeps packs")
+	t.eq(Profile.diamonds(), diamonds, "a reset keeps diamond keys")
 	t.eq(Profile.keys(), keys, "a reset keeps keys")
 	t.eq(Profile.coins(), Economy.START_COINS + 2000, "a reset keeps bought coins, not earned ones")
 	t.eq(Profile.stat("levels"), 0, "a reset clears progress")

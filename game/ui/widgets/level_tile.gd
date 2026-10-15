@@ -38,11 +38,11 @@ func _draw() -> void:
 	if has_focus():
 		draw_style_box(UIKit.box(Color.TRANSPARENT, r + 4, Color(Style.INK, 0.8), 3), box.grow(5))
 	if not open:
-		draw_style_box(UIKit.box(Color(1, 1, 1, 0.05), r, Color(1, 1, 1, 0.08), 2), box)
+		draw_style_box(UIKit.box(Color(Style.INK, 0.05), r, Color(Style.INK, 0.08), 2), box)
 		_text(f, str(number), box.get_center() + Vector2(0, -3), fs, Color(Style.INK, 0.32))
 		var c: Vector2 = box.end - Vector2(16, 16)
-		draw_circle(c, 14.0, Color("1A1638"), true, -1.0, true)
-		draw_texture_rect(UIKit.art("lock"), Rect2(c - Vector2(11, 11), Vector2(22, 22)), false, Color(1, 1, 1, 0.8))
+		draw_circle(c, 14.0, Style.LIP, true, -1.0, true)
+		draw_texture_rect(UIKit.art("lock"), Rect2(c - Vector2(11, 11), Vector2(22, 22)), false, Color(Style.INK, 0.8))
 		return
 	if stars > 0:
 		draw_texture_rect(Style.glow_texture(), box.grow(s * 0.15), false, Color(accent, 0.18))
@@ -55,7 +55,7 @@ func _draw() -> void:
 			var col: Color = Color.WHITE if k < stars else Color(Style.PAPER_INK, 0.3)
 			draw_texture_rect(UIKit.art("star"), Rect2(p - Vector2(ss, ss) * 0.5, Vector2(ss, ss) * 1.15), false, col)
 	else:
-		draw_style_box(UIKit.box(Color(accent, 0.16) if current else Color(1, 1, 1, 0.05), r, accent if current else Color(Style.INK, 0.4), 3), box)
+		draw_style_box(UIKit.box(Color(accent, 0.16) if current else Color(Style.INK, 0.05), r, accent if current else Color(Style.INK, 0.4), 3), box)
 		_text(f, str(number), box.get_center() + Vector2(0, -3), fs, Style.INK)
 	if current:
 		var pulse: float = 0.5 + 0.5 * sin(_t * 3.0)

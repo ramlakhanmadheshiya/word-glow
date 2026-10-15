@@ -44,7 +44,7 @@ func _draw() -> void:
 	var sky: Array[Color] = Look.sky(chapter)
 	var bg: Color = sky[0].lerp(sky[1], 0.3)
 	if not unlocked:
-		bg = bg.lerp(Color("15122E"), 0.6)
+		bg = bg.lerp(Style.LIP, 0.6)
 	draw_style_box(UIKit.box(bg, 34, Color(accent, 0.55 if unlocked else 0.15), 2), r)
 	if has_focus():
 		draw_style_box(UIKit.box(Color.TRANSPARENT, 36, Color(Style.INK, 0.8), 3), r.grow(4))
@@ -59,7 +59,7 @@ func _draw() -> void:
 	var by: float = size.y - 34.0
 	if unlocked:
 		var bw: float = size.x - pad - 290.0
-		draw_style_box(UIKit.box(Color(1, 1, 1, 0.12), 5, Color.TRANSPARENT, 0, Vector2.ZERO), Rect2(pad, by - 5, bw, 10))
+		draw_style_box(UIKit.box(Color(Style.INK, 0.12), 5, Color.TRANSPARENT, 0, Vector2.ZERO), Rect2(pad, by - 5, bw, 10))
 		if clears > 0:
 			draw_style_box(UIKit.box(accent, 5, Color.TRANSPARENT, 0, Vector2.ZERO), Rect2(pad, by - 5, maxf(10.0, bw * clears / float(Catalog.levels_per_chapter)), 10))
 		var f: Font = UIKit.font(700)
@@ -67,5 +67,5 @@ func _draw() -> void:
 		draw_texture_rect(UIKit.art("star"), Rect2(pad + bw + 84, by - 13, 26, 26), false)
 		draw_string(f, Vector2(pad + bw + 112, by + 8), str(stars), HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Style.GOLD)
 	else:
-		draw_texture_rect(UIKit.art("lock"), Rect2(pad, by - 17, 32, 32), false, Color(1, 1, 1, 0.75))
+		draw_texture_rect(UIKit.art("lock"), Rect2(pad, by - 17, 32, 32), false, Color(Style.INK, 0.75))
 		draw_string(UIKit.font(600), Vector2(pad + 42, by + 7), "%d levels" % Catalog.levels_per_chapter, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(Style.INK, 0.45))

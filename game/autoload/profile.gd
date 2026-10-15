@@ -5,6 +5,7 @@ extends Node
 
 signal coins_changed(total: int)
 signal keys_changed(total: int)
+signal diamonds_changed(total: int)
 signal achievement_unlocked(achievement: Dictionary)
 signal settings_changed
 signal purchases_changed
@@ -124,12 +125,14 @@ func total_stars() -> int:
 	return n
 
 
+## A chapter opens when 15 levels of the one before it are cleared, or when a
+## diamond key opened it.
 func chapter_unlocked(ci: int) -> bool:
 	if ci <= 0:
 		return ci == 0
 	if ci >= Catalog.chapter_count():
 		return false
-	return chapter_clears(ci - 1) >= Catalog.unlock_clears
+	return chapter_clears(ci - 1) >= Catalog.unlock_clears or diamond_opened(ci)
 
 
 ## A level is open when the one before it is cleared, or a key opened it.
@@ -218,6 +221,50 @@ func add_video_key() -> bool:
 	var c: Dictionary = _today_counter("video")
 	c["keys"] = int(c.get("keys", 0)) + 1
 	add_keys(1)
+	return true
+
+
+# --- Diamond keys -------------------------------------------------------------
+
+func diamonds() -> int:
+	return int(_d["diamonds"])
+
+
+func add_diamonds(n: int) -> void:
+	if n <= 0:
+		return
+	_d["diamonds"] = diamonds() + n
+	Save.mark_dirty()
+	diamonds_changed.emit(diamonds())
+
+
+func diamond_opened(ci: int) -> bool:
+	var ch: Dictionary = Catalog.chapter(ci)
+	return not ch.is_empty() and (_d["chapters_opened"] as Dictionary).has(ch["id"])
+
+
+## Spends a diamond key to open a locked chapter for good. Only level 1 opens;
+## the rest open by playing, as usual. False if there is nothing to spend or open.
+func use_diamond(ci: int) -> bool:
+	if diamonds() <= 0 or ci <= 0 or ci >= Catalog.chapter_count() or chapter_unlocked(ci):
+		return false
+	_d["diamonds"] = diamonds() - 1
+	_d["chapters_opened"][Catalog.chapter(ci)["id"]] = true
+	Save.mark_dirty()
+	diamonds_changed.emit(diamonds())
+	return true
+
+
+func video_diamonds_left() -> int:
+	return maxi(0, Economy.VIDEO_DIAMONDS_PER_DAY - int(_today_counter("video").get("diamonds", 0)))
+
+
+func add_video_diamond() -> bool:
+	if video_diamonds_left() <= 0:
+		return false
+	var c: Dictionary = _today_counter("video")
+	c["diamonds"] = int(c.get("diamonds", 0)) + 1
+	add_diamonds(1)
 	return true
 
 
@@ -325,6 +372,11 @@ func complete_level(id: String, state: LevelState) -> Dictionary:
 	if stars == 3 and old_best < 3:
 		s["perfect"] = int(s["perfect"]) + 1
 	var chapter_done: bool = false
+	var diamond: bool = false
+	# Clearing level 40 of a chapter for the first time earns a diamond key.
+	if first and cn[0] >= 0 and cn[1] == Catalog.levels_per_chapter:
+		diamond = true
+		add_diamonds(1)
 	if cn[0] >= 0:
 		var key: String = "ch_" + str(Catalog.chapter(cn[0])["id"])
 		if int(s.get(key, 0)) == 0 and chapter_clears(cn[0]) == Catalog.levels_per_chapter:
@@ -337,6 +389,7 @@ func complete_level(id: String, state: LevelState) -> Dictionary:
 	return {
 		"coins": reward, "first": first, "stars": stars, "best": best, "new_stars": new_stars,
 		"chapter_done": chapter_done, "chapter_unlocked": unlocked_chapter_count() > chapters_before,
+		"diamond": diamond,
 	}
 
 
@@ -432,4 +485,5 @@ func reset_all() -> void:
 	Save.reset()
 	coins_changed.emit(coins())
 	keys_changed.emit(keys())
+	diamonds_changed.emit(diamonds())
 	settings_changed.emit()

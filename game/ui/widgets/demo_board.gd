@@ -22,7 +22,7 @@ func _init() -> void:
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	custom_minimum_size = Vector2(300, 260)
-	var sb: StyleBoxFlat = UIKit.box(Color(1, 1, 1, 0.05), 44, Color(1, 1, 1, 0.07), 2, Vector2(18, 18))
+	var sb: StyleBoxFlat = UIKit.box(Color(Style.INK, 0.05), 44, Color(Style.INK, 0.07), 2, Vector2(18, 18))
 	sb.shadow_color = Color(0, 0, 0, 0.25)
 	sb.shadow_size = 24
 	sb.shadow_offset = Vector2(0, 10)

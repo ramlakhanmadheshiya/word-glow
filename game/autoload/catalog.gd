@@ -2,8 +2,6 @@ extends Node
 ## Read-only game content: chapters, difficulty tiers, theme names and the level
 ## files in data/. Missing or broken files are reported through `last_error`.
 
-## Day 0 of the daily pool. With 730 puzzles, no daily repeats before Oct 2028.
-const DAILY_EPOCH: Dictionary = {"year": 2026, "month": 10, "day": 1}
 
 var chapters: Array[Dictionary] = []
 var tiers: Array = []
@@ -13,6 +11,10 @@ var theme_names: Dictionary = {}
 var last_error: String = ""
 
 var _level_cache: Dictionary = {}
+var _theme_data: Dictionary = {}
+var _plan_data: Dictionary = {}
+var _generator: PuzzleGenerator
+var _daily_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -24,6 +26,8 @@ func reload() -> void:
 	chapters.clear()
 	theme_names.clear()
 	_level_cache.clear()
+	_daily_cache.clear()
+	_generator = null
 	last_error = ""
 	_load_meta()
 
@@ -31,6 +35,7 @@ func reload() -> void:
 func _load_meta() -> void:
 	var catalog: Variant = _json("res://data/chapters.json")
 	if catalog is Dictionary:
+		_plan_data = (catalog as Dictionary).duplicate(true)
 		levels_per_chapter = int(catalog.get("levels_per_chapter", 40))
 		unlock_clears = int(catalog.get("unlock_clears", 15))
 		tiers = catalog.get("difficulty", {}).get("tiers", [])
@@ -42,6 +47,7 @@ func _load_meta() -> void:
 			chapters.append(d)
 	var themes: Variant = _json("res://data/themes.json")
 	if themes is Dictionary:
+		_theme_data = themes
 		for k: Variant in themes:
 			theme_names[k] = str(themes[k].get("name", str(k).capitalize()))
 
@@ -123,18 +129,13 @@ func puzzle_by_id(id: String) -> Puzzle:
 	return puzzle(cn[0], cn[1])
 
 
-## Days since the daily epoch for a "YYYY-MM-DD" key.
+## Days since the daily epoch (1 Oct 2026) for a "YYYY-MM-DD" key.
 static func day_number(date_key: String) -> int:
-	var parts: PackedStringArray = date_key.split("-")
-	if parts.size() != 3:
-		return 0
-	var t: int = Time.get_unix_time_from_datetime_dict({"year": int(parts[0]), "month": int(parts[1]), "day": int(parts[2]), "hour": 12})
-	var t0: int = Time.get_unix_time_from_datetime_dict(DAILY_EPOCH.merged({"hour": 12}))
-	return int(round(float(t - t0) / 86400.0))
+	return PuzzleGenerator.day_number(date_key)
 
 
 static func date_key_from_day(day: int) -> String:
-	var t0: int = Time.get_unix_time_from_datetime_dict(DAILY_EPOCH.merged({"hour": 12}))
+	var t0: int = Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 10, "day": 1, "hour": 12})
 	return Time.get_date_string_from_unix_time(t0 + day * 86400)
 
 
@@ -142,12 +143,17 @@ static func today_key() -> String:
 	return Time.get_date_string_from_system()
 
 
-## The daily puzzle for a date: the pool repeats once every pool-size days.
+## The daily puzzle for a date, built on the device from the date alone (no
+## server, no stored pool), so every player gets the same puzzle on the same
+## day, for as long as the game is installed.
 func daily_puzzle(date_key: String) -> Puzzle:
-	var levels: Array = _levels("daily")
-	if levels.is_empty():
+	if _daily_cache.has(date_key):
+		return _daily_cache[date_key]
+	if _theme_data.is_empty() or _plan_data.is_empty():
 		return null
-	var idx: int = posmod(day_number(date_key), levels.size())
-	var p: Puzzle = Puzzle.from_dict(levels[idx], theme_names)
-	p.id = "daily-" + date_key
+	if _generator == null:
+		_generator = PuzzleGenerator.new(_theme_data, _plan_data)
+	var p: Puzzle = _generator.daily(date_key)
+	if p != null:
+		_daily_cache[date_key] = p
 	return p

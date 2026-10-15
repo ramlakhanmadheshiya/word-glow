@@ -35,7 +35,7 @@ func _row(a: Dictionary) -> PanelContainer:
 		row.add_child(UIKit.icon_rect(a["icon"], 48, tint))
 	else:
 		var ar: TextureRect = UIKit.art_rect(art_name, 52)
-		ar.modulate = Color.WHITE if got else Color(1, 1, 1, 0.35)
+		ar.modulate = Color.WHITE if got else Color(Style.INK, 0.35)
 		row.add_child(ar)
 	var mid: VBoxContainer = UIKit.vbox(4)
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL

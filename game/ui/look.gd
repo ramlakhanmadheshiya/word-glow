@@ -13,9 +13,9 @@ const THEMES: Dictionary = {
 	"sunset": {"name": "Sunset", "top": "#7A3B57", "bottom": "#2B1B3D", "accent": "#FF8C61", "tile": "#FFF0E6", "ink": "#3A1E33"},
 	"sakura": {"name": "Sakura", "top": "#5A2E4C", "bottom": "#1A0E18", "accent": "#FF9EC4", "tile": "#FFF1F5", "ink": "#4A2030"},
 	"ember": {"name": "Ember", "top": "#4A1E0C", "bottom": "#120704", "accent": "#FF7A3D", "tile": "#FFE9D6", "ink": "#3A1A0C"},
-	"deepsea": {"name": "Deep sea", "top": "#0B3D44", "bottom": "#021216", "accent": "#3DE0C8", "tile": "#E2FBF7", "ink": "#06302C"},
 	"royal": {"name": "Royal", "top": "#3A1F73", "bottom": "#0C0620", "accent": "#FFD45C", "tile": "#FFF6DC", "ink": "#23124A"},
-	"mono": {"name": "Mono", "top": "#262626", "bottom": "#050505", "accent": "#E0E0E0", "tile": "#F2F2F2", "ink": "#111111"},
+	"paper": {"name": "Paper", "top": "#FBF6EC", "bottom": "#EADBC2", "accent": "#E8603F", "tile": "#FFFFFF", "ink": "#2D2A4A", "light": true},
+	"daylight": {"name": "Daylight", "top": "#E8F4FF", "bottom": "#B9D9F5", "accent": "#2F80D9", "tile": "#FFFFFF", "ink": "#1E3A55", "light": true},
 }
 
 const STYLES: Dictionary = {
@@ -42,6 +42,55 @@ static func style_id() -> String:
 	return id if STYLES.has(id) and (id == "classic" or Profile.owns("style_pack")) else "classic"
 
 
+## Sets every Style colour from the chosen theme ("Original" keeps the night
+## palette). Called at start-up, on every screen change (so an ended trial
+## reverts) and whenever the player picks a theme.
+static func apply() -> void:
+	var t: String = theme_id()
+	if t == "chapters":
+		_set_palette(Color("2E2A6B"), Color("141235"), Color("FFB547"), true, Color("FFF4E3"))
+		Style.CARD = Color("272161")
+		Style.SURFACE = Color("2E2870")
+		Style.PANEL = Color("231D5C")
+		Style.LIP = Color("140F36")
+		Style.SHADOW_TILE = Color("1A1540")
+		Style.MUTED = Color("C6BFEA")
+		Style.DIM = Color(0.03, 0.02, 0.10, 0.62)
+		return
+	var th: Dictionary = THEMES[t]
+	var light: bool = bool(th.get("light", false))
+	_set_palette(Color(th["top"]), Color(th["bottom"]), Color(th["accent"]), not light, Color(th["ink"]) if light else Color("F4F1FF"))
+
+
+static func _set_palette(top: Color, bottom: Color, accent: Color, dark: bool, ink: Color) -> void:
+	Style.DARK = dark
+	Style.DEFAULT_SKY_TOP = top
+	Style.DEFAULT_SKY_BOTTOM = bottom
+	Style.AMBER = accent
+	Style.INK = ink
+	if dark:
+		var mid: Color = top.lerp(bottom, 0.4)
+		Style.MUTED = ink.lerp(top, 0.3)
+		Style.CARD = mid.lightened(0.07)
+		Style.SURFACE = mid.lightened(0.14)
+		Style.PANEL = mid.lightened(0.04)
+		Style.LIP = bottom.darkened(0.5)
+		Style.SHADOW_TILE = bottom.lightened(0.04)
+		Style.FIELD = Color(ink, 0.07)
+		Style.CARD_EDGE = Color(1, 1, 1, 0.10)
+		Style.DIM = Color(bottom.darkened(0.6), 0.62)
+	else:
+		Style.MUTED = ink.lerp(top, 0.42)
+		Style.CARD = top.lerp(Color.WHITE, 0.55)
+		Style.SURFACE = Color.WHITE
+		Style.PANEL = top.lerp(Color.WHITE, 0.4)
+		Style.LIP = bottom.darkened(0.22)
+		Style.SHADOW_TILE = bottom.darkened(0.25)
+		Style.FIELD = Color(ink, 0.07)
+		Style.CARD_EDGE = Color(ink, 0.12)
+		Style.DIM = Color(ink, 0.45)
+
+
 static func theme_ids() -> Array:
 	return ["chapters"] + THEMES.keys()
 
@@ -63,7 +112,7 @@ static func sky(chapter: Dictionary) -> Array[Color]:
 	var t: String = theme_id()
 	if t != "chapters":
 		return [Color(THEMES[t]["top"]), Color(THEMES[t]["bottom"])]
-	if chapter.is_empty():
+	if chapter.is_empty() or not chapter.has("sky_top"):
 		return [Style.DEFAULT_SKY_TOP, Style.DEFAULT_SKY_BOTTOM]
 	return [chapter["sky_top"], chapter["sky_bottom"]]
 

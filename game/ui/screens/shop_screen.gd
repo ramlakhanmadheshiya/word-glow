@@ -9,7 +9,7 @@ var _status: Label
 
 func build() -> void:
 	body.add_child(header("Shop", "Coins · packs · keys"))
-	body.add_child(chip_row([UIKit.key_chip(), UIKit.coin_chip()]))
+	body.add_child(chip_row([UIKit.diamond_chip(), UIKit.key_chip(), UIKit.coin_chip()]))
 	var scroll: TouchScroll = TouchScroll.new()
 	scroll.name = "Scroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -24,6 +24,7 @@ func build() -> void:
 		_rows[id] = row
 
 	list.add_child(UIKit.caption("Coins, keys and thanks", Style.AMBER, Style.SIZE_CAPTION, HORIZONTAL_ALIGNMENT_LEFT))
+	list.add_child(_link_row("diamonds", "Diamond keys", "Open any locked chapter now · one free from a video daily", "Product_diamonds", func() -> void: app.open(DiamondCard.new())))
 	list.add_child(_link_row("coins", "Coins", "Bags of 300 to 6,000 · free coins from a video", "Product_coins", func() -> void: app.open(CoinsCard.new())))
 	list.add_child(_link_row("keys", "Level keys", "Open any locked level · 10% off for 5+", "Product_keys", func() -> void: app.open(KeysCard.new())))
 	var n: int = Profile.tips_given()
@@ -93,11 +94,11 @@ func _product_row(id: String) -> Button:
 	b.name = "Product_" + id
 	b.custom_minimum_size = Vector2(0, 150 if featured else 132)
 	b.focus_mode = Control.FOCUS_ALL
-	_style_row(b, Color("3A2A5E") if featured else Color("2E2870"), Style.AMBER if featured else Color.TRANSPARENT)
+	_style_row(b, Style.SURFACE.lerp(Style.AMBER, 0.15) if featured else Style.SURFACE, Style.AMBER if featured else Color.TRANSPARENT)
 	UIKit.juice(b)
 	b.pressed.connect(func() -> void: _open_product(id))
 	var row: HBoxContainer = UIKit.hbox(18, BoxContainer.ALIGNMENT_BEGIN)
-	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	row.offset_left = 20
 	row.offset_right = -20
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -141,11 +142,11 @@ func _link_row(preview: String, title: String, sub: String, node_name: String, c
 	var b: Button = Button.new()
 	b.name = node_name
 	b.custom_minimum_size = Vector2(0, 124)
-	_style_row(b, Color("2E2870"), Color.TRANSPARENT)
+	_style_row(b, Style.SURFACE, Color.TRANSPARENT)
 	UIKit.juice(b)
 	b.pressed.connect(cb)
 	var row: HBoxContainer = UIKit.hbox(18, BoxContainer.ALIGNMENT_BEGIN)
-	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	row.offset_left = 20
 	row.offset_right = -20
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -168,7 +169,7 @@ func _link_row(preview: String, title: String, sub: String, node_name: String, c
 
 ## Pressable card style for shop rows (an outline marks the featured pack).
 static func _style_row(b: Button, fill: Color, outline: Color) -> void:
-	var lip_c: Color = Color("140F36")
+	var lip_c: Color = Style.LIP
 	b.add_theme_stylebox_override("normal", UIKit.lip_box(fill, 30, lip_c, 7, Vector2(8, 8), false, outline))
 	b.add_theme_stylebox_override("hover", UIKit.lip_box(fill.lightened(0.05), 30, lip_c, 7, Vector2(8, 8), false, outline))
 	b.add_theme_stylebox_override("pressed", UIKit.lip_box(fill.darkened(0.05), 30, lip_c, 7, Vector2(8, 8), true, outline))

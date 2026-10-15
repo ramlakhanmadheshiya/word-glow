@@ -90,7 +90,7 @@ func _show(i: int) -> void:
 		for k: int in pages.size():
 			var dot: ColorRect = ColorRect.new()
 			dot.custom_minimum_size = Vector2(14, 14) if k != _index else Vector2(34, 14)
-			dot.color = Style.AMBER if k == _index else Color(1, 1, 1, 0.25)
+			dot.color = Style.AMBER if k == _index else Color(Style.INK, 0.25)
 			dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			_dots.add_child(dot)
 	_dots.alignment = BoxContainer.ALIGNMENT_CENTER

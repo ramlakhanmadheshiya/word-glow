@@ -25,12 +25,16 @@ func build() -> void:
 	grid.add_theme_constant_override("h_separation", 14)
 	grid.add_theme_constant_override("v_separation", 14)
 	body.add_child(grid)
+	# Info cards open on top of Settings and return to it when closed;
+	# Shop leaves Settings for the shop screen.
 	var items: Array = [
-		["How to play", "HowToPlay", "circle-help", func() -> void: app.open(HowToCard.new())],
-		["Shop", "ShopButton", "shopping-bag", func() -> void: app.go("shop")],
-		["Awards", "Achievements", "trophy", func() -> void: app.open(AchievementsCard.new())],
-		["About", "About", "info", func() -> void: app.open(AboutCard.new())],
-		["Credits", "Credits", "users", func() -> void: app.open(CreditsCard.new())],
+		["How to play", "HowToPlay", "circle-help", func() -> void: open_child(HowToCard.new())],
+		["Shop", "ShopButton", "shopping-bag", func() -> void:
+			close()
+			app.go("shop")],
+		["Awards", "Achievements", "trophy", func() -> void: open_child(AchievementsCard.new())],
+		["About", "About", "info", func() -> void: open_child(AboutCard.new())],
+		["Credits", "Credits", "users", func() -> void: open_child(CreditsCard.new())],
 	]
 	var provider: Node = AdManager.provider
 	if provider != null and provider.has_method("privacy_options_required") and provider.privacy_options_required():
@@ -39,11 +43,7 @@ func build() -> void:
 		var b: Button = UIKit.button(str(item[0]), "soft", Style.AMBER, 76, 23, str(item[2]))
 		b.name = str(item[1])
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var cb: Callable = item[3]
-		b.pressed.connect(func() -> void:
-			close()
-			cb.call()
-		)
+		b.pressed.connect(item[3])
 		grid.add_child(b)
 	if app.screen == null or not app.screen.in_game():
 		var reset: Button = UIKit.button("Reset progress", "ghost", Style.AMBER, 72, 23)
@@ -73,13 +73,12 @@ func _look_button(title: String, current: String, icon_name: String, mode: Strin
 	b.name = "Pick" + title
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.pressed.connect(func() -> void:
-		close()
 		var p: PickerCard = PickerCard.new()
 		p.mode = mode
-		app.open(p)
+		open_child(p)
 	)
 	var row: HBoxContainer = UIKit.hbox(14, BoxContainer.ALIGNMENT_BEGIN)
-	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	row.offset_left = 18
 	row.offset_right = -12
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE

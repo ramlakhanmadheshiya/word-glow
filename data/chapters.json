@@ -31,5 +31,5 @@
 			{"name": "Extreme", "from": 40, "to": 40, "early": [7, 6], "late": [8, 7], "len": [5, 8], "shadows": 0.34, "beacons": 3}
 		]
 	},
-	"daily": {"count": 730}
+	"daily": {"chapter": 6, "weekday_levels": [37, 8, 14, 19, 24, 29, 33], "weekday_names": ["Sunday (hardest)", "Monday (gentlest)", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]}
 }

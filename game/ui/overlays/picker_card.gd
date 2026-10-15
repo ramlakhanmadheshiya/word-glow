@@ -37,28 +37,22 @@ func build() -> void:
 		var tile: Button = _tile(id, id == current, locked)
 		tile.pressed.connect(func() -> void:
 			if locked:
-				close()
 				var o: ProductCard = ProductCard.new()
 				o.product = _product
-				app.open(o)
+				open_child(o)
 				return
 			Profile.set_setting("theme" if mode == "themes" else "style", id)
 			Audio.play("click", 1.2, -4.0)
-			close()
-			app.reload_screen()
-			var again: PickerCard = PickerCard.new()
-			again.mode = mode
-			app.open(again)
+			app.repaint_and_reopen(mode)
 		)
 		grid.add_child(tile)
 	if not Profile.bought(_product):
 		var get_btn: Button = UIKit.button("Get the %s" % Store.display_name(_product), "ghost", Style.AMBER, 80, 24)
 		get_btn.name = "GetPack"
 		get_btn.pressed.connect(func() -> void:
-			close()
 			var o: ProductCard = ProductCard.new()
 			o.product = _product
-			app.open(o)
+			open_child(o)
 		)
 		body.add_child(get_btn)
 
@@ -68,7 +62,7 @@ func _tile(id: String, selected: bool, locked: bool) -> Button:
 	b.name = "Pick_" + id
 	b.custom_minimum_size = Vector2(0, 150)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var sb: StyleBoxFlat = UIKit.box(Color(1, 1, 1, 0.06), 28, Style.GOLD if selected else Color(1, 1, 1, 0.06), 4 if selected else 2)
+	var sb: StyleBoxFlat = UIKit.box(Color(Style.INK, 0.06), 28, Style.GOLD if selected else Color(Style.INK, 0.06), 4 if selected else 2)
 	for st: String in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(st, sb)
 	UIKit.juice(b)
@@ -76,7 +70,7 @@ func _tile(id: String, selected: bool, locked: bool) -> Button:
 	sw.mode = mode
 	sw.id = id
 	sw.dim = locked
-	sw.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sw.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	sw.offset_top = 12
 	sw.offset_bottom = -46
 	sw.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -105,9 +99,9 @@ class Swatch:
 		var c: Vector2 = size / 2.0
 		var t: float = minf(size.y * 0.62, 56.0)
 		if mode == "themes":
-			var top: Color = Style.DEFAULT_SKY_TOP if id == "chapters" else Color(Look.THEMES[id]["top"])
-			var bottom: Color = Style.DEFAULT_SKY_BOTTOM if id == "chapters" else Color(Look.THEMES[id]["bottom"])
-			var acc: Color = Style.AMBER if id == "chapters" else Color(Look.THEMES[id]["accent"])
+			var top: Color = Color("2E2A6B") if id == "chapters" else Color(Look.THEMES[id]["top"])
+			var bottom: Color = Color("141235") if id == "chapters" else Color(Look.THEMES[id]["bottom"])
+			var acc: Color = Color("FFB547") if id == "chapters" else Color(Look.THEMES[id]["accent"])
 			var tile: Color = Look.DEFAULT_TILE if id == "chapters" else Color(Look.THEMES[id]["tile"])
 			var r: Rect2 = Rect2(c - Vector2(size.x * 0.38, size.y * 0.5), Vector2(size.x * 0.76, size.y))
 			draw_style_box(UIKit.box(Color(top.lerp(bottom, 0.4), a), 18, Color(acc, a), 2), r)

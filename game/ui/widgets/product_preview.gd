@@ -34,6 +34,8 @@ func _draw() -> void:
 			_art("coin", c + Vector2(-s * 0.26, s * 0.22), s * 0.26)
 	elif product == "coins":
 		_art("coin_stack", c, s * 0.66)
+	elif product == "diamonds" or product.begins_with("diamond_key"):
+		_art("diamond_key", c, s * 0.7)
 	elif product == "keys":
 		_art("key", c, s * 0.66)
 	elif product == "tips":

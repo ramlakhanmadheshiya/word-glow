@@ -10,6 +10,10 @@ extends SceneTree
 ##   godot --headless --path . -s res://tests/levels_test.gd
 
 
+## The letters of the 2026-10-15 daily, as built by this version of the generator.
+const PINNED_DAILY: String = "ELKAHCTORLARTCNECDUBEEAECOITBGENNOBA"
+
+
 func _init() -> void:
 	var t: Check = Check.new("LEVELS")
 	var themes: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/themes.json"))
@@ -42,9 +46,11 @@ func _init() -> void:
 				t.ok(p.beacons.is_empty(), "%s: no beacons before chapter %d" % [p.id, plan["difficulty"]["beacons_from_chapter"]])
 			prev_area = p.cell_count()
 			prev_theme = p.theme_id
-			scores.append(difficulty(p))
-		# The curve: every tier is harder on average than the one before, and
-		# level 40 is the hardest level in its chapter.
+			scores.append(PuzzleGenerator.difficulty(p))
+		# Every level is a little harder than the one before it, and each tier
+		# is harder on average than the tier before.
+		for k: int in range(1, scores.size()):
+			t.ok(scores[k] > scores[k - 1], "%s: level %d is harder than level %d (%.2f > %.2f)" % [ch["id"], k + 1, k, scores[k], scores[k - 1]])
 		var prev_mean: float = -1.0
 		for tier: Dictionary in tiers:
 			var sum: float = 0.0
@@ -52,32 +58,39 @@ func _init() -> void:
 			for lv: int in range(int(tier["from"]), int(tier["to"]) + 1):
 				sum += scores[lv - 1]
 				n += 1
-			var mean: float = sum / n
-			t.ok(mean > prev_mean, "%s: %s levels are harder than the tier before (%.1f > %.1f)" % [ch["id"], tier["name"], mean, prev_mean])
-			prev_mean = mean
-		var top: float = scores[per - 1]
-		for k: int in per - 1:
-			t.ok(scores[k] < top, "%s: level 40 is harder than level %d" % [ch["id"], k + 1])
-	var daily: Array = _load(t, "daily")
-	t.eq(daily.size(), int(plan["daily"]["count"]), "daily pool size")
-	t.ok(daily.size() >= 730, "at least two years of daily puzzles")
-	var prev_daily: String = ""
-	for d: Variant in daily:
-		var dp: Puzzle = Puzzle.from_dict(d, names)
-		_check_puzzle(t, dp, vocab, ids)
-		t.ok(dp.theme_id != prev_daily, "%s: a different theme from the day before" % dp.id)
-		prev_daily = dp.theme_id
+			t.ok(sum / n > prev_mean, "%s: %s levels are harder than the tier before" % [ch["id"], tier["name"]])
+			prev_mean = sum / n
+	_check_daily(t, themes, plan, vocab, names)
 	quit(t.report())
 
 
-## A rough difficulty score: bigger grids, longer words, more shadows and more
-## waves of light are all harder.
-static func difficulty(p: Puzzle) -> float:
-	var letters: int = 0
-	for w: Dictionary in p.words:
-		letters += str(w["word"]).length()
-	var avg: float = float(letters) / float(maxi(1, p.words.size()))
-	return p.cell_count() + 3.0 * avg + 1.5 * p.shadows.size() + 2.0 * maxi(0, LanternRules.light_depth(p) - 1)
+## Daily puzzles are built on the phone from the date. Check a full year: every
+## day valid and solvable, a new theme each day, the same puzzle every time for
+## the same date, Sunday harder than Monday, and a pinned puzzle so an accidental
+## change to the generator (which would change everyone's daily) is caught.
+func _check_daily(t: Check, themes: Dictionary, plan: Dictionary, vocab: Dictionary, names: Dictionary) -> void:
+	var gen: PuzzleGenerator = PuzzleGenerator.new(themes, plan)
+	var prev_theme: String = ""
+	var ids: Dictionary = {}
+	var by_weekday: Array[float] = [0, 0, 0, 0, 0, 0, 0]
+	var t0: int = Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 10, "day": 1, "hour": 12})
+	for d: int in 365:
+		var key: String = Time.get_date_string_from_unix_time(t0 + d * 86400)
+		var p: Puzzle = gen.daily(key)
+		t.ok(p != null, "daily %s builds" % key)
+		if p == null:
+			continue
+		p.theme_name = names.get(p.theme_id, "")
+		_check_puzzle(t, p, vocab, ids)
+		t.ok(p.theme_id != prev_theme, "daily %s: a different theme from the day before" % key)
+		prev_theme = p.theme_id
+		by_weekday[PuzzleGenerator.weekday_of(key)] += PuzzleGenerator.difficulty(p)
+	t.ok(by_weekday[0] > by_weekday[1], "Sunday dailies are harder than Monday dailies")
+	var a: Puzzle = gen.daily("2027-02-14")
+	var b: Puzzle = PuzzleGenerator.new(themes, plan).daily("2027-02-14")
+	t.eq(str(a.to_dict()), str(b.to_dict()), "the same date always gives the same daily")
+	var pinned: Puzzle = gen.daily("2026-10-15")
+	t.eq("".join(pinned.letters), PINNED_DAILY, "the 2026-10-15 daily is unchanged (changing the generator changes every player's daily)")
 
 
 func _load(t: Check, id: String) -> Array:

@@ -31,12 +31,16 @@ static func defaults() -> Dictionary:
 		# level ids opened early with a level key
 		"unlocked": {},
 		"keys": 0,
+		# diamond keys open a whole locked chapter (from level 1)
+		"diamonds": 0,
+		# chapter ids opened early with a diamond key
+		"chapters_opened": {},
 		# coins bought with real money (kept on a progress reset)
 		"coins_bought": 0,
 		"owned": {},
 		"trials": {},
 		"tips": 0,
-		"video": {"day": "", "coins": 0, "keys": 0},
+		"video": {"day": "", "coins": 0, "keys": 0, "diamonds": 0},
 		"sparks": {"day": "", "used": 0},
 		"daily": {"done": {}, "streak": 0, "best_streak": 0, "last_date": ""},
 		"achievements": {},
@@ -133,7 +137,7 @@ func flush() -> void:
 ## settings and everything paid for: packs, trials, keys and bought coins.
 func reset() -> void:
 	var keep: Dictionary = {}
-	for k: String in ["settings", "owned", "trials", "tips", "keys", "coins_bought"]:
+	for k: String in ["settings", "owned", "trials", "tips", "keys", "diamonds", "chapters_opened", "coins_bought"]:
 		keep[k] = data.get(k)
 	data = defaults()
 	for k: String in keep:

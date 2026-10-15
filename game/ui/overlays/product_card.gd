@@ -55,7 +55,6 @@ func build() -> void:
 	_buy.pressed.connect(func() -> void:
 		if Profile.bought(product):
 			if _pick_mode() != "":
-				close()
 				_open_picker()
 			return
 		_status.text = "Opening Google Play…"
@@ -67,7 +66,6 @@ func build() -> void:
 		_trial.name = "Trial"
 		_trial.pressed.connect(func() -> void:
 			if Profile.trial_left(product) > 0:
-				close()
 				_open_picker()
 				return
 			if not AdManager.rewarded_ready():
@@ -79,7 +77,6 @@ func build() -> void:
 				if ok:
 					Profile.start_trial(product)
 					Audio.play("unlock", 1.0, -3.0)
-					close()
 					_open_picker()
 				else:
 					_status.text = "The video was closed early, so the trial didn't start."
@@ -113,11 +110,11 @@ func _pick_mode() -> String:
 	return "themes" if product == "theme_pack" else ("styles" if product == "style_pack" else "")
 
 
+## Shows the picker for this pack (repainting the app first, since a new
+## purchase or trial can change which looks are available).
 func _open_picker() -> void:
 	if _pick_mode() != "":
-		var p: PickerCard = PickerCard.new()
-		p.mode = _pick_mode()
-		app.open(p)
+		app.repaint_and_reopen(_pick_mode())
 
 
 func _refresh() -> void:

@@ -16,7 +16,7 @@ var _closing: bool = false
 
 
 func _init() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	add_to_group("modal")
 
@@ -24,7 +24,7 @@ func _init() -> void:
 func _ready() -> void:
 	_dim = ColorRect.new()
 	_dim.color = Style.DIM
-	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_dim.gui_input.connect(_on_dim_input)
 	add_child(_dim)
 	card = PanelContainer.new()
@@ -94,6 +94,18 @@ func _fit() -> void:
 	card.reset_size()
 	card.position = ((size - Vector2(0, AdManager.banner_height) - card.size) / 2.0).round()
 	card.pivot_offset = card.size / 2.0
+
+
+## Opens another card on top of this one and hides this one meanwhile; closing
+## the child brings this card back (e.g. Settings > Credits > close > Settings).
+func open_child(child: Overlay) -> void:
+	visible = false
+	child.closed.connect(func() -> void:
+		if is_instance_valid(self) and not _closing:
+			visible = true
+			refit()
+	)
+	app.open(child)
 
 
 ## Re-measure after content changes.

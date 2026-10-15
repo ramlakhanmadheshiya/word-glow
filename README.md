@@ -25,8 +25,9 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 
   Later chapters sit higher on the curve (bigger grids sooner, longer words, more shadows and beacons). `tests/levels_test.gd` checks that every tier is harder on average than the one before and that level 40 is the hardest level of its chapter.
 - **Three stars.** A perfect solve (no wrong words, no hints) earns ★★★; up to 3 extra moves earns ★★; more earns ★. A MOVES / STARS strip over the board shows what is still on offer, like Single Shot's TRY / STARS.
-- **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. Locked levels are still shown on the level grid.
-- **Daily lantern:** one puzzle a day for everyone, from a pool of 730 pre-made, solver-checked puzzles (`data/levels/daily.json`). The day's puzzle is *days since 1 Oct 2026, modulo 730*, using the device's local date, so no daily repeats before October 2028; neighbouring days never share a theme. It works offline.
+- **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. A **diamond key** opens a whole locked chapter at once (its level 1; the rest open by playing); you earn one by clearing level 40 of any chapter, can buy them (1 or 3), or get one a day from a video. Locked levels are still shown on the level grid.
+- **Smooth difficulty:** every level is a little harder than the one before. The generator builds several candidates per level and keeps the easiest one that is still harder than the previous level, scoring grid size, word length, shadows, waves of light, twisty words and backwards words; grids grow one step at a time from 3×3 to 8×7.
+- **Daily lantern:** built on the phone from the date (`PuzzleGenerator.daily`), with no server and no stored pool, so it never runs out and needs no updates. Everyone gets the same puzzle on the same date: the date seeds the generator, the theme rotates through every theme before repeating (never twice in a row), and difficulty follows the week (Monday gentlest, Sunday hardest). It is checked by the same solver as the levels, and a test builds a full year of dailies and pins one puzzle so an accidental generator change is caught.
 - **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily lantern, and 32 achievements in all.
 - **Hints:** *Spark* (25 coins) reveals the next letter of a word; the first Spark each day is free (3 for Supporters). *Lantern* (60 coins) finds a whole word. **Out of coins, the player can watch a rewarded video for the hint.** Hints count as extra moves.
 - **Shop** (Single Shot's model; one-time packs plus consumables, all via Google Play):
@@ -35,7 +36,8 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
   |---|---|
   | Complete pack | Everything below, plus 1,000 coins and 5 level keys |
   | Supporter pack | No banner ads, 3 free Sparks a day |
-  | Theme pack | 11 colour themes for sky and tiles (1-hour trial from a video) |
+  | Theme pack | 11 colour themes (9 dark, 2 light) that recolour the whole app: sky, cards, buttons, panels and tiles (1-hour trial from a video) |
+  | Diamond keys | 1 or 3; each opens a whole locked chapter; plus one free from a video a day |
   | Lantern styles | 6 styles for lit words and tiles (1-hour trial from a video) |
   | Coin bags | 300 / 1,000 / 2,500 / 6,000 coins; plus free coins from a video (5 a day) |
   | Level keys | 1–10 keys, 10% off for 5+; plus a free key from a video (5 a day) |

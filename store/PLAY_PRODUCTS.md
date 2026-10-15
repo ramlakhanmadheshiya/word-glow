@@ -15,6 +15,8 @@ Google Play's localised price and falls back to the regional prices in
 | `coins_1000` | Consumable | 1,000 coins | $1.99 |
 | `coins_2500` | Consumable | 2,500 coins | $2.99 |
 | `coins_6000` | Consumable | 6,000 coins | $5.99 |
+| `diamond_key_1` | Consumable | 1 diamond key: opens a whole locked chapter at its level 1 | $1.99 |
+| `diamond_key_3` | Consumable | 3 diamond keys | $5.99 |
 | `keys_1` … `keys_10` | Consumable | 1–10 level keys (₹30 / $0.49 each, 10% off for 5+) | $0.49 × n |
 | `tip_10` … `tip_1000` (steps of 10) | Consumable | A tip: nothing unlocked (priced in rupees) | ₹10 × n |
 

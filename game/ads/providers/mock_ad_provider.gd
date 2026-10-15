@@ -34,7 +34,7 @@ func show_banner() -> void:
 	bar.mouse_filter = Control.MOUSE_FILTER_STOP
 	var l: Label = Label.new()
 	l.text = "Ad banner (test)"
-	l.add_theme_color_override("font_color", Color(1, 1, 1, 0.55))
+	l.add_theme_color_override("font_color", Color(Style.INK, 0.55))
 	l.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

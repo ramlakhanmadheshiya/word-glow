@@ -51,6 +51,8 @@ func build() -> void:
 		body.add_child(_note("star-filled", "New best: %d stars" % int(reward["best"]), Style.GOLD))
 	if daily:
 		body.add_child(_note("flame", "%d-day streak · a new daily arrives tomorrow" % int(reward.get("streak", 1)), Color("FF8A3D")))
+	if bool(reward.get("diamond", false)):
+		body.add_child(_note("star", "+1 diamond key: open any locked chapter", Color("5FC8FF")))
 	if bool(reward.get("chapter_done", false)):
 		body.add_child(_note("trophy", "Chapter complete! +%d bonus coins" % Economy.CHAPTER_BONUS, Style.GOLD))
 	if bool(reward.get("chapter_unlocked", false)):
