@@ -60,8 +60,13 @@ func _init() -> void:
 			t.ok(scores[k] < top, "%s: level 40 is harder than level %d" % [ch["id"], k + 1])
 	var daily: Array = _load(t, "daily")
 	t.eq(daily.size(), int(plan["daily"]["count"]), "daily pool size")
+	t.ok(daily.size() >= 730, "at least two years of daily puzzles")
+	var prev_daily: String = ""
 	for d: Variant in daily:
-		_check_puzzle(t, Puzzle.from_dict(d, names), vocab, ids)
+		var dp: Puzzle = Puzzle.from_dict(d, names)
+		_check_puzzle(t, dp, vocab, ids)
+		t.ok(dp.theme_id != prev_daily, "%s: a different theme from the day before" % dp.id)
+		prev_daily = dp.theme_id
 	quit(t.report())
 
 

@@ -5,6 +5,9 @@ extends Overlay
 ## hidden while a level is being played so stars can't be wiped by accident.
 
 
+var _confirm_reset: bool = false
+
+
 func build() -> void:
 	name = "Settings"
 	add_title("Settings")
@@ -46,17 +49,22 @@ func build() -> void:
 		var reset: Button = UIKit.button("Reset progress", "ghost", Style.AMBER, 72, 23)
 		reset.name = "Reset"
 		reset.add_theme_color_override("font_color", Style.ERROR)
+		reset.add_theme_color_override("font_hover_color", Style.ERROR)
+		# Like Single Shot: the first tap asks, the second tap erases.
 		reset.pressed.connect(func() -> void:
+			if not _confirm_reset:
+				_confirm_reset = true
+				reset.text = "Tap again to erase all progress"
+				Haptics.error()
+				return
 			close()
-			MessageCard.confirm(app, "Reset all progress?", "Every cleared level, star, streak, achievement and earned coin will be erased. Settings, packs, keys and bought coins are kept. This cannot be undone.", "Erase progress", func() -> void:
-				Profile.reset_all()
-				app.toast("Progress reset", "rotate-ccw")
-				app.go("home")
-			, true)
+			app.reset_progress()
 		)
 		body.add_child(reset)
 	var version: String = str(ProjectSettings.get_setting("application/config/version", "1.0.0"))
 	body.add_child(UIKit.caption("Word Lantern %s · made with Godot" % version, Style.MUTED, 16))
+	if _confirm_reset == false and app.screen != null and not app.screen.in_game():
+		body.add_child(UIKit.para("Reset keeps your settings, packs, keys and bought coins.", Style.SIZE_CAPTION))
 
 
 ## A card showing the current colour theme or lantern style; opens its picker.

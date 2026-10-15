@@ -15,7 +15,10 @@ func build() -> void:
 		name = "Message"
 	body.add_theme_constant_override("separation", 18)
 	if not icon_name.is_empty():
-		body.add_child(UIKit.icon_rect(icon_name, 88, icon_color))
+		if UIKit.art(icon_name) != null:
+			body.add_child(UIKit.art_rect(icon_name, 96))
+		else:
+			body.add_child(UIKit.icon_rect(icon_name, 88, icon_color))
 	var t: Label = UIKit.label(title_text, Style.SIZE_H1, Style.INK, 600)
 	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(t)

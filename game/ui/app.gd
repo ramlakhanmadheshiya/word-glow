@@ -162,6 +162,15 @@ func reload_screen() -> void:
 		_swap(screen_name, screen.args, 0.0)
 
 
+## Erases progress (keeping settings and purchases) and starts again from home.
+## Lives on the App so it still runs after the Settings card that asked has closed.
+func reset_progress() -> void:
+	Profile.reset_all()
+	_busy = false
+	_swap("home", {}, -1.0)
+	toast("Progress reset", "rotate-ccw")
+
+
 ## Settings, from anywhere. In a level, Reset progress is hidden.
 func open_settings() -> void:
 	open(SettingsCard.new())

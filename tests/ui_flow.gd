@@ -36,6 +36,7 @@ func _ready() -> void:
 	await _settings()
 	await _daily()
 	await _restart_app()
+	await _reset_progress()
 	_wipe()
 	get_tree().quit(t.report())
 
@@ -84,8 +85,11 @@ func _banner_space() -> void:
 	t.ok(AdManager.banner_height > 0.0, "the banner is showing")
 	var frame: MarginContainer = app.screen.get_child(0) as MarginContainer
 	t.ok(frame.get_theme_constant("margin_bottom") >= int(AdManager.banner_height), "screens keep room for the banner")
-	for n: String in ["Play", "Shop", "SettingsButton", "Chapters", "Daily"]:
+	for n: String in ["Play", "Shop", "SettingsButton", "Chapters", "Daily", "Keys", "Coins"]:
 		t.ok(_find(app.screen, n) != null, "home has %s" % n)
+	t.ok(_find(app.screen, "Logo") == null, "home has no logo image")
+	var where: Label = _find(app.screen, "NextLevel") as Label
+	t.eq(where.text, "Meadow · Level 1", "home shows only the chapter and level")
 
 
 func _menus() -> void:
@@ -133,10 +137,17 @@ func _first_level() -> void:
 	for n: String in ["LevelsButton", "Spark", "Lantern", "Restart", "SettingsButton", "Back"]:
 		t.ok(_find(play, n) != null, "the game screen has %s" % n)
 	var wrong: PackedInt32Array = _wrong_path(play.state)
+	play.board._begin(play.board.cell_center(wrong[0]))
+	play.board._drag(play.board.cell_center(wrong[1]))
+	await _wait(0.2)
+	t.eq(play._toast.text, play.puzzle.word_text(PackedInt32Array([wrong[0], wrong[1]])), "the traced letters show on the word line")
+	t.ok(play._hud.modulate.a > 0.99 and play._hud.is_visible_in_tree(), "MOVES / STARS stay visible while tracing")
+	play.board.cancel_trace()
 	play.board.traced.emit(wrong)
 	await _wait(0.1)
 	t.eq(play.state.found_count(), 0, "a wrong guess finds nothing")
 	t.eq(play.state.stars(), 2, "a wrong guess costs a star")
+	t.ok(play._hud.modulate.a > 0.99, "MOVES / STARS stay visible with a message showing")
 	t.eq(Profile.coins(), coins0, "a wrong guess costs no coins")
 	await _solve(play)
 	await _wait(2.6)
@@ -230,13 +241,20 @@ func _shop() -> void:
 	t.eq(app.screen_name, "shop", "the shop opens")
 	for id: String in Store.PRODUCTS:
 		t.ok(_find(app.screen, "Product_" + id) != null, "the shop lists %s" % id)
+	t.ok(_find(app.screen, "Buy_coins_300") == null, "coin bags are not listed on the shop page itself")
+	_press(app.screen, "Product_coins")
+	await _wait(0.5)
+	var coin_card: Overlay = app.top_overlay()
+	t.ok(coin_card is CoinsCard, "the Coins row opens its card, like the tip jar")
 	var coins: int = Profile.coins()
-	_press(app.screen, "Buy_coins_300")
+	_press(coin_card, "Buy_coins_300")
 	await _wait(0.2)
 	t.eq(Profile.coins(), coins + 300, "buying a coin bag adds coins")
-	_press(app.screen, "FreeCoins")
+	_press(coin_card, "FreeCoins")
 	await _wait(0.3)
 	t.eq(Profile.coins(), coins + 300 + Economy.VIDEO_COINS, "a free-coins video pays")
+	coin_card.close()
+	await _wait(0.3)
 	_press(app.screen, "Product_theme_pack")
 	await _wait(0.5)
 	var card: Overlay = app.top_overlay()
@@ -331,3 +349,32 @@ func _wrong_path(live: LevelState) -> PackedInt32Array:
 				if LevelState.new(p).submit(path)["result"] == LevelState.Result.NOT_A_WORD:
 					return path
 	return PackedInt32Array()
+
+
+## Reset, like Single Shot: the first tap asks, the second erases. Progress goes;
+## settings, packs, keys and bought coins stay.
+func _reset_progress() -> void:
+	app.go("home")
+	await _wait(0.6)
+	Profile.add_keys(2)
+	var keys: int = Profile.keys()
+	t.ok(Profile.stat("levels") > 0, "there is progress to reset")
+	_press(app.screen, "SettingsButton")
+	await _wait(0.5)
+	var card: Overlay = app.top_overlay()
+	var reset: Button = _find(card, "Reset") as Button
+	reset.pressed.emit()
+	await _wait(0.2)
+	t.ok(Profile.stat("levels") > 0, "the first tap only asks")
+	t.ok(reset.text.begins_with("Tap again"), "the button asks for a second tap")
+	reset.pressed.emit()
+	await _wait(1.0)
+	t.eq(Profile.stat("levels"), 0, "the second tap erases progress")
+	t.eq(Profile.stars_for("meadow-01"), 0, "stars are erased")
+	t.ok(not Profile.daily_done(Catalog.today_key()), "the daily is reset")
+	t.ok(Profile.is_supporter(), "packs are kept")
+	t.eq(Profile.keys(), keys, "keys are kept")
+	t.eq(float(Profile.setting("music_volume")), 0.4, "settings are kept")
+	t.eq(app.screen_name, "home", "after a reset, home")
+	t.eq((_find(app.screen, "NextLevel") as Label).text, "Meadow · Level 1", "Play starts again from Meadow 1")
+	t.ok(app.top_overlay() == null, "no card is left open")

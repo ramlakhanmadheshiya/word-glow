@@ -54,6 +54,6 @@ func _draw() -> void:
 		var c: Vector2 = Vector2(cols[1] + (float(k) - 1.0) * 40.0, 55)
 		var r: Rect2 = Rect2(c - Vector2(s, s) * 0.5, Vector2(s, s))
 		if k < stars:
-			draw_texture_rect(UIKit.icon("star-filled"), r, false, Style.GOLD)
+			draw_texture_rect(UIKit.art("star"), r, false)
 		else:
-			draw_texture_rect(UIKit.icon("star"), r, false, Color(Style.INK, 0.22 + 0.5 * (_bump if k == stars else 0.0)))
+			draw_texture_rect(UIKit.art("star"), r, false, Color(0.25, 0.22, 0.45, 0.7 + 0.3 * (_bump if k == stars else 0.0)))

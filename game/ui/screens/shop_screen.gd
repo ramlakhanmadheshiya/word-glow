@@ -1,11 +1,10 @@
 extends Screen
 ## The shop, like Single Shot's: every pack with a live preview, its price and
-## whether it's yours (tap for its card), coin bags, free coins from a video,
-## level keys, the tip jar, and Restore purchases.
+## whether it's yours (tap for its card), then Coins, Level keys and the Tip jar
+## as rows that open their own cards, and Restore purchases.
 
 var _rows: Dictionary = {}
 var _status: Label
-var _video_btn: Button
 
 
 func build() -> void:
@@ -24,21 +23,8 @@ func build() -> void:
 		list.add_child(row)
 		_rows[id] = row
 
-	list.add_child(UIKit.caption("Coins", Style.AMBER, Style.SIZE_CAPTION, HORIZONTAL_ALIGNMENT_LEFT))
-	var grid: GridContainer = GridContainer.new()
-	grid.name = "CoinPacks"
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 14)
-	grid.add_theme_constant_override("v_separation", 14)
-	list.add_child(grid)
-	for id: String in Store.COIN_PACKS:
-		grid.add_child(_coin_tile(id))
-	_video_btn = UIKit.button("", "soft", Style.AMBER, 92, 24, "play")
-	_video_btn.name = "FreeCoins"
-	_video_btn.pressed.connect(_watch_for_coins)
-	list.add_child(_video_btn)
-
-	list.add_child(UIKit.caption("Keys and thanks", Style.AMBER, Style.SIZE_CAPTION, HORIZONTAL_ALIGNMENT_LEFT))
+	list.add_child(UIKit.caption("Coins, keys and thanks", Style.AMBER, Style.SIZE_CAPTION, HORIZONTAL_ALIGNMENT_LEFT))
+	list.add_child(_link_row("coins", "Coins", "Bags of 300 to 6,000 · free coins from a video", "Product_coins", func() -> void: app.open(CoinsCard.new())))
 	list.add_child(_link_row("keys", "Level keys", "Open any locked level · 10% off for 5+", "Product_keys", func() -> void: app.open(KeysCard.new())))
 	var n: int = Profile.tips_given()
 	list.add_child(_link_row("tips", "Tip jar", "Say thanks, as often as you like" if n == 0 else "You've tipped %d %s. Thank you ♥" % [n, "time" if n == 1 else "times"], "TipJar", func() -> void: app.open(TipCard.new())))
@@ -88,9 +74,6 @@ func refresh() -> void:
 			tag.add_theme_color_override("font_color", Style.GOLD)
 		var clock: String = Profile.trial_clock(id)
 		sub.text = "" if clock.is_empty() or Profile.bought(id) else "trial · %s left" % clock
-	var left: int = Profile.video_coins_left()
-	_video_btn.text = "Free coins: watch a video  +%d  (%d left today)" % [Economy.VIDEO_COINS, left] if left > 0 else "Free coins are back tomorrow"
-	_video_btn.disabled = left <= 0
 
 
 func _process(_delta: float) -> void:
@@ -110,9 +93,7 @@ func _product_row(id: String) -> Button:
 	b.name = "Product_" + id
 	b.custom_minimum_size = Vector2(0, 150 if featured else 132)
 	b.focus_mode = Control.FOCUS_ALL
-	var sb: StyleBoxFlat = UIKit.box(Color(Style.AMBER, 0.12) if featured else Color(1, 1, 1, 0.06), 32, Style.AMBER if featured else Color(1, 1, 1, 0.06), 3 if featured else 2)
-	for st: String in ["normal", "hover", "pressed", "disabled", "focus"]:
-		b.add_theme_stylebox_override(st, sb)
+	_style_row(b, Color("3A2A5E") if featured else Color("2E2870"), Style.AMBER if featured else Color.TRANSPARENT)
 	UIKit.juice(b)
 	b.pressed.connect(func() -> void: _open_product(id))
 	var row: HBoxContainer = UIKit.hbox(18, BoxContainer.ALIGNMENT_BEGIN)
@@ -156,65 +137,11 @@ func _open_product(id: String) -> void:
 	app.open(o)
 
 
-## A coin bag: buy straight from the tile.
-func _coin_tile(id: String) -> Button:
-	var pack: Array = Store.COIN_PACKS[id]
-	var b: Button = Button.new()
-	b.name = "Buy_" + id
-	b.custom_minimum_size = Vector2(0, 210)
-	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var sb: StyleBoxFlat = UIKit.box(Color(1, 1, 1, 0.06), 30, Color(1, 1, 1, 0.06), 2)
-	for st: String in ["normal", "hover", "pressed", "disabled", "focus"]:
-		b.add_theme_stylebox_override(st, sb)
-	UIKit.juice(b)
-	b.pressed.connect(func() -> void:
-		_status.text = "Opening Google Play…"
-		Store.buy(id)
-	)
-	var col: VBoxContainer = UIKit.vbox(4)
-	col.set_anchors_preset(Control.PRESET_FULL_RECT)
-	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	b.add_child(col)
-	var pv: ProductPreview = ProductPreview.new(id, 84)
-	pv.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	col.add_child(pv)
-	col.add_child(UIKit.label("%s coins" % _thousands(int(pack[0])), 26, Style.INK, 700))
-	col.add_child(UIKit.label(str(pack[2]), 18, Style.MUTED, 500))
-	var price: Label = UIKit.label(Store.price(id), 24, Style.GOLD, 700)
-	col.add_child(price)
-	return b
-
-
-static func _thousands(n: int) -> String:
-	return str(n) if n < 1000 else "%d,%03d" % [n / 1000, n % 1000]
-
-
-func _watch_for_coins() -> void:
-	if Profile.video_coins_left() <= 0:
-		return
-	if not AdManager.rewarded_ready():
-		_status.text = "No video available right now. Try again in a little while." if AdManager.provider != null else "Videos are available in the Android app."
-		return
-	AdManager.show_rewarded(func(ok: bool) -> void:
-		if not is_inside_tree():
-			return
-		if ok and Profile.claim_video_coins():
-			Audio.play("coin")
-			_status.text = "+%d coins. Thank you for watching!" % Economy.VIDEO_COINS
-		elif not ok:
-			_status.text = "The video was closed early, so no coins this time."
-		refresh()
-	)
-
-
 func _link_row(preview: String, title: String, sub: String, node_name: String, cb: Callable) -> Button:
 	var b: Button = Button.new()
 	b.name = node_name
 	b.custom_minimum_size = Vector2(0, 124)
-	var sb: StyleBoxFlat = UIKit.box(Color(1, 1, 1, 0.06), 32, Color(1, 1, 1, 0.06), 2)
-	for st: String in ["normal", "hover", "pressed", "disabled", "focus"]:
-		b.add_theme_stylebox_override(st, sb)
+	_style_row(b, Color("2E2870"), Color.TRANSPARENT)
 	UIKit.juice(b)
 	b.pressed.connect(cb)
 	var row: HBoxContainer = UIKit.hbox(18, BoxContainer.ALIGNMENT_BEGIN)
@@ -237,3 +164,13 @@ func _link_row(preview: String, title: String, sub: String, node_name: String, c
 	row.add_child(text)
 	row.add_child(UIKit.icon_rect("chevron-right", 26, Style.MUTED))
 	return b
+
+
+## Pressable card style for shop rows (an outline marks the featured pack).
+static func _style_row(b: Button, fill: Color, outline: Color) -> void:
+	var lip_c: Color = Color("140F36")
+	b.add_theme_stylebox_override("normal", UIKit.lip_box(fill, 30, lip_c, 7, Vector2(8, 8), false, outline))
+	b.add_theme_stylebox_override("hover", UIKit.lip_box(fill.lightened(0.05), 30, lip_c, 7, Vector2(8, 8), false, outline))
+	b.add_theme_stylebox_override("pressed", UIKit.lip_box(fill.darkened(0.05), 30, lip_c, 7, Vector2(8, 8), true, outline))
+	b.add_theme_stylebox_override("hover_pressed", UIKit.lip_box(fill.darkened(0.05), 30, lip_c, 7, Vector2(8, 8), true, outline))
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())

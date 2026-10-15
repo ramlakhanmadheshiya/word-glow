@@ -64,8 +64,8 @@ func _draw() -> void:
 			draw_style_box(UIKit.box(accent, 5, Color.TRANSPARENT, 0, Vector2.ZERO), Rect2(pad, by - 5, maxf(10.0, bw * clears / float(Catalog.levels_per_chapter)), 10))
 		var f: Font = UIKit.font(700)
 		draw_string(f, Vector2(pad + bw + 16, by + 8), "%d/%d" % [clears, Catalog.levels_per_chapter], HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Style.INK)
-		draw_texture_rect(UIKit.icon("star-filled"), Rect2(pad + bw + 86, by - 11, 22, 22), false, Style.GOLD)
+		draw_texture_rect(UIKit.art("star"), Rect2(pad + bw + 84, by - 13, 26, 26), false)
 		draw_string(f, Vector2(pad + bw + 112, by + 8), str(stars), HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Style.GOLD)
 	else:
-		draw_texture_rect(UIKit.icon("lock"), Rect2(pad, by - 16, 30, 30), false, Color(Style.INK, 0.5))
+		draw_texture_rect(UIKit.art("lock"), Rect2(pad, by - 17, 32, 32), false, Color(1, 1, 1, 0.75))
 		draw_string(UIKit.font(600), Vector2(pad + 42, by + 7), "%d levels" % Catalog.levels_per_chapter, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(Style.INK, 0.45))

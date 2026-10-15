@@ -42,7 +42,7 @@ func _draw() -> void:
 		_text(f, str(number), box.get_center() + Vector2(0, -3), fs, Color(Style.INK, 0.32))
 		var c: Vector2 = box.end - Vector2(16, 16)
 		draw_circle(c, 14.0, Color("1A1638"), true, -1.0, true)
-		draw_texture_rect(UIKit.icon("lock"), Rect2(c - Vector2(9, 9), Vector2(18, 18)), false, Color(Style.INK, 0.5))
+		draw_texture_rect(UIKit.art("lock"), Rect2(c - Vector2(11, 11), Vector2(22, 22)), false, Color(1, 1, 1, 0.8))
 		return
 	if stars > 0:
 		draw_texture_rect(Style.glow_texture(), box.grow(s * 0.15), false, Color(accent, 0.18))
@@ -52,8 +52,8 @@ func _draw() -> void:
 		for k: int in 3:
 			var p: Vector2 = box.get_center() + Vector2((float(k) - 1.0) * s * 0.17, s * 0.22)
 			var ss: float = s * 0.15
-			var col: Color = Color("FFF3C4") if k < stars else Color(Style.PAPER_INK, 0.22)
-			draw_texture_rect(UIKit.icon("star-filled"), Rect2(p - Vector2(ss, ss) * 0.5, Vector2(ss, ss)), false, col)
+			var col: Color = Color.WHITE if k < stars else Color(Style.PAPER_INK, 0.3)
+			draw_texture_rect(UIKit.art("star"), Rect2(p - Vector2(ss, ss) * 0.5, Vector2(ss, ss) * 1.15), false, col)
 	else:
 		draw_style_box(UIKit.box(Color(accent, 0.16) if current else Color(1, 1, 1, 0.05), r, accent if current else Color(Style.INK, 0.4), 3), box)
 		_text(f, str(number), box.get_center() + Vector2(0, -3), fs, Style.INK)
@@ -65,7 +65,7 @@ func _draw() -> void:
 	if keyed and stars == 0:
 		var kc: Vector2 = box.end - Vector2(16, 16)
 		draw_circle(kc, 14.0, accent, true, -1.0, true)
-		draw_texture_rect(UIKit.icon("key-round"), Rect2(kc - Vector2(9, 9), Vector2(18, 18)), false, Style.PAPER_INK)
+		draw_texture_rect(UIKit.art("key"), Rect2(kc - Vector2(12, 12), Vector2(24, 24)), false)
 
 
 func _text(f: Font, s: String, centre: Vector2, fs: int, col: Color) -> void:

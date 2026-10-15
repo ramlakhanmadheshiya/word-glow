@@ -31,5 +31,5 @@
 			{"name": "Extreme", "from": 40, "to": 40, "early": [7, 6], "late": [8, 7], "len": [5, 8], "shadows": 0.34, "beacons": 3}
 		]
 	},
-	"daily": {"count": 120}
+	"daily": {"count": 730}
 }

@@ -24,7 +24,7 @@ func build() -> void:
 	minus.pressed.connect(func() -> void: _set_count(_count - 1))
 	row.add_child(minus)
 	var mid: HBoxContainer = UIKit.hbox(10)
-	mid.add_child(UIKit.icon_rect("key-round", 44, Style.AMBER))
+	mid.add_child(UIKit.art_rect("key", 56))
 	_num = UIKit.label("1", 64, Style.INK, 500)
 	_num.custom_minimum_size.x = 90
 	mid.add_child(_num)
@@ -51,7 +51,7 @@ func build() -> void:
 		Store.buy("keys_%d" % _count)
 	)
 	body.add_child(_buy)
-	_video = UIKit.button("", "ghost", Style.AMBER, 80, 23, "play")
+	_video = UIKit.button("", "soft", Style.AMBER, 80, 23, "art:video")
 	_video.name = "VideoKey"
 	_video.pressed.connect(_watch)
 	body.add_child(_video)

@@ -53,13 +53,38 @@ func _draw() -> void:
 		PackedColorArray([top, top, bottom, bottom]))
 	for st: Vector4 in _stars:
 		var a: float = 0.25 + 0.45 * (0.5 + 0.5 * sin(_t * 1.3 + st.w))
-		draw_circle(Vector2(st.x * s.x, st.y * s.y), st.z, Color(Style.INK, a))
+		draw_circle(Vector2(st.x * s.x, st.y * s.y * 0.7), st.z, Color(Style.INK, a))
 	var glow: Texture2D = Style.glow_texture()
+	# The moon.
+	var moon: Vector2 = Vector2(s.x * 0.84, s.y * 0.1)
+	var mr: float = minf(s.x, s.y) * 0.055
+	draw_texture_rect(glow, Rect2(moon - Vector2(mr, mr) * 5.0, Vector2(mr, mr) * 10.0), false, Color("FFF1C9", 0.16))
+	draw_circle(moon, mr, Color("FFF4DA", 0.92), true, -1.0, true)
+	draw_circle(moon + Vector2(mr * 0.35, -mr * 0.2), mr * 0.82, top.lerp(Color("FFF4DA"), 0.1), true, -1.0, true)
+	# Far hills, then the lanterns rising from behind the near hills.
+	_hills(s, s.y * 0.8, s.y * 0.05, 1.7, 0.3, bottom.lerp(top, 0.35).darkened(0.25))
 	for l: Dictionary in _lanterns:
 		var p: Vector2 = Vector2((float(l["x"]) + 0.02 * sin(_t * 0.6 + float(l["phase"]))) * s.x, float(l["y"]) * s.y)
 		var r: float = l["size"]
 		var c: Color = l["color"]
 		var flicker: float = 0.85 + 0.15 * sin(_t * 3.0 + float(l["phase"]))
 		draw_texture_rect(glow, Rect2(p - Vector2(r, r) * 3.0, Vector2(r, r) * 6.0), false, Color(c, 0.22 * flicker))
-		draw_rect(Rect2(p - Vector2(r * 0.55, r * 0.7), Vector2(r * 1.1, r * 1.4)), Color(c, 0.75 * flicker))
-		draw_rect(Rect2(p - Vector2(r * 0.4, r * 0.85), Vector2(r * 0.8, r * 0.18)), Color(0.1, 0.07, 0.2, 0.6))
+		var pts: PackedVector2Array = PackedVector2Array()
+		for i: int in 16:
+			var ang: float = TAU * i / 16.0
+			pts.append(p + Vector2(cos(ang) * r * 0.55, sin(ang) * r * 0.7))
+		draw_colored_polygon(pts, Color(c, 0.8 * flicker))
+		draw_rect(Rect2(p - Vector2(r * 0.3, r * 0.82), Vector2(r * 0.6, r * 0.16)), Color(0.1, 0.07, 0.2, 0.7))
+	_hills(s, s.y * 0.88, s.y * 0.04, 2.6, 1.9, bottom.darkened(0.45))
+
+
+## A soft ridge of hills across the bottom of the screen.
+func _hills(s: Vector2, base_y: float, amp: float, freq: float, phase: float, col: Color) -> void:
+	var pts: PackedVector2Array = PackedVector2Array([Vector2(0, s.y)])
+	var n: int = 32
+	for i: int in n + 1:
+		var x: float = s.x * i / n
+		var y: float = base_y - amp * (sin(i * freq / n * TAU * 0.5 + phase) * 0.6 + sin(i * freq * 2.3 / n * TAU * 0.5 + phase * 2.0) * 0.4)
+		pts.append(Vector2(x, y))
+	pts.append(Vector2(s.x, s.y))
+	draw_colored_polygon(pts, col)

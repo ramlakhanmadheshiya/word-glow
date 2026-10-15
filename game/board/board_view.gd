@@ -244,8 +244,8 @@ func _draw() -> void:
 	if state == null:
 		return
 	var p: Puzzle = state.puzzle
-	var font: Font = UIKit.font(700)
-	var fs: int = int(_tile * 0.5)
+	var font: Font = UIKit.font(800)
+	var fs: int = int(_tile * 0.52)
 	var small_fs: int = maxi(12, int(_tile * 0.2))
 	var radius: float = _tile * Look.radius()
 	var glow: Texture2D = Style.glow_texture()
@@ -319,8 +319,13 @@ func _draw() -> void:
 		if reveal > 0.0:
 			a = reveal
 			_draw_shadow_tile(rect, radius, c, 1.0 - reveal)
-		draw_style_box(UIKit.box(Color(Look.tile_edge(), a), int(radius)), Rect2(rect.position + Vector2(0, _tile * 0.05), rect.size))
+		draw_style_box(UIKit.box(Color(0, 0, 0, 0.25 * a), int(radius)), Rect2(rect.position + Vector2(0, _tile * 0.1), rect.size))
+		draw_style_box(UIKit.box(Color(Look.tile_edge(), a), int(radius)), Rect2(rect.position + Vector2(0, _tile * 0.07), rect.size))
 		draw_style_box(UIKit.box(Color(tile_col, a), int(radius)), rect)
+		# A soft sheen on the upper half of the paper.
+		var sheen: Rect2 = Rect2(rect.position + Vector2(_tile * 0.1, _tile * 0.07), Vector2(rect.size.x - _tile * 0.2, rect.size.y * 0.32))
+		draw_style_box(UIKit.box(Color(1, 1, 1, 0.45 * a), int(radius * 0.7)), sheen)
+		_draw_letter(font, fs, letter, Rect2(rect.position + Vector2(0, _tile * 0.025), rect.size), Color(Look.tile_ink(), 0.12 * a))
 		_draw_letter(font, fs, letter, rect, Color(Look.tile_ink(), a))
 		if p.beacons.has(c):
 			_draw_flame(rect, Color(Color("FF8A3D"), a), small_fs)

@@ -35,6 +35,6 @@ func _draw() -> void:
 		var r: Rect2 = Rect2(c - Vector2(s, s) * 0.5, Vector2(s, s))
 		if i < _earned:
 			draw_texture_rect(Style.glow_texture(), r.grow(s * 0.35), false, Color(Style.GOLD, 0.35))
-			draw_texture_rect(UIKit.icon("star-filled"), r, false, Style.GOLD)
+			draw_texture_rect(UIKit.art("star"), r, false)
 		else:
-			draw_texture_rect(UIKit.icon("star"), r, false, Color(Style.INK, 0.25))
+			draw_texture_rect(UIKit.art("star"), r, false, Color(0.25, 0.22, 0.45, 0.8))

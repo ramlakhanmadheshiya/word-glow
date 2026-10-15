@@ -12,7 +12,7 @@ func build() -> void:
 	name = "Locked"
 	var ch: Dictionary = Catalog.chapter(chapter_idx)
 	add_title("Level %d is locked" % level)
-	body.add_child(UIKit.icon_rect("lock", 80, Style.AMBER))
+	body.add_child(UIKit.art_rect("lock", 92))
 	var how: String
 	if not Profile.chapter_unlocked(chapter_idx):
 		how = "Clear %d levels in %s to open this chapter." % [Catalog.unlock_clears, Catalog.chapter(chapter_idx - 1).get("name", "")]
@@ -22,7 +22,7 @@ func build() -> void:
 	body.add_child(UIKit.caption("%s · %s" % [ch["name"], Catalog.tier_name(level)]))
 	var k: int = Profile.keys()
 	if Profile.chapter_unlocked(chapter_idx):
-		var use: Button = UIKit.button("Use a key  (%d left)" % k if k > 0 else "No keys yet", "primary", Style.AMBER, 92, 28, "key-round")
+		var use: Button = UIKit.button("Use a key  (%d left)" % k if k > 0 else "No keys yet", "primary", Style.AMBER, 92, 28, "art:key")
 		use.name = "UseKey"
 		use.disabled = k <= 0
 		use.pressed.connect(func() -> void:

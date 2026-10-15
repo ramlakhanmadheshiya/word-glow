@@ -36,7 +36,7 @@ func build() -> void:
 	var coins: int = int(reward.get("coins", 0))
 	if coins > 0:
 		var coin_row: HBoxContainer = UIKit.hbox(12)
-		coin_row.add_child(UIKit.icon_rect("coin", 44, Style.GOLD))
+		coin_row.add_child(UIKit.art_rect("coin", 52))
 		var amount: Label = UIKit.label("+0", 40, Style.GOLD, 700)
 		amount.name = "Reward"
 		coin_row.add_child(amount)

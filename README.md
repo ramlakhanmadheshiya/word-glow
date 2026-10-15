@@ -26,6 +26,7 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
   Later chapters sit higher on the curve (bigger grids sooner, longer words, more shadows and beacons). `tests/levels_test.gd` checks that every tier is harder on average than the one before and that level 40 is the hardest level of its chapter.
 - **Three stars.** A perfect solve (no wrong words, no hints) earns ★★★; up to 3 extra moves earns ★★; more earns ★. A MOVES / STARS strip over the board shows what is still on offer, like Single Shot's TRY / STARS.
 - **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. Locked levels are still shown on the level grid.
+- **Daily lantern:** one puzzle a day for everyone, from a pool of 730 pre-made, solver-checked puzzles (`data/levels/daily.json`). The day's puzzle is *days since 1 Oct 2026, modulo 730*, using the device's local date, so no daily repeats before October 2028; neighbouring days never share a theme. It works offline.
 - **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily lantern, and 32 achievements in all.
 - **Hints:** *Spark* (25 coins) reveals the next letter of a word; the first Spark each day is free (3 for Supporters). *Lantern* (60 coins) finds a whole word. **Out of coins, the player can watch a rewarded video for the hint.** Hints count as extra moves.
 - **Shop** (Single Shot's model; one-time packs plus consumables, all via Google Play):
@@ -42,7 +43,8 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 
   Product ids and Play Console setup: [`store/PLAY_PRODUCTS.md`](store/PLAY_PRODUCTS.md). Debug desktop builds simulate purchases; the web build explains that purchases are in the Android app.
 - **Ads (Android):** a banner at the bottom of the home, chapters, levels, shop and game screens, with layout space reserved so it never covers a button; rewarded videos only when the player asks. No interstitials. Supporters see no banners. The web build shows no ads (where no video can be shown, an out-of-coins hint is simply free).
-- **Settings:** Music and Sound volume sliders, Vibration, colour theme and lantern style pickers, How to play, Shop, Awards, About, Credits, Ad privacy (when required), and Reset progress (hidden during a level; keeps purchases).
+- **Settings:** Music and Sound volume sliders, Vibration, colour theme and lantern style pickers, How to play, Shop, Awards, About, Credits, Ad privacy (when required), and Reset progress (like Single Shot: tap once to arm, again to erase; hidden during a level; keeps settings, packs, keys and bought coins).
+- **While playing,** MOVES / STARS stay visible at the top; the letters being traced and short messages appear on their own line just above the board.
 - **Saving:** everything is saved locally with atomic writes and a backup; half-played levels resume; version-1 saves are migrated.
 
 ### Controls
@@ -70,7 +72,7 @@ Debug desktop runs show a test ad banner and simulate purchases, so every flow c
 
 | Suite | What it checks |
 |---|---|
-| `tests/levels_test.gd` | 61 themes of valid words; all 760 levels (640 + 120 daily): full coverage, adjacent paths, theme words only, no duplicates, each answer traceable in one place only, solvable with shadows, played through with the real game logic; the difficulty curve of every chapter; mechanics only from their chapters. |
+| `tests/levels_test.gd` | 61 themes of valid words; all 1,370 levels (640 + 730 daily): full coverage, adjacent paths, theme words only, no duplicates, each answer traceable in one place only, solvable with shadows, played through with the real game logic; the difficulty curve of every chapter; mechanics only from their chapters. |
 | `tests/logic_test.gd` | Word validation, shadows, beacon beams, hints, stars and moves, save/restore of half-played levels, and broken puzzles the validator must reject. |
 | `tests/profile_test.tscn` | Coins, free Sparks, stars and star rewards, unlocks, keys, chapter bonus, dailies, achievements (once), video reward limits, simulated purchases (packs, coins, keys, tips), trials, reset keeping purchases, restart persistence, corrupt-save recovery, v1 migration. |
 | `tests/ui_flow.tscn` | The real app end to end with the mock ad provider: banner space, chapters, 40-tile level grid with locked levels, a level with a wrong guess (2★), Again for 3★, Next, a locked level opened with a key, free/paid hints, out-of-coins video (watched and skipped), Restart, the shop (coin bag, free coins video, pack trial, theme pick, Supporter removes the banner), volume sliders, Reset hidden in a level, the daily, and an app restart. |

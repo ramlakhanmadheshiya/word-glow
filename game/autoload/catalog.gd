@@ -2,7 +2,8 @@ extends Node
 ## Read-only game content: chapters, difficulty tiers, theme names and the level
 ## files in data/. Missing or broken files are reported through `last_error`.
 
-const DAILY_EPOCH: Dictionary = {"year": 2026, "month": 1, "day": 1}
+## Day 0 of the daily pool. With 730 puzzles, no daily repeats before Oct 2028.
+const DAILY_EPOCH: Dictionary = {"year": 2026, "month": 10, "day": 1}
 
 var chapters: Array[Dictionary] = []
 var tiers: Array = []

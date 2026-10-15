@@ -30,7 +30,13 @@ func _row(a: Dictionary) -> PanelContainer:
 	var have: int = mini(Profile.stat(a["stat"]), int(a["goal"]))
 	var row: HBoxContainer = UIKit.hbox(16, BoxContainer.ALIGNMENT_BEGIN)
 	var tint: Color = Style.GOLD if got else Color(Style.MUTED, 0.6)
-	row.add_child(UIKit.icon_rect(a["icon"], 48, tint))
+	var art_name: String = {"lantern": "lantern", "trophy": "trophy", "star": "star", "star-filled": "star", "book": "", "calendar": "calendar", "flame": "flame", "globe": ""}.get(a["icon"], "")
+	if art_name.is_empty():
+		row.add_child(UIKit.icon_rect(a["icon"], 48, tint))
+	else:
+		var ar: TextureRect = UIKit.art_rect(art_name, 52)
+		ar.modulate = Color.WHITE if got else Color(1, 1, 1, 0.35)
+		row.add_child(ar)
 	var mid: VBoxContainer = UIKit.vbox(4)
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid.add_child(UIKit.label(a["title"], Style.SIZE_BODY - 2, Style.INK if got else Color(Style.INK, 0.8), 600, HORIZONTAL_ALIGNMENT_LEFT))

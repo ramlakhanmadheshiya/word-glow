@@ -93,7 +93,7 @@ func _ready() -> void:
 	scroll.scroll_to(900)
 	await _wait(0.4)
 	await _shot("shop_more")
-	for o: Overlay in [_product("complete_pack"), _product("theme_pack"), KeysCard.new(), TipCard.new(), _picker("themes"), _picker("styles"), SettingsCard.new(), AchievementsCard.new(), AboutCard.new(), CreditsCard.new()]:
+	for o: Overlay in [_product("complete_pack"), _product("theme_pack"), CoinsCard.new(), KeysCard.new(), TipCard.new(), _picker("themes"), _picker("styles"), SettingsCard.new(), AchievementsCard.new(), AboutCard.new(), CreditsCard.new()]:
 		app.open(o)
 		await _wait(0.8)
 		await _shot(o.name.to_lower() + ("_" + str(o.get("mode")) if o is PickerCard else ("_" + str(o.get("product")) if o is ProductCard else "")))

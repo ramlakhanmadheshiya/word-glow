@@ -5,6 +5,7 @@ extends RefCounted
 
 const FONT_PATH: String = "res://assets/fonts/Outfit-Variable.ttf"
 const ICON_DIR: String = "res://assets/icons/"
+const ART_DIR: String = "res://assets/art/"
 
 static var _fonts: Dictionary = {}
 static var _icons: Dictionary = {}
@@ -114,72 +115,128 @@ static func icon_rect(name: String, size: float, color: Color = Style.INK) -> Te
 	return ic
 
 
-## Rounded pill button. style: "primary" (accent fill), "soft" (translucent), "ghost" (outline), "danger".
+## Full-colour game art (coin, key, star, lantern...) from assets/art, drawn
+## untinted. Used for game items; line icons stay for navigation.
+static func art(name: String) -> Texture2D:
+	var key: String = "art/" + name
+	if not _icons.has(key):
+		var path: String = ART_DIR + name + ".svg"
+		_icons[key] = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	return _icons[key]
+
+
+static func art_rect(name: String, size: float) -> TextureRect:
+	var ic: TextureRect = TextureRect.new()
+	ic.texture = art(name)
+	ic.custom_minimum_size = Vector2(size, size)
+	ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return ic
+
+
+## A rounded box with a darker "lip" under it, so buttons look pressable.
+## Pressed boxes have a thinner lip and push their content down.
+static func lip_box(fill: Color, radius: int, lip_color: Color, lip: int, pad: Vector2, pressed: bool = false, outline: Color = Color.TRANSPARENT) -> StyleBoxFlat:
+	var s: StyleBoxFlat = box(fill, radius, Color.TRANSPARENT, 0, pad)
+	var l: int = maxi(1, lip / 3) if pressed else lip
+	if outline.a > 0.0:
+		s.border_color = outline
+		s.set_border_width_all(2)
+		s.border_width_bottom = l + 2
+	else:
+		s.border_color = lip_color
+		s.border_width_bottom = l
+	s.content_margin_top = pad.y + (lip - l)
+	s.content_margin_bottom = pad.y
+	s.shadow_color = Color(0, 0, 0, 0.22)
+	s.shadow_size = 0 if pressed else 6
+	s.shadow_offset = Vector2(0, 4)
+	return s
+
+
+## Rounded pill button with a pressable lip. style: "primary" (accent),
+## "soft" (translucent), "ghost" (outline), "danger". `icon_name` may be
+## "art:<name>" for full-colour art.
 static func button(text: String, style: String = "primary", accent: Color = Style.AMBER, height: int = 92, font_size: int = 30, icon_name: String = "") -> Button:
 	var b: Button = Button.new()
 	b.text = text
 	b.custom_minimum_size = Vector2(0, height)
 	b.focus_mode = Control.FOCUS_ALL
-	b.add_theme_font_override("font", font(600))
+	b.add_theme_font_override("font", font(700 if style == "primary" else 600))
 	b.add_theme_font_size_override("font_size", font_size)
 	var fill: Color
 	var text_c: Color
-	var border: Color = Color.TRANSPARENT
-	var bw: int = 0
+	var lip_c: Color
+	var outline: Color = Color.TRANSPARENT
 	match style:
 		"primary":
 			fill = accent
 			text_c = Style.PAPER_INK
+			lip_c = accent.darkened(0.35)
 		"danger":
 			fill = Style.ERROR
 			text_c = Color.WHITE
+			lip_c = Style.ERROR.darkened(0.35)
 		"soft":
-			fill = Style.FIELD
+			fill = Color("2E2870")
 			text_c = Style.INK
+			lip_c = Color("16123A")
 		_:
-			fill = Color(0, 0, 0, 0)
+			fill = Color(1, 1, 1, 0.03)
 			text_c = Style.INK
-			border = Color(1, 1, 1, 0.22)
-			bw = 3
-	var r: int = height / 2
-	b.add_theme_stylebox_override("normal", box(fill, r, border, bw))
-	b.add_theme_stylebox_override("hover", box(fill.lightened(0.08) if style in ["primary", "danger"] else Color(1, 1, 1, fill.a + 0.05), r, border, bw))
-	b.add_theme_stylebox_override("pressed", box(fill.darkened(0.1) if style in ["primary", "danger"] else Color(1, 1, 1, fill.a + 0.1), r, border, bw))
-	b.add_theme_stylebox_override("disabled", box(Color(1, 1, 1, 0.06), r))
-	var focus: StyleBoxFlat = box(Color.TRANSPARENT, r, Color(Style.INK, 0.7), 3)
+			lip_c = Color(1, 1, 1, 0.18)
+			outline = Color(1, 1, 1, 0.18)
+	var r: int = int(height * 0.36)
+	var lip: int = maxi(4, int(height * 0.07))
+	var pad: Vector2 = Vector2(28, 8)
+	b.add_theme_stylebox_override("normal", lip_box(fill, r, lip_c, lip, pad, false, outline))
+	b.add_theme_stylebox_override("hover", lip_box(fill.lightened(0.07), r, lip_c, lip, pad, false, outline))
+	b.add_theme_stylebox_override("pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true, outline))
+	b.add_theme_stylebox_override("hover_pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true, outline))
+	b.add_theme_stylebox_override("disabled", lip_box(Color("231E55"), r, Color("140F33"), lip, pad))
+	var focus: StyleBoxFlat = box(Color.TRANSPARENT, r + 4, Color(Style.INK, 0.7), 3)
 	focus.set_expand_margin_all(5)
 	b.add_theme_stylebox_override("focus", focus)
 	for key: String in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
 		b.add_theme_color_override(key, text_c)
 	b.add_theme_color_override("font_disabled_color", Color(Style.INK, 0.35))
 	if not icon_name.is_empty():
-		b.icon = icon(icon_name)
-		b.add_theme_constant_override("icon_max_width", int(font_size * 1.1))
+		var is_art: bool = icon_name.begins_with("art:")
+		b.icon = art(icon_name.substr(4)) if is_art else icon(icon_name)
+		b.add_theme_constant_override("icon_max_width", int(font_size * (1.35 if is_art else 1.1)))
 		b.add_theme_constant_override("h_separation", 12)
-		for key: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
-			b.add_theme_color_override(key, text_c)
+		for key: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:
+			b.add_theme_color_override(key, Color.WHITE if is_art else text_c)
 	juice(b)
 	return b
 
 
-## Round icon-only button (44pt+ touch target).
-static func icon_button(icon_name: String, size: float = 84.0, fill: Color = Style.FIELD, tint: Color = Style.INK) -> Button:
+## Round icon-only button with a pressable lip (44pt+ touch target).
+## `icon_name` may be "art:<name>" for full-colour art.
+static func icon_button(icon_name: String, size: float = 84.0, fill: Color = Color("2E2870"), tint: Color = Style.INK) -> Button:
 	var b: Button = Button.new()
-	b.icon = icon(icon_name)
+	var is_art: bool = icon_name.begins_with("art:")
+	b.icon = art(icon_name.substr(4)) if is_art else icon(icon_name)
 	b.custom_minimum_size = Vector2(size, size)
 	b.expand_icon = true
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.focus_mode = Control.FOCUS_ALL
-	var r: int = int(size / 2)
-	var pad: Vector2 = Vector2(size * 0.27, size * 0.27)
-	b.add_theme_stylebox_override("normal", box(fill, r, Color.TRANSPARENT, 0, pad))
-	b.add_theme_stylebox_override("hover", box(Color(fill, fill.a + 0.06), r, Color.TRANSPARENT, 0, pad))
-	b.add_theme_stylebox_override("pressed", box(Color(fill, fill.a + 0.12), r, Color.TRANSPARENT, 0, pad))
-	var focus: StyleBoxFlat = box(Color.TRANSPARENT, r, Color(Style.INK, 0.7), 3, pad)
+	var r: int = int(size * 0.36)
+	var lip: int = maxi(4, int(size * 0.07))
+	var pad: Vector2 = Vector2(size * (0.2 if is_art else 0.27), size * (0.2 if is_art else 0.25))
+	var lip_c: Color = Color("16123A")
+	b.add_theme_stylebox_override("normal", lip_box(fill, r, lip_c, lip, pad))
+	b.add_theme_stylebox_override("hover", lip_box(fill.lightened(0.07), r, lip_c, lip, pad))
+	b.add_theme_stylebox_override("pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true))
+	b.add_theme_stylebox_override("hover_pressed", lip_box(fill.darkened(0.06), r, lip_c, lip, pad, true))
+	b.add_theme_stylebox_override("disabled", lip_box(Color("231E55"), r, Color("140F33"), lip, pad))
+	var focus: StyleBoxFlat = box(Color.TRANSPARENT, r + 4, Color(Style.INK, 0.7), 3, pad)
 	focus.set_expand_margin_all(4)
 	b.add_theme_stylebox_override("focus", focus)
-	for key: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
-		b.add_theme_color_override(key, tint)
+	for key: String in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color", "icon_hover_pressed_color"]:
+		b.add_theme_color_override(key, Color.WHITE if is_art else tint)
+	b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
 	juice(b)
 	return b
 

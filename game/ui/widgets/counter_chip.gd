@@ -17,15 +17,18 @@ func _init(kind: String = "coins") -> void:
 	name = "Coins" if kind == "coins" else "Keys"
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	add_theme_stylebox_override("panel", UIKit.box(Color(0, 0, 0, 0.28), 34, Color(1, 1, 1, 0.08), 2, Vector2(18, 10)))
+	add_theme_stylebox_override("panel", UIKit.lip_box(Color("231D5C"), 30, Color("120E33"), 5, Vector2(12, 6)))
 	var row: HBoxContainer = UIKit.hbox(10)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(row)
-	row.add_child(UIKit.icon_rect("coin" if kind == "coins" else "key-round", 34, Style.GOLD if kind == "coins" else Style.AMBER))
+	row.add_child(UIKit.art_rect("coin" if kind == "coins" else "key", 40))
 	_label = UIKit.label("0", 28, Style.INK, 700)
 	_label.custom_minimum_size.x = 40 if kind == "keys" else 56
 	row.add_child(_label)
-	row.add_child(UIKit.icon_rect("plus", 22, Color(Style.INK, 0.5)))
+	var plus: PanelContainer = UIKit.panel(UIKit.icon_rect("plus", 18, Style.PAPER_INK), Style.SUCCESS, 14, Vector2(5, 5))
+	plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plus.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(plus)
 
 
 func _value() -> int:

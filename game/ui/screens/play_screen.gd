@@ -16,6 +16,7 @@ var daily_key: String = ""
 
 var _hud: MovesHud
 var _toast: Label
+var _toast_box: PanelContainer
 var _toast_tween: Tween
 var _spark_btn: Button
 var _lantern_btn: Button
@@ -72,32 +73,41 @@ func _title_caption() -> String:
 
 func _build_ui() -> void:
 	body.add_child(header(puzzle.theme_name, _title_caption()))
-	# The strip: MOVES / STARS and coins; messages appear here too, over the HUD.
+	# The strip: MOVES / STARS and coins, always visible while playing.
 	var strip: HBoxContainer = UIKit.hbox(8, BoxContainer.ALIGNMENT_BEGIN)
 	strip.name = "Strip"
-	var hud_box: Control = Control.new()
-	hud_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hud_box.custom_minimum_size.y = 84
-	strip.add_child(hud_box)
 	_hud = MovesHud.new()
 	_hud.name = "Hud"
-	_hud.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hud_box.add_child(_hud)
-	_toast = UIKit.label("", 26, Style.INK, 600)
-	_toast.name = "Toast"
-	_toast.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_toast.modulate.a = 0.0
-	hud_box.add_child(_toast)
+	_hud.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	strip.add_child(_hud)
 	var coins: CounterChip = UIKit.coin_chip()
 	coins.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	strip.add_child(coins)
-	body.add_child(strip)
+	var strip_panel: PanelContainer = PanelContainer.new()
+	strip_panel.add_theme_stylebox_override("panel", UIKit.lip_box(Color("231D5C"), 28, Color("120E33"), 5, Vector2(14, 2)))
+	strip_panel.add_child(strip)
+	body.add_child(strip_panel)
 
 	words = WordList.new()
 	words.name = "Words"
 	body.add_child(words)
 	words.setup(state)
+
+	# The word line: the letters being traced and short messages, on their own
+	# line just above the board (it keeps its height so nothing jumps).
+	var line: CenterContainer = CenterContainer.new()
+	line.name = "WordLine"
+	line.custom_minimum_size.y = 64
+	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_toast_box = PanelContainer.new()
+	_toast_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_toast_box.add_theme_stylebox_override("panel", UIKit.box(Color(0, 0, 0, 0.32), 30, Color(1, 1, 1, 0.08), 2, Vector2(26, 6)))
+	_toast = UIKit.label("", 30, Style.INK, 700)
+	_toast.name = "Toast"
+	_toast_box.add_child(_toast)
+	_toast_box.modulate.a = 0.0
+	line.add_child(_toast_box)
+	body.add_child(line)
 
 	board = BoardView.new()
 	board.name = "Board"
@@ -110,11 +120,11 @@ func _build_ui() -> void:
 	bar.name = "Bar"
 	bar.custom_minimum_size.y = 128
 	bar.add_child(_action("layout-grid", "LEVELS" if daily_key.is_empty() else "HOME", "LevelsButton", 80, func() -> void: app.back()))
-	var spark: Array = _hint_action("sparkles", "SPARK", "Spark", use_spark)
+	var spark: Array = _hint_action("art:spark", "SPARK", "Spark", use_spark)
 	_spark_btn = spark[0]
 	_spark_badge = spark[1]
 	bar.add_child(spark[2])
-	var lantern: Array = _hint_action("lantern", "LANTERN", "Lantern", use_lantern)
+	var lantern: Array = _hint_action("art:lantern", "LANTERN", "Lantern", use_lantern)
 	_lantern_btn = lantern[0]
 	_lantern_badge = lantern[1]
 	bar.add_child(lantern[2])
@@ -138,9 +148,6 @@ func _action(icon_name: String, caption: String, node_name: String, size_px: flo
 func _hint_action(icon_name: String, caption: String, node_name: String, cb: Callable) -> Array:
 	var box: VBoxContainer = _action(icon_name, caption, node_name, 96, cb)
 	var b: Button = box.get_child(0)
-	b.add_theme_color_override("icon_normal_color", accent())
-	b.add_theme_color_override("icon_hover_color", accent())
-	b.add_theme_color_override("icon_pressed_color", accent())
 	var badge: Label = UIKit.label("", 17, Style.PAPER_INK, 800)
 	badge.name = "Badge"
 	badge.add_theme_stylebox_override("normal", UIKit.box(Style.GOLD, 14, Color.TRANSPARENT, 0, Vector2(8, 1)))
@@ -195,7 +202,7 @@ func _on_traced(cells: PackedInt32Array) -> void:
 			Haptics.error()
 			var tip: String = "%s isn't hidden here" % r["word"]
 			if state.mistakes == 3:
-				tip += "\nStuck? A Spark shows the next letter"
+				tip = "Stuck? A Spark shows the next letter"
 			show_toast(tip, 2.2, Style.ERROR)
 			Profile.store_progress(puzzle.id, state)
 			_refresh()
@@ -224,27 +231,26 @@ func _on_found(r: Dictionary) -> void:
 	_refresh()
 
 
-## Shows a message in the strip, in place of MOVES / STARS (0 s = until hidden).
+## Shows the traced letters or a short message on the word line above the
+## board (0 s = until hidden). MOVES / STARS are never covered.
 func show_toast(text: String, seconds: float, color: Color = Style.INK) -> void:
 	_toast.text = text
 	_toast.add_theme_color_override("font_color", color)
+	_toast_box.reset_size()
 	if _toast_tween != null:
 		_toast_tween.kill()
-	_toast_tween = create_tween().set_parallel(true)
-	_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.12)
-	_toast_tween.tween_property(_hud, "modulate:a", 0.0, 0.12)
+	_toast_tween = create_tween()
+	_toast_tween.tween_property(_toast_box, "modulate:a", 1.0, 0.1)
 	if seconds > 0.0:
-		_toast_tween.chain().tween_interval(seconds)
-		_toast_tween.chain().tween_property(_toast, "modulate:a", 0.0, 0.3)
-		_toast_tween.tween_property(_hud, "modulate:a", 1.0, 0.3)
+		_toast_tween.tween_interval(seconds)
+		_toast_tween.tween_property(_toast_box, "modulate:a", 0.0, 0.3)
 
 
 func hide_toast() -> void:
 	if _toast_tween != null:
 		_toast_tween.kill()
-	_toast_tween = create_tween().set_parallel(true)
-	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.2)
-	_toast_tween.tween_property(_hud, "modulate:a", 1.0, 0.2)
+	_toast_tween = create_tween()
+	_toast_tween.tween_property(_toast_box, "modulate:a", 0.0, 0.2)
 
 
 # --- Hints ---------------------------------------------------------------------

@@ -63,7 +63,7 @@ func build() -> void:
 	)
 	body.add_child(_buy)
 	if bool(info.get("trial", false)) and not Profile.bought(product):
-		_trial = UIKit.button("Try it free for 1 hour with a video", "ghost", Style.AMBER, 84, 23, "play")
+		_trial = UIKit.button("Try it free for 1 hour with a video", "soft", Style.AMBER, 84, 23, "art:video")
 		_trial.name = "Trial"
 		_trial.pressed.connect(func() -> void:
 			if Profile.trial_left(product) > 0:
