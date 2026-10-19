@@ -9,7 +9,7 @@ var _status: Label
 
 func build() -> void:
 	body.add_child(header("Shop", "Coins · packs · keys"))
-	body.add_child(chip_row([UIKit.diamond_chip(), UIKit.key_chip(), UIKit.coin_chip()]))
+	body.add_child(chip_row([UIKit.chapter_key_chip(), UIKit.key_chip(), UIKit.coin_chip()]))
 	var scroll: TouchScroll = TouchScroll.new()
 	scroll.name = "Scroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -24,7 +24,7 @@ func build() -> void:
 		_rows[id] = row
 
 	list.add_child(UIKit.caption("Coins, keys and thanks", Style.AMBER, Style.SIZE_CAPTION, HORIZONTAL_ALIGNMENT_LEFT))
-	list.add_child(_link_row("diamonds", "Diamond keys", "Open any locked chapter now · one free from a video daily", "Product_diamonds", func() -> void: app.open(DiamondCard.new())))
+	list.add_child(_link_row("chapter_keys", "Chapter keys", "Open a locked chapter now · up to 5 at a time", "Product_chapter_keys", func() -> void: app.open(ChapterKeyCard.new())))
 	list.add_child(_link_row("coins", "Coins", "Bags of 300 to 6,000 · free coins from a video", "Product_coins", func() -> void: app.open(CoinsCard.new())))
 	list.add_child(_link_row("keys", "Level keys", "Open any locked level · 10% off for 5+", "Product_keys", func() -> void: app.open(KeysCard.new())))
 	var n: int = Profile.tips_given()

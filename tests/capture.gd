@@ -30,6 +30,7 @@ func _ready() -> void:
 	Profile.set_setting("music_volume", 0.0)
 	Profile.set_setting("sound_volume", 0.0)
 	Store.simulate = true
+	Profile.set_setting("appearance", "dark")
 	if a.size() >= 4 and a[3] == "clean":
 		AdManager.use_provider(null)
 	_seed_progress()
@@ -74,6 +75,12 @@ func _ready() -> void:
 			await _wait(0.15)
 	await _wait(3.4)
 	await _shot("result")
+	var result: Overlay = app.top_overlay()
+	result.open_child(result._share_card())
+	await _wait(2.0)
+	await _shot("share")
+	app.top_overlay().close()
+	await _wait(0.4)
 	_close_intro()
 	await _wait(0.3)
 	# Out of coins in a level.
@@ -93,7 +100,7 @@ func _ready() -> void:
 	scroll.scroll_to(900)
 	await _wait(0.4)
 	await _shot("shop_more")
-	for o: Overlay in [_product("complete_pack"), _product("theme_pack"), DiamondCard.new(), CoinsCard.new(), KeysCard.new(), TipCard.new(), _picker("themes"), _picker("styles"), SettingsCard.new(), AchievementsCard.new(), AboutCard.new(), CreditsCard.new()]:
+	for o: Overlay in [_product("complete_pack"), _product("theme_pack"), ChapterKeyCard.new(), CoinsCard.new(), KeysCard.new(), TipCard.new(), _picker("themes"), _picker("styles"), SettingsCard.new(), AchievementsCard.new(), AboutCard.new(), CreditsCard.new()]:
 		app.open(o)
 		await _wait(0.8)
 		await _shot(o.name.to_lower() + ("_" + str(o.get("mode")) if o is PickerCard else ("_" + str(o.get("product")) if o is ProductCard else "")))
@@ -131,6 +138,17 @@ func _ready() -> void:
 	app.open_settings()
 	await _wait(0.8)
 	await _shot("settings_themed")
+	app.close_overlays()
+	Profile.set_setting("theme", "chapters")
+	Profile.set_setting("appearance", "light")
+	app.go("home")
+	await _wait(1.0)
+	await _shot("home_light")
+	app.go("play", {"chapter": 4, "level": 22})
+	await _wait(1.2)
+	_close_intro()
+	await _wait(0.5)
+	await _shot("play_light")
 	for s: String in ["", ".bak", ".tmp"]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE + s))
 	print("CAPTURE: %d screenshots in %s" % [_n, out_dir])

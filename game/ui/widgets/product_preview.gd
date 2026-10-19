@@ -26,7 +26,8 @@ func _draw() -> void:
 	draw_style_box(UIKit.box(Color(0, 0, 0, 0.28), int(s * 0.26)), box)
 	var c: Vector2 = box.get_center()
 	if product.begins_with("coins") or product == "free_coins":
-		var n: int = {"coins_300": 0, "coins_1000": 1, "coins_2500": 2, "coins_6000": 3}.get(product, 0)
+		var amount: int = int(product.trim_prefix("coins_")) if product.begins_with("coins_") else 100
+		var n: int = 0 if amount <= 300 else (1 if amount <= 1000 else (2 if amount <= 2500 else 3))
 		_art("coin_stack", c + Vector2(0, s * 0.02), s * (0.62 + 0.06 * n))
 		if n >= 2:
 			_art("coin", c + Vector2(s * 0.24, s * 0.2), s * 0.3)
@@ -34,8 +35,8 @@ func _draw() -> void:
 			_art("coin", c + Vector2(-s * 0.26, s * 0.22), s * 0.26)
 	elif product == "coins":
 		_art("coin_stack", c, s * 0.66)
-	elif product == "diamonds" or product.begins_with("diamond_key"):
-		_art("diamond_key", c, s * 0.7)
+	elif product.begins_with("chapter_key"):
+		_art("chapter_key", c, s * 0.7)
 	elif product == "keys":
 		_art("key", c, s * 0.66)
 	elif product == "tips":

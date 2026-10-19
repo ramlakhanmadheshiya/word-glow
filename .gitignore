@@ -5,3 +5,6 @@ build/
 site/
 /android/
 __pycache__/
+plugins_src/wordlantern_share/build/
+plugins_src/wordlantern_share/.gradle/
+addons/wordlantern_share/bin/

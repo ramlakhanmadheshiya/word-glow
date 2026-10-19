@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 48 48"><defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC56B"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient></defs>
+<rect x="9" y="21" width="30" height="8" fill="#FF8A3D"/>
+<rect x="2" y="15" width="15" height="19" rx="4.5" fill="#B5531A"/><rect x="2" y="13.5" width="15" height="18" rx="4.5" fill="url(#w)"/>
+<rect x="16.5" y="15" width="15" height="19" rx="4.5" fill="#B5531A"/><rect x="16.5" y="13.5" width="15" height="18" rx="4.5" fill="url(#w)"/>
+<rect x="31" y="15" width="15" height="19" rx="4.5" fill="#B5531A"/><rect x="31" y="13.5" width="15" height="18" rx="4.5" fill="url(#w)"/>
+<path d="M12.6 19.2 A4.6 4.6 0 1 0 12.6 26" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<path d="M20.4 27.5 L24 17.8 L27.6 27.5 M21.7 24.3 H26.3" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M34.5 18 H41.5 M38.5 18 V27.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M14 40.5 h20" stroke="#FFD27A" stroke-width="2.6" stroke-linecap="round" opacity=".8"/></svg>

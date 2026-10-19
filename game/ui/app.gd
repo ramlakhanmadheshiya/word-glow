@@ -19,6 +19,7 @@ var screen: Screen
 var screen_name: String = ""
 var _screen_host: Control
 var _overlay_host: Control
+var _banner_slot: ColorRect
 var _toast_host: Control
 var _busy: bool = false
 
@@ -41,6 +42,14 @@ func _ready() -> void:
 	add_child(backdrop)
 	_screen_host = _layer("Screens")
 	_overlay_host = _layer("Overlays")
+	# The banner's reserved strip: a calm bar while an ad loads or if none comes.
+	_banner_slot = ColorRect.new()
+	_banner_slot.name = "BannerSlot"
+	_banner_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_banner_slot.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_banner_slot.visible = false
+	add_child(_banner_slot)
+	AdManager.banner_changed.connect(func(h: float) -> void: _fit_banner_slot(h))
 	_toast_host = _layer("Toasts")
 	_toast_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	Profile.achievement_unlocked.connect(func(a: Dictionary) -> void:
@@ -145,6 +154,7 @@ func _swap(name: String, args: Dictionary, direction: float) -> void:
 	_screen_host.add_child(next)
 	var colors: Array[Color] = next.sky()
 	backdrop.set_sky(colors[0], colors[1])
+	AdManager.screen_changed()
 	next.modulate.a = 0.0
 	next.position.x = 60.0 * direction
 	var tw: Tween = create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -172,25 +182,35 @@ var _theme_key: String = ""
 ## Sets the colour palette for the current theme (and style). Cheap when
 ## nothing changed; when it did, theme-coloured textures are redrawn too.
 func _apply_theme() -> void:
-	var key: String = Look.theme_id() + "/" + Look.style_id()
+	var key: String = "%s/%s/%s" % [Look.theme_id(), Look.style_id(), Look.original_is_light()]
 	Look.apply()
 	if key != _theme_key:
 		_theme_key = key
 		UIKit.clear_color_caches()
+		if _banner_slot != null:
+			_banner_slot.color = Style.LIP
 
 
 ## After a new theme or lantern style is picked: repaint the whole app, then
 ## bring back Settings with the picker on top, so closing it returns there.
-func repaint_and_reopen(picker_mode: String) -> void:
+func repaint_and_reopen(picker_mode: String = "") -> void:
 	_busy = false
 	_swap(screen_name, screen.args if screen != null else {}, 0.0)
 	await get_tree().process_frame
 	var settings: SettingsCard = SettingsCard.new()
 	open(settings)
+	if picker_mode.is_empty():
+		return
 	await get_tree().process_frame
 	var p: PickerCard = PickerCard.new()
 	p.mode = picker_mode
 	settings.open_child(p)
+
+
+func _fit_banner_slot(h: float) -> void:
+	_banner_slot.visible = h > 0.0
+	_banner_slot.offset_top = -h
+	_banner_slot.color = Style.LIP
 
 
 ## Removes every open card at once (no animation).
@@ -267,6 +287,11 @@ func _unhandled_input(e: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		handle_back()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and Look.appearance() == "auto" and screen != null and not _busy:
+		# The phone may have switched between light and dark while we were away.
+		var key: String = "%s/%s/%s" % [Look.theme_id(), Look.style_id(), Look.original_is_light()]
+		if key != _theme_key:
+			reload_screen()
 	elif what == NOTIFICATION_WM_CLOSE_REQUEST:
 		quit_game()
 

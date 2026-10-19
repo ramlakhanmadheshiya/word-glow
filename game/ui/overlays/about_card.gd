@@ -9,7 +9,7 @@ const AUTHOR_SITE: String = "https://theramlakhan.com/"
 func build() -> void:
 	name = "About"
 	var head: HBoxContainer = UIKit.hbox(0, BoxContainer.ALIGNMENT_END)
-	var x: Button = UIKit.icon_button("x", 72)
+	var x: Button = UIKit.icon_button("x", Style.CLOSE_BUTTON)
 	x.name = "Close"
 	x.pressed.connect(close)
 	head.add_child(x)

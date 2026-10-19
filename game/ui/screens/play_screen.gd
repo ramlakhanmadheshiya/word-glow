@@ -120,11 +120,11 @@ func _build_ui() -> void:
 	bar.name = "Bar"
 	bar.custom_minimum_size.y = 128
 	bar.add_child(_action("layout-grid", "LEVELS" if daily_key.is_empty() else "HOME", "LevelsButton", 80, func() -> void: app.back()))
-	var spark: Array = _hint_action("art:spark", "SPARK", "Spark", use_spark)
+	var spark: Array = _hint_action("art:hint_letter", "LETTER", "LetterHint", use_spark)
 	_spark_btn = spark[0]
 	_spark_badge = spark[1]
 	bar.add_child(spark[2])
-	var lantern: Array = _hint_action("art:lantern", "LANTERN", "Lantern", use_lantern)
+	var lantern: Array = _hint_action("art:hint_word", "WORD", "WordHint", use_lantern)
 	_lantern_btn = lantern[0]
 	_lantern_badge = lantern[1]
 	bar.add_child(lantern[2])
@@ -202,7 +202,7 @@ func _on_traced(cells: PackedInt32Array) -> void:
 			Haptics.error()
 			var tip: String = "%s isn't hidden here" % r["word"]
 			if state.mistakes == 3:
-				tip = "Stuck? A Spark shows the next letter"
+				tip = "Stuck? A letter hint shows the next letter"
 			show_toast(tip, 2.2, Style.ERROR)
 			Profile.store_progress(puzzle.id, state)
 			_refresh()
@@ -312,8 +312,9 @@ func _give_lantern() -> void:
 ## Where no video can be shown at all (e.g. the web), the hint is free.
 func _out_of_coins(kind: String) -> void:
 	var cost: int = Economy.SPARK_COST if kind == "spark" else Economy.LANTERN_COST
+	var hint_name: String = "letter hint" if kind == "spark" else "word hint"
 	if AdManager.provider == null:
-		show_toast("Here's a free %s" % kind.capitalize(), 1.8, Style.GOLD)
+		show_toast("Here's a free %s" % hint_name, 1.8, Style.GOLD)
 		_give(kind)
 		return
 	var o: MessageCard = MessageCard.new()
@@ -321,7 +322,7 @@ func _out_of_coins(kind: String) -> void:
 	o.title_text = "Out of coins"
 	o.icon_name = "coin"
 	o.icon_color = Style.GOLD
-	o.message = "A %s costs %d coins and you have %d.\nWatch a short video to get this one free?" % [kind.capitalize(), cost, Profile.coins()]
+	o.message = "A %s costs %d coins and you have %d.\nWatch a short video to get this one free?" % [hint_name, cost, Profile.coins()]
 	o.buttons = [
 		["Watch a video", "primary", func() -> void:
 			o.close()

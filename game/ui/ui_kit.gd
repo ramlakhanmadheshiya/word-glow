@@ -431,10 +431,10 @@ static func coin_chip() -> CounterChip:
 	return c
 
 
-## Diamond-key balance pill; tapping it opens the diamond key card.
-static func diamond_chip() -> CounterChip:
-	var c: CounterChip = CounterChip.new("diamonds")
-	c.pressed.connect(func() -> void: App.instance.open(DiamondCard.new()))
+## Chapter-key balance pill; tapping it opens the chapter key card.
+static func chapter_key_chip() -> CounterChip:
+	var c: CounterChip = CounterChip.new("chapter_keys")
+	c.pressed.connect(func() -> void: App.instance.open(ChapterKeyCard.new()))
 	return c
 
 

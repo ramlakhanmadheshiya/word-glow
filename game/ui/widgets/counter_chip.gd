@@ -11,17 +11,17 @@ var _tween: Tween
 var _kind: String
 
 
-## kind: "coins", "keys" or "diamonds".
+## kind: "coins", "keys" or "chapter_keys".
 func _init(kind: String = "coins") -> void:
 	_kind = kind
-	name = {"coins": "Coins", "keys": "Keys", "diamonds": "Diamonds"}[kind]
+	name = {"coins": "Coins", "keys": "Keys", "chapter_keys": "ChapterKeys"}[kind]
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	add_theme_stylebox_override("panel", UIKit.lip_box(Style.PANEL, 30, Style.LIP, 5, Vector2(12, 6)))
 	var row: HBoxContainer = UIKit.hbox(10)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(row)
-	row.add_child(UIKit.art_rect({"coins": "coin", "keys": "key", "diamonds": "diamond_key"}[kind], 40))
+	row.add_child(UIKit.art_rect({"coins": "coin", "keys": "key", "chapter_keys": "chapter_key"}[kind], 40))
 	_label = UIKit.label("0", 28, Style.INK, 700)
 	_label.custom_minimum_size.x = 40 if kind == "keys" else 56
 	row.add_child(_label)
@@ -35,8 +35,8 @@ func _value() -> int:
 	match _kind:
 		"coins":
 			return Profile.coins()
-		"diamonds":
-			return Profile.diamonds()
+		"chapter_keys":
+			return Profile.chapter_keys()
 	return Profile.keys()
 
 
@@ -46,8 +46,8 @@ func _ready() -> void:
 	match _kind:
 		"coins":
 			Profile.coins_changed.connect(_on_changed)
-		"diamonds":
-			Profile.diamonds_changed.connect(_on_changed)
+		"chapter_keys":
+			Profile.chapter_keys_changed.connect(_on_changed)
 		_:
 			Profile.keys_changed.connect(_on_changed)
 

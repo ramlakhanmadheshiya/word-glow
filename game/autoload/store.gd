@@ -13,25 +13,37 @@ signal price_updated(product: String, price: String)
 ## Google Play answers.
 const PRODUCTS: Dictionary = {
 	"complete_pack": {"name": "Complete pack", "tier": 3, "blurb": "Everything below, plus 1,000 coins",
-		"perks": ["No banner ads", "3 free Sparks every day", "11 colour themes", "6 lantern styles", "1,000 coins and 5 level keys", "Yours to keep after one purchase"]},
-	"supporter_pack": {"name": "Supporter pack", "tier": 2, "blurb": "No ads, and 3 free Sparks a day",
-		"perks": ["No banner ads", "3 free Sparks every day", "Helps new chapters get made"]},
+		"perks": ["No banner ads", "3 free letter hints every day", "11 colour themes", "6 lantern styles", "1,000 coins and 5 level keys", "Yours to keep after one purchase"]},
+	"supporter_pack": {"name": "Supporter pack", "tier": 2, "blurb": "No ads, and 3 free letter hints a day",
+		"perks": ["No banner ads or videos between levels", "3 free letter hints every day", "Helps new chapters get made"]},
 	"theme_pack": {"name": "Theme pack", "tier": 1, "blurb": "Paper, Daylight, Ocean, Sakura and 7 more", "trial": true,
 		"perks": ["11 colour themes for the whole app", "Pick one any time in Settings", "Yours to keep after one purchase"]},
 	"style_pack": {"name": "Lantern styles", "tier": 1, "blurb": "Neon, Glass, Ember and 3 more", "trial": true,
 		"perks": ["6 new looks for tiles and lit words", "Pick one any time in Settings", "Yours to keep after one purchase"]},
 }
-## Coin bags: consumable. id -> [coins, tier, label].
+## Coin bags: consumable, smallest first; bigger bags give more coins per rupee.
+## id -> [coins, name, fallback price in rupees, fallback price in US dollars].
 const COIN_PACKS: Dictionary = {
-	"coins_300": [300, 0, "Handful"],
-	"coins_1000": [1000, 1, "Pouch"],
-	"coins_2500": [2500, 2, "Chest"],
-	"coins_6000": [6000, 3, "Treasure"],
+	"coins_100": [100, "Pinch", 29, 0.49],
+	"coins_250": [250, "Little pile", 69, 0.89],
+	"coins_300": [300, "Handful", 79, 0.99],
+	"coins_500": [500, "Purse", 119, 1.49],
+	"coins_750": [750, "Bag", 139, 1.79],
+	"coins_1000": [1000, "Pouch", 149, 1.99],
+	"coins_1500": [1500, "Sack", 199, 2.49],
+	"coins_2000": [2000, "Big sack", 229, 2.79],
+	"coins_2500": [2500, "Chest", 249, 2.99],
+	"coins_6000": [6000, "Treasure", 449, 5.99],
 }
-## Diamond keys: consumable, each opens a whole locked chapter. id -> [count, tier].
-const DIAMOND_PACKS: Dictionary = {
-	"diamond_key_1": [1, 1],
-	"diamond_key_3": [3, 3],
+## Chapter keys: consumable, each opens a locked chapter at its level 1. Sold
+## 1-5 at a time as products chapter_keys_1 ... chapter_keys_5.
+const CHAPTER_KEY_MAX: int = 5
+## Per-chapter-key fallback price by region: [symbol, amount, decimals].
+const CHAPTER_KEY_UNIT: Dictionary = {
+	"IN": ["₹", 99.0, 0], "US": ["$", 1.29, 2], "EU": ["€", 1.29, 2], "GB": ["£", 1.09, 2],
+	"CA": ["CA$", 1.79, 2], "AU": ["A$", 1.99, 2], "JP": ["¥", 200.0, 0], "BR": ["R$", 6.90, 2],
+	"ID": ["Rp ", 19000.0, 0], "PK": ["Rs ", 349.0, 0], "BD": ["৳", 139.0, 0], "NP": ["Rs ", 169.0, 0],
+	"PH": ["₱", 69.0, 0], "TR": ["₺", 39.99, 2], "MX": ["MX$", 25.0, 0],
 }
 const COMPLETE_COINS: int = 1000
 const COMPLETE_KEYS: int = 5
@@ -86,9 +98,9 @@ func _ready() -> void:
 	for id: String in PRODUCTS:
 		prices[id] = regional_price(tier_of(id))
 	for id: String in COIN_PACKS:
-		prices[id] = regional_price(tier_of(id))
-	for id: String in DIAMOND_PACKS:
-		prices[id] = regional_price(tier_of(id))
+		prices[id] = coins_price(id)
+	for n: int in range(1, CHAPTER_KEY_MAX + 1):
+		prices["chapter_keys_%d" % n] = chapter_keys_price(n)
 	for n: int in range(1, KEY_MAX + 1):
 		prices["keys_%d" % n] = keys_price(n)
 	for n: int in range(TIP_MIN, TIP_MAX + 1, TIP_STEP):
@@ -115,7 +127,35 @@ static func tip_ids() -> Array:
 
 
 static func all_ids() -> Array:
-	return PRODUCTS.keys() + COIN_PACKS.keys() + DIAMOND_PACKS.keys() + key_ids() + tip_ids()
+	return PRODUCTS.keys() + COIN_PACKS.keys() + chapter_key_ids() + key_ids() + tip_ids()
+
+
+static func chapter_key_ids() -> Array:
+	var out: Array = []
+	for n: int in range(1, CHAPTER_KEY_MAX + 1):
+		out.append("chapter_keys_%d" % n)
+	return out
+
+
+static func chapter_key_count(product: String) -> int:
+	return int(product.trim_prefix("chapter_keys_"))
+
+
+## Fallback price of a coin bag: rupees in India, else US dollars scaled to the
+## local currency the same way level keys are.
+static func coins_price(product: String) -> String:
+	var pack: Array = COIN_PACKS[product]
+	var region: String = _region()
+	if region == "IN":
+		return "₹%d" % int(pack[2])
+	var unit: Array = KEY_UNIT.get(region, KEY_UNIT["US"])
+	return _money(unit, float(pack[3]) * float(unit[1]) / float(KEY_UNIT["US"][1]))
+
+
+## Fallback price for n chapter keys (Play's real price replaces it once known).
+static func chapter_keys_price(n: int) -> String:
+	var unit: Array = CHAPTER_KEY_UNIT.get(_region(), CHAPTER_KEY_UNIT["US"])
+	return _money(unit, float(unit[1]) * float(n))
 
 
 static func is_tip(product: String) -> bool:
@@ -130,12 +170,12 @@ static func is_coins(product: String) -> bool:
 	return COIN_PACKS.has(product)
 
 
-static func is_diamonds(product: String) -> bool:
-	return DIAMOND_PACKS.has(product)
+static func is_chapter_keys(product: String) -> bool:
+	return product.begins_with("chapter_keys_")
 
 
 static func is_consumable(product: String) -> bool:
-	return is_tip(product) or is_keys(product) or is_coins(product) or is_diamonds(product)
+	return is_tip(product) or is_keys(product) or is_coins(product) or is_chapter_keys(product)
 
 
 static func key_count(product: String) -> int:
@@ -143,10 +183,6 @@ static func key_count(product: String) -> int:
 
 
 static func tier_of(product: String) -> int:
-	if COIN_PACKS.has(product):
-		return int(COIN_PACKS[product][1])
-	if DIAMOND_PACKS.has(product):
-		return int(DIAMOND_PACKS[product][1])
 	return int(PRODUCTS.get(product, {}).get("tier", 0))
 
 
@@ -201,8 +237,9 @@ func price(product: String) -> String:
 static func complete_saving() -> int:
 	var us: Array = REGIONAL_TIERS["US"]
 	var parts: float = 0.0
-	for id: String in ["supporter_pack", "theme_pack", "style_pack", "coins_1000"]:
+	for id: String in ["supporter_pack", "theme_pack", "style_pack"]:
 		parts += float(str(us[tier_of(id)]).trim_prefix("$"))
+	parts += float(COIN_PACKS["coins_1000"][3])
 	parts += float(KEY_UNIT["US"][1]) * COMPLETE_KEYS * (1.0 - KEY_DISCOUNT)
 	var whole: float = float(str(us[tier_of("complete_pack")]).trim_prefix("$"))
 	return int(round((1.0 - whole / parts) * 100.0))
@@ -250,9 +287,9 @@ func _thanks(product: String) -> String:
 		return "%d %s added" % [key_count(product), "key" if key_count(product) == 1 else "keys"]
 	if is_coins(product):
 		return "%d coins added" % int(COIN_PACKS[product][0])
-	if is_diamonds(product):
-		var n: int = int(DIAMOND_PACKS[product][0])
-		return "%d diamond %s added" % [n, "key" if n == 1 else "keys"]
+	if is_chapter_keys(product):
+		var n: int = chapter_key_count(product)
+		return "%d chapter %s added" % [n, "key" if n == 1 else "keys"]
 	return "Thank you for supporting Word Lantern!"
 
 
@@ -263,8 +300,8 @@ func _grant(product: String) -> void:
 		Profile.add_keys(key_count(product))
 	elif is_coins(product):
 		Profile.add_bought_coins(int(COIN_PACKS[product][0]))
-	elif is_diamonds(product):
-		Profile.add_diamonds(int(DIAMOND_PACKS[product][0]))
+	elif is_chapter_keys(product):
+		Profile.add_chapter_keys(chapter_key_count(product))
 	else:
 		Profile.set_owned(product, true)
 		# The Complete pack's coins and keys are granted once, ever.

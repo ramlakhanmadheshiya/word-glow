@@ -36,6 +36,8 @@ const SUCCESS: Color = Color("4FD18B")
 ## Every round icon button in a top bar (Back, Settings, Shop) is this size on
 ## every screen, so they never change size between pages.
 const TOP_BUTTON: float = 84.0
+## Every card's close (X) button is this size.
+const CLOSE_BUTTON: float = 72.0
 
 const GUTTER: int = 24
 const MAX_WIDTH: int = 720

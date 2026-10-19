@@ -15,7 +15,7 @@ func _ready() -> void:
 	_coins_and_free_sparks()
 	_stars_and_rewards()
 	_unlocks_keys_and_chapters()
-	_diamond_keys()
+	_chapter_keys()
 	_daily_streaks()
 	_achievements_pay_once()
 	_video_rewards()
@@ -25,6 +25,8 @@ func _ready() -> void:
 	_restart_keeps_progress()
 	_corrupt_save_recovers()
 	_migrates_v1_saves()
+	_migrates_diamond_keys()
+	_streak_achievements()
 	_glyphs()
 	_cleanup()
 	get_tree().quit(t.report())
@@ -117,25 +119,25 @@ func _unlocks_keys_and_chapters() -> void:
 	t.eq(Profile.next_level(), [1, 1] as Array[int], "Play moves to the next chapter")
 
 
-## Diamond keys: earned once per chapter for level 40, open a locked chapter
+## Chapter keys: earned once per chapter for level 40, open a locked chapter
 ## at level 1 only, limited free ones from videos, and sold in packs.
-func _diamond_keys() -> void:
-	# Meadow was fully cleared above, so its level 40 has already paid a diamond.
-	t.eq(Profile.diamonds(), 1, "clearing level 40 earned a diamond key")
+func _chapter_keys() -> void:
+	# Meadow was fully cleared above, so its level 40 has already paid a chapter key.
+	t.eq(Profile.chapter_keys(), 1, "clearing level 40 earned a chapter key")
 	Profile.complete_level("meadow-40", _state("meadow-40"))
-	t.eq(Profile.diamonds(), 1, "replaying level 40 pays no second diamond")
+	t.eq(Profile.chapter_keys(), 1, "replaying level 40 pays no second chapter key")
 	t.ok(not Profile.chapter_unlocked(5), "chapter 6 is locked")
-	t.ok(not Profile.use_diamond(1), "a diamond is not spent on an open chapter")
-	t.ok(Profile.use_diamond(5), "a diamond key opens a locked chapter")
-	t.eq(Profile.diamonds(), 0, "the diamond is spent")
+	t.ok(not Profile.use_chapter_key(1), "a chapter key is not spent on an open chapter")
+	t.ok(Profile.use_chapter_key(5), "a chapter key opens a locked chapter")
+	t.eq(Profile.chapter_keys(), 0, "the chapter key is spent")
 	t.ok(Profile.chapter_unlocked(5), "chapter 6 is open")
 	t.ok(Profile.level_unlocked(5, 1), "its level 1 is open")
 	t.ok(not Profile.level_unlocked(5, 2), "but only level 1")
-	t.ok(not Profile.use_diamond(6), "no diamonds left")
-	t.ok(Profile.add_video_diamond(), "one free diamond from a video")
-	t.ok(not Profile.add_video_diamond(), "only one a day")
-	Store.buy("diamond_key_3")
-	t.eq(Profile.diamonds(), 4, "a pack of 3 diamond keys")
+	t.ok(not Profile.use_chapter_key(6), "no chapter keys left")
+	t.ok(Profile.add_video_chapter_key(), "one free chapter key from a video")
+	t.ok(not Profile.add_video_chapter_key(), "only one a day")
+	Store.buy("chapter_keys_3")
+	t.eq(Profile.chapter_keys(), 4, "3 chapter keys bought")
 
 
 func _daily_streaks() -> void:
@@ -203,7 +205,14 @@ func _store_purchases() -> void:
 	t.eq(Profile.keys(), keys + Store.COMPLETE_KEYS + 5, "keys bought")
 	Store.buy("tip_50")
 	t.eq(Profile.tips_given(), 1, "a tip is counted")
-	t.eq(Store.all_ids().size(), 4 + 4 + 2 + 10 + 100, "product catalogue size")
+	t.eq(Store.all_ids().size(), 4 + 10 + 5 + 10 + 100, "product catalogue size")
+	t.ok(Store.chapter_key_ids().size() == Store.CHAPTER_KEY_MAX and Store.CHAPTER_KEY_MAX == 5, "chapter keys are sold 1 to 5 at a time")
+	var coin_ids: Array = Store.COIN_PACKS.keys()
+	for want: String in ["coins_100", "coins_250", "coins_500", "coins_750", "coins_1000", "coins_1500", "coins_2000", "coins_300", "coins_2500", "coins_6000"]:
+		t.ok(coin_ids.has(want), "the shop sells %s" % want)
+	for k: int in range(1, coin_ids.size()):
+		t.ok(int(Store.COIN_PACKS[coin_ids[k]][0]) > int(Store.COIN_PACKS[coin_ids[k - 1]][0]), "coin bags are listed smallest first")
+		t.ok(float(Store.COIN_PACKS[coin_ids[k]][0]) / float(Store.COIN_PACKS[coin_ids[k]][2]) >= float(Store.COIN_PACKS[coin_ids[k - 1]][0]) / float(Store.COIN_PACKS[coin_ids[k - 1]][2]), "bigger bags give at least as many coins per rupee")
 	t.ok(Store.complete_saving() > 0, "the Complete pack is cheaper than its parts")
 	Store.simulate = false
 	var msg: Array[String] = [""]
@@ -234,10 +243,10 @@ func _reset_keeps_purchases() -> void:
 	Store.buy("supporter_pack")
 	Save.data["coins_bought"] = 2000
 	var keys: int = Profile.keys()
-	var diamonds: int = Profile.diamonds()
+	var chapter_keys: int = Profile.chapter_keys()
 	Profile.reset_all()
 	t.ok(Profile.is_supporter(), "a reset keeps packs")
-	t.eq(Profile.diamonds(), diamonds, "a reset keeps diamond keys")
+	t.eq(Profile.chapter_keys(), chapter_keys, "a reset keeps chapter keys")
 	t.eq(Profile.keys(), keys, "a reset keeps keys")
 	t.eq(Profile.coins(), Economy.START_COINS + 2000, "a reset keeps bought coins, not earned ones")
 	t.eq(Profile.stat("levels"), 0, "a reset clears progress")
@@ -319,3 +328,34 @@ func _glyphs() -> void:
 				ok = true
 				break
 		t.ok(ok, "the fonts can draw '%s' (U+%04X)" % [text[i], code])
+
+
+## Saves from builds that called chapter keys "diamond keys" keep them.
+func _migrates_diamond_keys() -> void:
+	var f: FileAccess = FileAccess.open(TEST_SAVE, FileAccess.WRITE)
+	f.store_string(JSON.stringify({"version": 2, "coins": 50, "diamonds": 3}))
+	f.close()
+	Save.load_data()
+	t.eq(Profile.chapter_keys(), 3, "old diamond keys become chapter keys")
+
+
+## Streak achievements need that many days in a row; a missed day starts over.
+func _streak_achievements() -> void:
+	Save.data = Save.defaults()
+	var t0: int = Time.get_unix_time_from_datetime_dict({"year": 2026, "month": 1, "day": 1, "hour": 12})
+	var s: LevelState = LevelState.new(Catalog.daily_puzzle("2026-01-01"))
+	for d: int in 9:
+		Profile.complete_daily(Time.get_date_string_from_unix_time(t0 + d * 86400), s)
+	# Day 10 is missed; then 5 more days.
+	for d: int in range(10, 15):
+		Profile.complete_daily(Time.get_date_string_from_unix_time(t0 + d * 86400), s)
+	Profile.check_achievements()
+	t.ok(Profile.achievement_done("streak_7"), "7 days in a row earns A Week of Light")
+	t.ok(not Profile.achievement_done("streak_10"), "9 days, a miss, then 5 more is not 10 in a row")
+	for d: int in range(15, 20):
+		Profile.complete_daily(Time.get_date_string_from_unix_time(t0 + d * 86400), s)
+	Profile.check_achievements()
+	t.ok(Profile.achievement_done("streak_10"), "10 days in a row after the miss earns Ten Bright Days")
+	t.ok(not Profile.achievement_done("streak_14"), "two weeks needs 14 days in a row")
+	for id: String in ["streak_3", "streak_7", "streak_10", "streak_14", "streak_21", "streak_30"]:
+		t.ok(not Achievements.by_id(id).is_empty(), "%s exists" % id)

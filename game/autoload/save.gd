@@ -31,23 +31,25 @@ static func defaults() -> Dictionary:
 		# level ids opened early with a level key
 		"unlocked": {},
 		"keys": 0,
-		# diamond keys open a whole locked chapter (from level 1)
-		"diamonds": 0,
-		# chapter ids opened early with a diamond key
+		# chapter keys open a whole locked chapter (from level 1)
+		"chapter_keys": 0,
+		# chapter ids opened early with a chapter key
 		"chapters_opened": {},
 		# coins bought with real money (kept on a progress reset)
 		"coins_bought": 0,
 		"owned": {},
 		"trials": {},
 		"tips": 0,
-		"video": {"day": "", "coins": 0, "keys": 0, "diamonds": 0},
+		"video": {"day": "", "coins": 0, "keys": 0, "chapter_keys": 0},
 		"sparks": {"day": "", "used": 0},
 		"daily": {"done": {}, "streak": 0, "best_streak": 0, "last_date": ""},
 		"achievements": {},
 		"stats": {"levels": 0, "stars": 0, "perfect": 0, "words": 0, "dailies": 0, "best_streak": 0, "beacons": 0, "hints": 0},
-		"settings": {"music_volume": 0.6, "sound_volume": 0.8, "haptics": true, "theme": "chapters", "style": "classic"},
+		"settings": {"music_volume": 0.6, "sound_volume": 0.8, "haptics": true, "theme": "chapters", "style": "classic", "appearance": "auto"},
 		"seen": {},
 		"last_level": "",
+		# levels cleared since the last video between levels
+		"levels_since_video": 0,
 	}
 
 
@@ -60,6 +62,10 @@ func load_data() -> void:
 	var d: Dictionary = loaded if loaded is Dictionary else {}
 	if not d.is_empty() and int(d.get("version", 1)) < 2:
 		_migrate_v1(d)
+	# Builds before chapter keys called them diamond keys.
+	if d.has("diamonds"):
+		d["chapter_keys"] = int(d.get("chapter_keys", 0)) + int(d["diamonds"])
+		d.erase("diamonds")
 	data = _merge(defaults(), d)
 	data["version"] = VERSION
 
@@ -137,7 +143,7 @@ func flush() -> void:
 ## settings and everything paid for: packs, trials, keys and bought coins.
 func reset() -> void:
 	var keep: Dictionary = {}
-	for k: String in ["settings", "owned", "trials", "tips", "keys", "diamonds", "chapters_opened", "coins_bought"]:
+	for k: String in ["settings", "owned", "trials", "tips", "keys", "chapter_keys", "chapters_opened", "coins_bought"]:
 		keep[k] = data.get(k)
 	data = defaults()
 	for k: String in keep:

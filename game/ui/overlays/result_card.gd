@@ -51,8 +51,8 @@ func build() -> void:
 		body.add_child(_note("star-filled", "New best: %d stars" % int(reward["best"]), Style.GOLD))
 	if daily:
 		body.add_child(_note("flame", "%d-day streak · a new daily arrives tomorrow" % int(reward.get("streak", 1)), Color("FF8A3D")))
-	if bool(reward.get("diamond", false)):
-		body.add_child(_note("star", "+1 diamond key: open any locked chapter", Color("5FC8FF")))
+	if bool(reward.get("chapter_key", false)):
+		body.add_child(_note("star", "+1 chapter key: open any locked chapter", Color("5FC8FF")))
 	if bool(reward.get("chapter_done", false)):
 		body.add_child(_note("trophy", "Chapter complete! +%d bonus coins" % Economy.CHAPTER_BONUS, Style.GOLD))
 	if bool(reward.get("chapter_unlocked", false)):
@@ -67,26 +67,37 @@ func build() -> void:
 		next_text = "Next level" if play.level_n < Catalog.levels_per_chapter else "Next chapter"
 	var next: Button = UIKit.button(next_text, "primary", acc, 100, 34, "arrow-right")
 	next.name = "Next"
-	next.pressed.connect(func() -> void:
-		close()
-		play.go_next()
-	)
+	next.pressed.connect(func() -> void: _leave(Callable(play, "go_next")))
 	body.add_child(next)
-	var actions: HBoxContainer = UIKit.hbox(30)
-	actions.add_child(_action("rotate-ccw", "AGAIN", "Again", func() -> void:
-		close()
-		play.restart()
-	))
+	var actions: HBoxContainer = UIKit.hbox(24)
+	actions.add_child(_action("rotate-ccw", "AGAIN", "Again", func() -> void: _leave(Callable(play, "restart"))))
 	if not daily:
-		actions.add_child(_action("layout-grid", "LEVELS", "Levels", func() -> void:
-			close()
-			app.go("levels", {"chapter": play.chapter_idx})
-		))
-	actions.add_child(_action("house", "HOME", "Home", func() -> void:
-		close()
-		app.go("home")
-	))
+		actions.add_child(_action("layout-grid", "LEVELS", "Levels", func() -> void: _leave(app.go.bind("levels", {"chapter": play.chapter_idx}))))
+	actions.add_child(_action("share-2", "SHARE", "Share", func() -> void: open_child(_share_card())))
+	actions.add_child(_action("house", "HOME", "Home", func() -> void: _leave(app.go.bind("home"))))
 	body.add_child(actions)
+
+
+## Leaves the result. After every few cleared levels a short video plays first
+## (see AdManager.after_level). `then` belongs to the game screen or the App, so
+## it still runs after this card has gone.
+func _leave(then: Callable) -> void:
+	close()
+	if play.daily_key.is_empty():
+		AdManager.after_level(then)
+	else:
+		then.call()
+
+
+func _share_card() -> ShareCardOverlay:
+	var o: ShareCardOverlay = ShareCardOverlay.new()
+	o.info = {
+		"puzzle": play.puzzle, "state": play.state, "stars": int(reward.get("stars", play.state.stars())),
+		"title": TITLES[clampi(int(reward.get("stars", 1)), 1, 3)], "verdict": _verdict(),
+		"chapter": "Daily lantern" if not play.daily_key.is_empty() else str(Catalog.chapter(play.chapter_idx)["name"]),
+		"number": play.level_n, "daily": play.daily_key, "accent": play.accent(), "sky": play.sky(),
+	}
+	return o
 
 
 ## How the solve went, in a few words.
@@ -125,5 +136,4 @@ func _note(icon_name: String, text: String, tint: Color) -> PanelContainer:
 
 
 func on_back() -> void:
-	close()
-	play.go_next()
+	_leave(Callable(play, "go_next"))

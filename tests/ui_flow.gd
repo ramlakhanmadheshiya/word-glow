@@ -32,11 +32,13 @@ func _ready() -> void:
 	await _locked_and_keys()
 	await _hints_and_ads()
 	await _restart_button()
+	await _ads_between_levels()
 	await _shop()
 	await _settings()
 	await _daily()
 	await _restart_app()
-	await _diamond_unlock()
+	await _chapter_key_unlock()
+	await _extras()
 	await _reset_progress()
 	_wipe()
 	get_tree().quit(t.report())
@@ -135,7 +137,7 @@ func _first_level() -> void:
 	await _wait(0.5)
 	var play: Node = _play()
 	t.eq(play.puzzle.id, "meadow-01", "it is Meadow 1")
-	for n: String in ["LevelsButton", "Spark", "Lantern", "Restart", "SettingsButton", "Back"]:
+	for n: String in ["LevelsButton", "LetterHint", "WordHint", "Restart", "SettingsButton", "Back"]:
 		t.ok(_find(play, n) != null, "the game screen has %s" % n)
 	var wrong: PackedInt32Array = _wrong_path(play.state)
 	play.board._begin(play.board.cell_center(wrong[0]))
@@ -194,17 +196,17 @@ func _hints_and_ads() -> void:
 	var play: Node = _play()
 	Save.data["sparks"]["day"] = ""
 	var coins0: int = Profile.coins()
-	_press(play, "Spark")
+	_press(play, "LetterHint")
 	await _wait(0.1)
 	t.eq(Profile.coins(), coins0, "the first spark of the day is free")
 	t.eq(play.state.stars(), 2, "a hint costs a star")
-	_press(play, "Spark")
+	_press(play, "LetterHint")
 	await _wait(0.1)
 	t.eq(Profile.coins(), coins0 - Economy.SPARK_COST, "the next spark costs coins")
 	# Out of coins: the game offers a video for the hint.
 	Save.data["coins"] = 5
 	var hints: int = play.state.hints_used
-	_press(play, "Lantern")
+	_press(play, "WordHint")
 	await _wait(0.5)
 	var card: Overlay = app.top_overlay()
 	t.ok(card is MessageCard and card.name == "OutOfCoins", "out of coins: a video is offered")
@@ -214,7 +216,7 @@ func _hints_and_ads() -> void:
 	t.eq(play.state.hints_used, hints + 1, "after the video, the hint is given")
 	t.eq(Profile.coins(), 5, "and no coins are taken")
 	mock.earn = false
-	_press(play, "Lantern")
+	_press(play, "WordHint")
 	await _wait(0.4)
 	_press(app.top_overlay(), "Watchavideo")
 	await _wait(0.5)
@@ -426,23 +428,111 @@ func _reset_progress() -> void:
 	t.ok(app.top_overlay() == null, "no card is left open")
 
 
-## A locked chapter opened with a diamond key starts at its level 1.
-func _diamond_unlock() -> void:
+## A locked chapter opened with a chapter key starts at its level 1.
+func _chapter_key_unlock() -> void:
 	app.go("chapters")
 	await _wait(0.7)
 	_press(_find(app.screen, "List"), "Chapter_bamboo")
 	await _wait(0.5)
 	var card: Overlay = app.top_overlay()
-	t.ok(card is LockedChapterCard, "a locked chapter offers a diamond key")
-	t.ok((_find(card, "UseDiamond") as Button).disabled, "no diamond keys: the button is disabled")
+	t.ok(card is LockedChapterCard, "a locked chapter offers a chapter key")
+	t.ok((_find(card, "UseChapterKey") as Button).disabled, "no chapter keys: the button is disabled")
 	card.close()
 	await _wait(0.3)
-	Profile.add_diamonds(1)
+	Profile.add_chapter_keys(1)
 	_press(_find(app.screen, "List"), "Chapter_bamboo")
 	await _wait(0.5)
-	_press(app.top_overlay(), "UseDiamond")
+	_press(app.top_overlay(), "UseChapterKey")
 	await _wait(0.9)
 	t.eq(app.screen_name, "levels", "the opened chapter shows its levels")
 	var grid: Node = _find(app.screen, "Grid")
 	t.ok((grid.get_child(0) as LevelTile).open and not (grid.get_child(1) as LevelTile).open, "only its level 1 is open")
-	t.eq(Profile.diamonds(), 0, "the diamond key is spent")
+	t.eq(Profile.chapter_keys(), 0, "the chapter key is spent")
+
+
+## A short video after every 5th cleared level (not for daily puzzles), and a
+## fresh banner ad when moving between screens (at most every 30 seconds).
+func _ads_between_levels() -> void:
+	Save.data["levels_since_video"] = 3
+	var before: int = mock.interstitials
+	for k: int in 2:
+		app.go("play", {"chapter": 0, "level": 1})
+		await _wait(0.8)
+		await _solve(_play())
+		await _wait(2.6)
+		_press(app.top_overlay(), "Next")
+		await _wait(0.9)
+	t.eq(mock.interstitials, before + 1, "the 5th cleared level plays one video")
+	t.eq(int(Save.data["levels_since_video"]), 0, "and the count starts again")
+	t.eq(app.screen_name, "play", "after the video the game carries on")
+	# Banner refresh on navigation, rate-limited.
+	AdManager._last_banner_load_msec = -1000000
+	var reloads: int = mock.reloads
+	app.go("home")
+	await _wait(0.7)
+	t.eq(mock.reloads, reloads + 1, "moving to another screen loads a fresh banner ad")
+	app.go("chapters")
+	await _wait(0.7)
+	t.eq(mock.reloads, reloads + 1, "but not again within 30 seconds")
+	var frame: MarginContainer = app.screen.get_child(0) as MarginContainer
+	t.ok(frame.get_theme_constant("margin_bottom") >= int(AdManager.banner_height), "the banner space stays reserved")
+
+
+func _extras() -> void:
+	# Appearance: Auto / Dark / Light.
+	app.go("home")
+	await _wait(0.7)
+	_press(app.screen, "SettingsButton")
+	await _wait(0.5)
+	var slider: SegmentedSlider = _find(app.top_overlay(), "Appearance") as SegmentedSlider
+	t.ok(slider != null, "Settings has the Auto / Dark / Light slider")
+	slider.select(2)
+	await _wait(1.0)
+	t.eq(str(Profile.setting("appearance")), "light", "Light is saved")
+	t.ok(not Style.DARK, "Light makes the Original colours light")
+	t.ok(app.top_overlay() is SettingsCard, "Settings is shown again after repainting")
+	(_find(app.top_overlay(), "Appearance") as SegmentedSlider).select(1)
+	await _wait(1.0)
+	t.ok(Style.DARK, "Dark brings the night look back")
+	app.close_overlays()
+	# Tip jar: type any amount; − / + step by 10.
+	app.go("shop")
+	await _wait(0.7)
+	_press(app.screen, "TipJar")
+	await _wait(0.5)
+	var tip: Overlay = app.top_overlay()
+	var amount: LineEdit = _find(tip, "TipAmount") as LineEdit
+	amount.text = "347"
+	amount.text_changed.emit("347")
+	t.ok((_find(tip, "TipCustom") as Button).text.contains("350"), "a typed amount rounds to the nearest 10")
+	_press(tip, "TipPlus")
+	t.eq(amount.text, "360", "+ adds 10")
+	_press(tip, "TipMinus")
+	_press(tip, "TipMinus")
+	t.eq(amount.text, "340", "− takes off 10")
+	tip.close()
+	await _wait(0.3)
+	# Chapter keys: 1 to 5 at a time.
+	_press(app.screen, "Product_chapter_keys")
+	await _wait(0.5)
+	var ck: Overlay = app.top_overlay()
+	for k: int in 8:
+		_press(ck, "Plus")
+	t.ok((_find(ck, "BuyChapterKeys") as Button).text.begins_with("Get 5 "), "no more than 5 chapter keys at once")
+	ck.close()
+	await _wait(0.3)
+	# Share after a clear.
+	app.go("play", {"chapter": 0, "level": 1})
+	await _wait(0.8)
+	await _solve(_play())
+	await _wait(2.6)
+	_press(app.top_overlay(), "Share")
+	await _wait(0.6)
+	var share: Overlay = app.top_overlay()
+	t.ok(share is ShareCardOverlay, "the result card can share the puzzle")
+	for n: String in ["ShareNow", "Save", "CopyLink"]:
+		t.ok(_find(share, n) != null, "sharing offers %s" % n)
+	t.ok(ShareService.message_for(share.info).contains("theramlakhan.com/word-lantern"), "the share message links to the game")
+	share.close()
+	await _wait(0.4)
+	t.ok(app.top_overlay() is ResultCard, "closing Share returns to the result")

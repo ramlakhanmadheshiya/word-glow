@@ -51,7 +51,7 @@ func build() -> void:
 		Store.buy("keys_%d" % _count)
 	)
 	body.add_child(_buy)
-	_video = UIKit.button("", "soft", Style.AMBER, 80, 23, "art:video")
+	_video = UIKit.button("", "soft", Style.AMBER, 80, 23, "art:watch")
 	_video.name = "VideoKey"
 	_video.pressed.connect(_watch)
 	body.add_child(_video)

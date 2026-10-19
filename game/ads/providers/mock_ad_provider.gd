@@ -21,6 +21,35 @@ func _ready() -> void:
 	add_child(_layer)
 
 
+## Mirrors AdMob: the banner's space is known before an ad loads.
+func expected_banner_px() -> float:
+	return BANNER_PX
+
+
+## Counts banner reloads so tests can check navigation refreshes the ad.
+var reloads: int = 0
+var interstitials: int = 0
+
+
+func reload_banner() -> void:
+	reloads += 1
+	if _banner != null:
+		var l: Label = _banner.get_child(0)
+		l.text = "Ad banner (test) · ad %d" % (reloads + 1)
+
+
+func interstitial_ready() -> bool:
+	return true
+
+
+func show_interstitial(on_done: Callable) -> void:
+	interstitials += 1
+	if auto_finish:
+		on_done.call_deferred()
+		return
+	_fullscreen("Video ad between levels (test)", func(_ok: bool) -> void: on_done.call())
+
+
 func show_banner() -> void:
 	if _banner != null:
 		return
@@ -58,6 +87,10 @@ func show_rewarded(on_done: Callable) -> void:
 	if auto_finish:
 		on_done.call.call_deferred(earn)
 		return
+	_fullscreen("Rewarded video (test)", on_done)
+
+
+func _fullscreen(text: String, on_done: Callable) -> void:
 	var root: ColorRect = ColorRect.new()
 	root.color = Color(0.03, 0.02, 0.08, 0.96)
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -67,7 +100,7 @@ func show_rewarded(on_done: Callable) -> void:
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	root.add_child(col)
 	var l: Label = Label.new()
-	l.text = "Rewarded video (test)"
+	l.text = text
 	l.add_theme_font_size_override("font_size", 32)
 	col.add_child(l)
 	var close: Button = Button.new()

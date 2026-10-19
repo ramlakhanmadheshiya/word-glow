@@ -11,6 +11,13 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+## Shows the stars at once, without animation (for the share picture).
+func show_now(stars: int) -> void:
+	_earned = stars
+	_shown = [1.0, 1.0, 1.0]
+	queue_redraw()
+
+
 func play(stars: int) -> void:
 	_earned = stars
 	for i: int in 3:

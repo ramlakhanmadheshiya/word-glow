@@ -14,6 +14,24 @@ func build() -> void:
 	body.add_child(UIKit.slider_row("Music", "music", float(Profile.setting("music_volume", 0.6)), func(v: float) -> void: Profile.set_setting("music_volume", v)))
 	body.add_child(UIKit.slider_row("Sound", "volume-2", float(Profile.setting("sound_volume", 0.8)), func(v: float) -> void: Profile.set_setting("sound_volume", v)))
 	body.add_child(UIKit.toggle_row("Vibration", "sparkles", bool(Profile.setting("haptics", true)), func(on: bool) -> void: Profile.set_setting("haptics", on)))
+	body.add_child(UIKit.gap(4))
+	# Appearance: Auto (follow the phone), Dark or Light, for the Original colours.
+	var ap_row: HBoxContainer = UIKit.hbox(18, BoxContainer.ALIGNMENT_BEGIN)
+	ap_row.add_child(UIKit.icon_rect("palette", 40, Style.MUTED))
+	var ap_label: Label = UIKit.label("Appearance", Style.SIZE_BODY, Style.INK, 500, HORIZONTAL_ALIGNMENT_LEFT)
+	ap_label.custom_minimum_size.x = 170
+	ap_row.add_child(ap_label)
+	var modes: Array = ["auto", "dark", "light"]
+	var slider: SegmentedSlider = SegmentedSlider.new(PackedStringArray(["Auto", "Dark", "Light"]), modes.find(Look.appearance()))
+	slider.name = "Appearance"
+	slider.changed.connect(func(i: int) -> void:
+		Profile.set_setting("appearance", modes[i])
+		app.repaint_and_reopen()
+	)
+	ap_row.add_child(slider)
+	body.add_child(ap_row)
+	if Look.theme_id() != "chapters":
+		body.add_child(UIKit.para("Your %s theme sets its own colours. Appearance applies to the Original colours." % Look.theme_name(Look.theme_id()), Style.SIZE_CAPTION))
 	body.add_child(UIKit.gap(6))
 	var looks: HBoxContainer = UIKit.hbox(14)
 	looks.add_child(_look_button("Colours", Look.theme_name(Look.theme_id()), "palette", "themes"))

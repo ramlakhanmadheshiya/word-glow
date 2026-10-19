@@ -29,6 +29,7 @@ Audio="*res://game/autoload/audio.gd"
 Haptics="*res://game/autoload/haptics.gd"
 Store="*res://game/autoload/store.gd"
 AdManager="*res://game/ads/ad_manager.gd"
+ShareService="*res://game/autoload/share_service.gd"
 
 [display]
 
@@ -42,7 +43,7 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg", "res://addons/admob/plugin.cfg")
+enabled=PackedStringArray("res://addons/GodotGooglePlayBilling/plugin.cfg", "res://addons/admob/plugin.cfg", "res://addons/wordlantern_share/plugin.cfg")
 
 [gui]
 

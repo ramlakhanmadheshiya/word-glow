@@ -47,6 +47,10 @@ static func style_id() -> String:
 ## reverts) and whenever the player picks a theme.
 static func apply() -> void:
 	var t: String = theme_id()
+	if t == "chapters" and original_is_light():
+		# Original colours in daylight: warm cream sky, dark text.
+		_set_palette(Color("FFF4E6"), Color("F4D8C4"), Color("E8703A"), false, Color("2D2547"))
+		return
 	if t == "chapters":
 		_set_palette(Color("2E2A6B"), Color("141235"), Color("FFB547"), true, Color("FFF4E3"))
 		Style.CARD = Color("272161")
@@ -91,6 +95,22 @@ static func _set_palette(top: Color, bottom: Color, accent: Color, dark: bool, i
 		Style.DIM = Color(ink, 0.45)
 
 
+## Settings › Appearance for the Original colours: "auto" follows the phone's
+## dark mode, "dark" is the night look, "light" the daytime look.
+static func appearance() -> String:
+	var a: String = str(Profile.setting("appearance", "auto"))
+	return a if a in ["auto", "dark", "light"] else "auto"
+
+
+static func original_is_light() -> bool:
+	match appearance():
+		"light":
+			return true
+		"dark":
+			return false
+	return DisplayServer.is_dark_mode_supported() and not DisplayServer.is_dark_mode()
+
+
 static func theme_ids() -> Array:
 	return ["chapters"] + THEMES.keys()
 
@@ -114,6 +134,10 @@ static func sky(chapter: Dictionary) -> Array[Color]:
 		return [Color(THEMES[t]["top"]), Color(THEMES[t]["bottom"])]
 	if chapter.is_empty() or not chapter.has("sky_top"):
 		return [Style.DEFAULT_SKY_TOP, Style.DEFAULT_SKY_BOTTOM]
+	if original_is_light():
+		# Each chapter keeps its hue, as a daytime sky.
+		var hue: Color = chapter.get("accent", Style.AMBER)
+		return [hue.lerp(Color.WHITE, 0.85), hue.lerp(Color.WHITE, 0.62)]
 	return [chapter["sky_top"], chapter["sky_bottom"]]
 
 
@@ -121,12 +145,16 @@ static func accent(chapter: Dictionary) -> Color:
 	var t: String = theme_id()
 	if t != "chapters":
 		return Color(THEMES[t]["accent"])
-	return chapter.get("accent", Style.AMBER)
+	var a: Color = chapter.get("accent", Style.AMBER)
+	# Deeper on daytime skies so captions and bars keep their contrast.
+	return a.darkened(0.3) if original_is_light() else a
 
 
 static func tile() -> Color:
 	var t: String = theme_id()
-	return Color(THEMES[t]["tile"]) if t != "chapters" else DEFAULT_TILE
+	if t == "chapters":
+		return Color.WHITE if original_is_light() else DEFAULT_TILE
+	return Color(THEMES[t]["tile"])
 
 
 static func tile_ink() -> Color:

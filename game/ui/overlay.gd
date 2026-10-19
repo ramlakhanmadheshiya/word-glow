@@ -56,20 +56,20 @@ func build() -> void:
 func add_title(text: String, with_close: bool = true) -> void:
 	var row: HBoxContainer = UIKit.hbox(8, BoxContainer.ALIGNMENT_BEGIN)
 	var spacer: Control = Control.new()
-	spacer.custom_minimum_size = Vector2(72, 72)
+	spacer.custom_minimum_size = Vector2(Style.CLOSE_BUTTON, Style.CLOSE_BUTTON)
 	row.add_child(spacer)
 	var l: Label = UIKit.label(text, Style.SIZE_H1, Style.INK, 600)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	row.add_child(l)
 	if with_close:
-		var x: Button = UIKit.icon_button("x", 72)
+		var x: Button = UIKit.icon_button("x", Style.CLOSE_BUTTON)
 		x.name = "Close"
 		x.pressed.connect(close)
 		row.add_child(x)
 	else:
 		var s2: Control = Control.new()
-		s2.custom_minimum_size = Vector2(72, 72)
+		s2.custom_minimum_size = Vector2(Style.CLOSE_BUTTON, Style.CLOSE_BUTTON)
 		row.add_child(s2)
 	body.add_child(row)
 

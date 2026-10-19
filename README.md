@@ -25,26 +25,28 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 
   Later chapters sit higher on the curve (bigger grids sooner, longer words, more shadows and beacons). `tests/levels_test.gd` checks that every tier is harder on average than the one before and that level 40 is the hardest level of its chapter.
 - **Three stars.** A perfect solve (no wrong words, no hints) earns ★★★; up to 3 extra moves earns ★★; more earns ★. A MOVES / STARS strip over the board shows what is still on offer, like Single Shot's TRY / STARS.
-- **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. A **diamond key** opens a whole locked chapter at once (its level 1; the rest open by playing); you earn one by clearing level 40 of any chapter, can buy them (1 or 3), or get one a day from a video. Locked levels are still shown on the level grid.
+- **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. A **chapter key** opens a whole locked chapter at once (its level 1; the rest open by playing); you earn one by clearing level 40 of any chapter, can buy them (1 or 3), or get one a day from a video. Locked levels are still shown on the level grid.
 - **Smooth difficulty:** every level is a little harder than the one before. The generator builds several candidates per level and keeps the easiest one that is still harder than the previous level, scoring grid size, word length, shadows, waves of light, twisty words and backwards words; grids grow one step at a time from 3×3 to 8×7.
 - **Daily lantern:** built on the phone from the date (`PuzzleGenerator.daily`), with no server and no stored pool, so it never runs out and needs no updates. Everyone gets the same puzzle on the same date: the date seeds the generator, the theme rotates through every theme before repeating (never twice in a row), and difficulty follows the week (Monday gentlest, Sunday hardest). It is checked by the same solver as the levels, and a test builds a full year of dailies and pins one puzzle so an accidental generator change is caught.
 - **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily lantern, and 32 achievements in all.
-- **Hints:** *Spark* (25 coins) reveals the next letter of a word; the first Spark each day is free (3 for Supporters). *Lantern* (60 coins) finds a whole word. **Out of coins, the player can watch a rewarded video for the hint.** Hints count as extra moves.
+- **Hints:** *Letter hint* (25 coins) reveals the next letter of a word; the first letter hint each day is free (3 for Supporters). *Word hint* (60 coins) finds a whole word. **Out of coins, the player can watch a rewarded video for the hint.** Hints count as extra moves.
 - **Shop** (Single Shot's model; one-time packs plus consumables, all via Google Play):
 
   | Product | What it gives |
   |---|---|
   | Complete pack | Everything below, plus 1,000 coins and 5 level keys |
-  | Supporter pack | No banner ads, 3 free Sparks a day |
+  | Supporter pack | No banner ads, 3 free letter hints a day |
   | Theme pack | 11 colour themes (9 dark, 2 light) that recolour the whole app: sky, cards, buttons, panels and tiles (1-hour trial from a video) |
-  | Diamond keys | 1 or 3; each opens a whole locked chapter; plus one free from a video a day |
+  | Chapter keys | 1 or 3; each opens a whole locked chapter; plus one free from a video a day |
   | Lantern styles | 6 styles for lit words and tiles (1-hour trial from a video) |
   | Coin bags | 300 / 1,000 / 2,500 / 6,000 coins; plus free coins from a video (5 a day) |
   | Level keys | 1–10 keys, 10% off for 5+; plus a free key from a video (5 a day) |
   | Tip jar | Say thanks; unlocks nothing |
 
   Product ids and Play Console setup: [`store/PLAY_PRODUCTS.md`](store/PLAY_PRODUCTS.md). Debug desktop builds simulate purchases; the web build explains that purchases are in the Android app.
-- **Ads (Android):** a banner at the bottom of the home, chapters, levels, shop and game screens, with layout space reserved so it never covers a button; rewarded videos only when the player asks. No interstitials. Supporters see no banners. The web build shows no ads (where no video can be shown, an out-of-coins hint is simply free).
+- **Ads (Android):** a banner at the bottom of every screen, with its space reserved before the ad loads so the layout never jumps; it loads a fresh ad when the player changes screens (at most every 30 s, per AdMob policy). A short video plays after every 5th cleared level. Rewarded videos only when the player asks (a hint when out of coins, free coins, a level or chapter key, a pack trial). Supporters see no banners and no videos between levels.
+- **Sharing:** after a clear, Share makes a 1080×1350 picture of the solved puzzle (stars, theme, link and QR code) and opens the phone's share sheet; Save puts it in the gallery; Copy link copies the message. Like Single Shot, Android uses a small plugin (`plugins_src/wordlantern_share`, built by CI).
+- **Appearance:** a thin Auto / Dark / Light slider in Settings; Auto follows the phone's dark mode. It applies to the Original colours (Theme-pack themes keep their own). The web build shows no ads (where no video can be shown, an out-of-coins hint is simply free).
 - **Settings:** Music and Sound volume sliders, Vibration, colour theme and lantern style pickers, How to play, Shop, Awards, About, Credits, Ad privacy (when required), and Reset progress (like Single Shot: tap once to arm, again to erase; hidden during a level; keeps settings, packs, keys and bought coins).
 - **While playing,** MOVES / STARS stay visible at the top; the letters being traced and short messages appear on their own line just above the board.
 - **Saving:** everything is saved locally with atomic writes and a backup; half-played levels resume; version-1 saves are migrated.
@@ -54,7 +56,7 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 | Input | Action |
 |---|---|
 | Drag (touch or mouse) | Trace a word; slide back to undo the last letter |
-| H | Spark hint |
+| H | letter hint hint |
 | R | Restart the level |
 | Esc / Android Back | Back (level → levels → chapters → home) |
 
@@ -76,7 +78,7 @@ Debug desktop runs show a test ad banner and simulate purchases, so every flow c
 |---|---|
 | `tests/levels_test.gd` | 61 themes of valid words; all 1,370 levels (640 + 730 daily): full coverage, adjacent paths, theme words only, no duplicates, each answer traceable in one place only, solvable with shadows, played through with the real game logic; the difficulty curve of every chapter; mechanics only from their chapters. |
 | `tests/logic_test.gd` | Word validation, shadows, beacon beams, hints, stars and moves, save/restore of half-played levels, and broken puzzles the validator must reject. |
-| `tests/profile_test.tscn` | Coins, free Sparks, stars and star rewards, unlocks, keys, chapter bonus, dailies, achievements (once), video reward limits, simulated purchases (packs, coins, keys, tips), trials, reset keeping purchases, restart persistence, corrupt-save recovery, v1 migration. |
+| `tests/profile_test.tscn` | Coins, free letter hints, stars and star rewards, unlocks, keys, chapter bonus, dailies, achievements (once), video reward limits, simulated purchases (packs, coins, keys, tips), trials, reset keeping purchases, restart persistence, corrupt-save recovery, v1 migration. |
 | `tests/ui_flow.tscn` | The real app end to end with the mock ad provider: banner space, chapters, 40-tile level grid with locked levels, a level with a wrong guess (2★), Again for 3★, Next, a locked level opened with a key, free/paid hints, out-of-coins video (watched and skipped), Restart, the shop (coin bag, free coins video, pack trial, theme pick, Supporter removes the banner), volume sliders, Reset hidden in a level, the daily, and an app restart. |
 | Boot smoke | Runs the game for 300 frames and fails on any error, warning or leak. |
 

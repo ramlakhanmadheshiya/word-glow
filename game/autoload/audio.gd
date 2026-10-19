@@ -98,6 +98,11 @@ func music(name: String) -> void:
 	create_tween().tween_property(_music, "volume_db", _music_db(), 1.5)
 
 
+## Silences music while a full-screen video plays; it fades back on the next track.
+func stop_music_briefly() -> void:
+	_music.stop()
+
+
 func _music_db() -> float:
 	return MUSIC_DB + linear_to_db(maxf(0.001, _volume("music_volume")))
 

@@ -32,7 +32,7 @@ const PAGES: Dictionary = {
 	},
 	"hints": {
 		"title": "Hints and coins",
-		"text": "Stuck? A Spark (%d coins) reveals the next letter of a word, and your first Spark each day is free. A Lantern (%d coins) lights a whole word. Out of coins? Watch a short video for the hint, or earn coins from levels, chapters, daily lanterns and achievements." % [Economy.SPARK_COST, Economy.LANTERN_COST],
+		"text": "Stuck? A letter hint (%d coins) shows the next letter of a word, and your first letter hint each day is free. A word hint (%d coins) finds a whole word for you. Out of coins? Watch a short video for the hint, or earn coins from levels, chapters, daily puzzles and achievements." % [Economy.SPARK_COST, Economy.LANTERN_COST],
 		"grid": ["BEA", "HSM", "INE"], "words": [["BEAM", [0, 1, 2, 5]], ["SHINE", [4, 3, 6, 7, 8]]],
 		"found": [0], "ghost": -1, "shadows": [], "beacons": [], "sparks": {1: 2},
 	},

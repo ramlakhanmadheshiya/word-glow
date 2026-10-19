@@ -25,7 +25,7 @@ func build() -> void:
 	name = "Product"
 	var info: Dictionary = Store.PRODUCTS[product]
 	var head: HBoxContainer = UIKit.hbox(0, BoxContainer.ALIGNMENT_END)
-	var x: Button = UIKit.icon_button("x", 72)
+	var x: Button = UIKit.icon_button("x", Style.CLOSE_BUTTON)
 	x.name = "Close"
 	x.pressed.connect(close)
 	head.add_child(x)
@@ -62,7 +62,7 @@ func build() -> void:
 	)
 	body.add_child(_buy)
 	if bool(info.get("trial", false)) and not Profile.bought(product):
-		_trial = UIKit.button("Try it free for 1 hour with a video", "soft", Style.AMBER, 84, 23, "art:video")
+		_trial = UIKit.button("Try it free for 1 hour with a video", "soft", Style.AMBER, 84, 23, "art:watch")
 		_trial.name = "Trial"
 		_trial.pressed.connect(func() -> void:
 			if Profile.trial_left(product) > 0:
