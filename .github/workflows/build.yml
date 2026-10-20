@@ -113,6 +113,10 @@ jobs:
           sed -i "s/^version\/name=.*/version\/name=\"1.0.${{ github.run_number }}\"/" export_presets.cfg
           sed -i "s/^config\/version=.*/config\/version=\"1.0.${{ github.run_number }}\"/" project.godot
 
+      - name: Slim web engine (Brainnova)
+        # 2D-only Godot web engine shared by every Brainnova game (smaller, faster to start).
+        run: curl -fsSL https://raw.githubusercontent.com/ramlakhanmadheshiya/BrainnovaStudio/main/tools/slim-engine.sh | bash
+
       - name: Export web build
         run: |
           mkdir -p build/web
@@ -167,23 +171,20 @@ jobs:
           test -s build/android/word-lantern.apk
           ls -lh build/android
 
-      - name: Assemble site
-        run: |
-          mkdir -p site/play
-          cp -r build/web/* site/play/
-          cp build/android/word-lantern.apk site/word-lantern.apk
-          rsync -a --exclude '.gdignore' web/ site/
-          cp assets/icon.svg site/icon.svg
-          size=$(du -h build/android/word-lantern.apk | cut -f1)
-          sed -i "s/{{APK_SIZE}}/${size}/g; s/{{VERSION}}/1.0.${{ github.run_number }}/g; s/{{BUILD_DATE}}/$(date -u +%Y-%m-%d)/g" site/index.html
-          touch site/.nojekyll
+      - name: Ship to Brainnova Studio
+        # APK, web pack, help and privacy go to theramlakhan.com/BrainnovaStudio/games/word-lantern/.
+        # Also writes ./stubs: the old theramlakhan.com/word-lantern/ addresses, redirecting.
+        env:
+          STUDIO_DEPLOY_KEY: ${{ secrets.STUDIO_DEPLOY_KEY }}
+        run: curl -fsSL https://raw.githubusercontent.com/ramlakhanmadheshiya/BrainnovaStudio/main/tools/ship.sh | bash -s -- word-lantern "1.0.${{ github.run_number }}"
 
-      - name: Publish to gh-pages
+      - name: Old addresses (gh-pages)
+        # theramlakhan.com/word-lantern/... now redirects to Brainnova Studio.
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: site
+          publish_dir: stubs
           force_orphan: true
           commit_message: "Publish build ${{ github.run_number }}"
 
