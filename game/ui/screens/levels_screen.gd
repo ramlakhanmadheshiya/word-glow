@@ -16,7 +16,7 @@ func chapter_info() -> Dictionary:
 func build() -> void:
 	chapter_idx = clampi(int(args.get("chapter", 0)), 0, maxi(0, Catalog.chapter_count() - 1))
 	var ch: Dictionary = Catalog.chapter(chapter_idx)
-	body.add_child(header(str(ch["name"]), "Chapter %d" % (chapter_idx + 1)))
+	body.add_child(header(str(ch["name"]), "Chapter %d · %s" % [chapter_idx + 1, str(ch.get("concept", ""))]))
 	_scroll = TouchScroll.new()
 	_scroll.name = "Scroll"
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -113,7 +113,8 @@ func refresh() -> void:
 	_refresh_tiles()
 
 
-## The chapter at a glance: tagline, stars, and open / cleared / locked progress.
+## The chapter at a glance: tagline, stars, open / cleared / locked progress,
+## and a button that explains the chapter's idea.
 func _hero(ch: Dictionary) -> PanelContainer:
 	var v: VBoxContainer = UIKit.vbox(10)
 	var top: HBoxContainer = UIKit.hbox(16, BoxContainer.ALIGNMENT_BEGIN)
@@ -140,6 +141,16 @@ func _hero(ch: Dictionary) -> PanelContainer:
 	var legend: Label = UIKit.label("%d of %d open · %d cleared · %d locked" % [open, total, cleared, total - open], Style.SIZE_CAPTION + 1, Style.MUTED, 500, HORIZONTAL_ALIGNMENT_LEFT)
 	legend.name = "Legend"
 	v.add_child(legend)
+	var lesson: String = str(ch.get("lesson", ""))
+	if HowToCard.PAGES.has(lesson):
+		var how: Button = UIKit.button("How it works", "soft", accent(), 64, 22)
+		how.name = "HowItWorks"
+		how.pressed.connect(func() -> void:
+			var o: HowToCard = HowToCard.new()
+			o.pages = [lesson]
+			o.heading = str(ch.get("concept", ""))
+			app.open(o))
+		v.add_child(how)
 	var p: PanelContainer = UIKit.panel(v, Color(0, 0, 0, 0.25), 34, Vector2(26, 20))
 	p.name = "Hero"
 	return p

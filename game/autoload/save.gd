@@ -5,7 +5,7 @@ extends Node
 
 signal saved
 
-const VERSION: int = 2
+const VERSION: int = 3
 const DEFAULT_PATH: String = "user://word_lantern_save.json"
 
 var path: String = DEFAULT_PATH
@@ -62,6 +62,8 @@ func load_data() -> void:
 	var d: Dictionary = loaded if loaded is Dictionary else {}
 	if not d.is_empty() and int(d.get("version", 1)) < 2:
 		_migrate_v1(d)
+	if not d.is_empty() and int(d.get("version", 1)) < 3:
+		_migrate_v2(d)
 	# Builds before chapter keys called them diamond keys.
 	if d.has("diamonds"):
 		d["chapter_keys"] = int(d.get("chapter_keys", 0)) + int(d["diamonds"])
@@ -86,6 +88,27 @@ static func _migrate_v1(d: Dictionary) -> void:
 		o["sound_volume"] = 0.8 if bool(o.get("sfx", true)) else 0.0
 		o.erase("music")
 		o.erase("sfx")
+
+
+## Version 2 had 16 chapters; version 3 has 8, each with its own idea, and new
+## levels. Level progress no longer applies, so it starts over (level keys used
+## on old levels and chapter keys used on old chapters are given back), and the
+## new chapters' idea cards show again. Coins, purchases, settings, dailies and
+## achievements are kept.
+static func _migrate_v2(d: Dictionary) -> void:
+	d["keys"] = int(d.get("keys", 0)) + (d.get("unlocked", {}) as Dictionary).size()
+	d["chapter_keys"] = int(d.get("chapter_keys", 0)) + (d.get("chapters_opened", {}) as Dictionary).size()
+	for k: String in ["cleared", "progress", "unlocked", "chapters_opened", "last_level"]:
+		d.erase(k)
+	var st: Variant = d.get("stats", {})
+	if st is Dictionary:
+		for k: String in ["levels", "stars", "perfect"]:
+			(st as Dictionary).erase(k)
+	var seen: Variant = d.get("seen", {})
+	if seen is Dictionary:
+		for k: Variant in (seen as Dictionary).keys():
+			if str(k).begins_with("intro_"):
+				(seen as Dictionary).erase(k)
 
 
 func _read(p: String) -> Variant:

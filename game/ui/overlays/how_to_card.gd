@@ -1,16 +1,31 @@
 class_name HowToCard
 extends Overlay
 ## How to play, one page per idea, each with a small live demo board (the real
-## BoardView with a ghost finger tracing the word). `pages` picks which ideas to show.
+## BoardView with a ghost finger tracing the word, and the word list where it
+## matters). `pages` picks which ideas to show: every chapter's new idea in
+## order, then stars and hints. The play screen shows one page the first time
+## a chapter is played, headed "New in <chapter>".
 
-const ALL_PAGES: Array[String] = ["basics", "stars", "shadows", "beacons", "hints"]
+const ALL_PAGES: Array[String] = ["listed", "bends", "hidden", "shadows", "beacons", "two_themes", "mystery", "stars", "hints"]
 
 const PAGES: Dictionary = {
-	"basics": {
-		"title": "Light every word",
-		"text": "Every tile belongs to exactly one hidden word on the theme. Drag through neighbouring tiles (up, down, left or right) to spell a word. When every tile glows, the level is clear.",
+	"listed": {
+		"title": "Find the listed words",
+		"text": "The words are written above the grid. Drag across a row or down a column to spell one. Every tile belongs to exactly one word: light them all to clear the level.",
+		"grid": ["TOE", "HIP", "ARM"], "words": [["TOE", [0, 1, 2]], ["HIP", [3, 4, 5]], ["ARM", [6, 7, 8]]],
+		"found": [0], "ghost": 1, "shadows": [], "beacons": [], "list": true, "listed": true,
+	},
+	"bends": {
+		"title": "Words that bend",
+		"text": "Now words can turn corners. Drag through neighbouring tiles, up, down, left or right, and watch out: a word can even read backwards.",
 		"grid": ["BEA", "HSM", "INE"], "words": [["BEAM", [0, 1, 2, 5]], ["SHINE", [4, 3, 6, 7, 8]]],
-		"found": [0], "ghost": 1, "shadows": [], "beacons": [],
+		"found": [0], "ghost": 1, "shadows": [], "beacons": [], "list": true, "listed": true,
+	},
+	"hidden": {
+		"title": "Hidden words",
+		"text": "From here on the words are hidden. The slots above the grid show only how long each word is, and the theme is your clue.",
+		"grid": ["BEA", "HSM", "INE"], "words": [["BEAM", [0, 1, 2, 5]], ["SHINE", [4, 3, 6, 7, 8]]],
+		"found": [0], "ghost": 1, "shadows": [], "beacons": [], "list": true,
 	},
 	"shadows": {
 		"title": "Shadow tiles",
@@ -21,6 +36,24 @@ const PAGES: Dictionary = {
 	"beacons": {
 		"title": "Beacons",
 		"text": "A tile with a flame is a beacon. When its word is found, beams of light shoot along its whole row and column, lighting every shadow in their path.",
+		"grid": ["OWL", "BEE", "SUN", "CAT"], "words": [["OWL", [0, 1, 2]], ["BEE", [3, 4, 5]], ["SUN", [6, 7, 8]], ["CAT", [9, 10, 11]]],
+		"found": [], "ghost": 0, "shadows": [3, 4, 6, 7, 8, 9, 10, 11], "beacons": [2],
+	},
+	"two_themes": {
+		"title": "Two themes",
+		"text": "Two themes share every grid, like Animals & Sky. Each theme's words sit on their own row above the grid, so you know how many to find from each.",
+		"grid": ["OWL", "SUN", "CAT", "SKY"], "words": [["OWL", [0, 1, 2], 0], ["CAT", [6, 7, 8], 0], ["SUN", [3, 4, 5], 1], ["SKY", [9, 10, 11], 1]],
+		"themes": ["animals", "sky"], "found": [0, 2], "ghost": 1, "shadows": [], "beacons": [], "list": true,
+	},
+	"mystery": {
+		"title": "Mystery theme",
+		"text": "The theme is hidden. Find any word and its theme is revealed; then use it to find the rest. Look for short, common words first.",
+		"grid": ["BEA", "HSM", "INE"], "words": [["BEAM", [0, 1, 2, 5]], ["SHINE", [4, 3, 6, 7, 8]]],
+		"found": [], "ghost": 0, "shadows": [], "beacons": [], "list": true,
+	},
+	"finale": {
+		"title": "Everything at once",
+		"text": "The last chapter brings every idea together: hidden words, two mystery themes, shadows and beacons. Take your time.",
 		"grid": ["OWL", "BEE", "SUN", "CAT"], "words": [["OWL", [0, 1, 2]], ["BEE", [3, 4, 5]], ["SUN", [6, 7, 8]], ["CAT", [9, 10, 11]]],
 		"found": [], "ghost": 0, "shadows": [3, 4, 6, 7, 8, 9, 10, 11], "beacons": [2],
 	},
@@ -39,6 +72,8 @@ const PAGES: Dictionary = {
 }
 
 var pages: Array = ALL_PAGES
+## Replaces the title (the play screen uses "New in <chapter>").
+var heading: String = ""
 var _index: int = 0
 var _holder: VBoxContainer
 var _prev: Button
@@ -48,7 +83,7 @@ var _dots: HBoxContainer
 
 func build() -> void:
 	name = "HowTo"
-	add_title("How to play" if pages.size() > 1 or pages == ["basics"] else "New idea")
+	add_title(heading if not heading.is_empty() else ("How to play" if pages.size() > 1 else "New idea"))
 	_holder = UIKit.vbox(14)
 	body.add_child(_holder)
 	var nav: HBoxContainer = UIKit.hbox(16)
@@ -78,6 +113,10 @@ func _show(i: int) -> void:
 		c.queue_free()
 	var page: Dictionary = PAGES[pages[_index]]
 	var demo: BoardView = _demo(page)
+	if page.get("list", false):
+		var list: WordList = WordList.new()
+		_holder.add_child(list)
+		list.setup(demo.state)
 	_holder.add_child(demo)
 	_holder.add_child(UIKit.label(page["title"], Style.SIZE_H2, Style.AMBER, 600))
 	_holder.add_child(UIKit.para(page["text"], Style.SIZE_BODY - 2, Style.INK))
@@ -101,8 +140,10 @@ func _show(i: int) -> void:
 func _demo(page: Dictionary) -> BoardView:
 	var words: Array = []
 	for w: Array in page["words"]:
-		words.append({"w": w[0], "p": w[1]})
-	var p: Puzzle = Puzzle.from_dict({"id": "demo", "theme": "demo", "grid": page["grid"], "words": words, "shadows": page["shadows"], "beacons": page["beacons"]})
+		words.append({"w": w[0], "p": w[1], "t": w[2] if w.size() > 2 else 0})
+	var themes: Array = page.get("themes", ["demo"])
+	var p: Puzzle = Puzzle.from_dict({"id": "demo", "theme": themes[0], "grid": page["grid"], "words": words, "shadows": page["shadows"], "beacons": page["beacons"],
+		"themes": themes, "listed": page.get("listed", false)})
 	var s: LevelState = LevelState.new(p)
 	for i: int in page["found"]:
 		s.submit(p.words[i]["cells"])

@@ -15,6 +15,7 @@ var level_n: int = 0
 var daily_key: String = ""
 
 var _hud: MovesHud
+var _title: Label
 var _toast: Label
 var _toast_box: PanelContainer
 var _toast_tween: Tween
@@ -72,7 +73,9 @@ func _title_caption() -> String:
 
 
 func _build_ui() -> void:
-	body.add_child(header(puzzle.theme_name, _title_caption()))
+	var head: HBoxContainer = header(puzzle.shown_theme(state.found), _title_caption())
+	_title = head.find_child("Title", true, false)
+	body.add_child(head)
 	# The strip: MOVES / STARS and coins, always visible while playing.
 	var strip: HBoxContainer = UIKit.hbox(8, BoxContainer.ALIGNMENT_BEGIN)
 	strip.name = "Strip"
@@ -164,6 +167,7 @@ func _pretty_date(key: String) -> String:
 
 
 func _refresh() -> void:
+	_title.text = puzzle.shown_theme(state.found)
 	_hud.accent = accent()
 	_hud.set_state(state.moves(), state.par(), state.stars())
 	_spark_badge.text = "FREE" if Profile.free_sparks_left() > 0 else str(Economy.SPARK_COST)
@@ -212,9 +216,15 @@ func _on_traced(cells: PackedInt32Array) -> void:
 
 func _on_found(r: Dictionary) -> void:
 	var i: int = r["word_index"]
+	var title_before: String = _title.text
 	board.show_found(i, r["revealed"], r["beacons"])
 	words.mark_found(i)
 	show_toast(str(r["word"]), 1.1, Look.lantern(state.found_count() - 1))
+	if puzzle.mystery and puzzle.shown_theme(state.found) != title_before:
+		var theme: String = puzzle.theme_names[int(puzzle.words[i].get("theme", 0))]
+		get_tree().create_timer(1.2).timeout.connect(func() -> void:
+			if is_inside_tree():
+				show_toast("The theme is %s" % theme, 1.6, Style.GOLD))
 	Audio.play("found", 1.0 + 0.04 * mini(state.found_count(), 6))
 	Haptics.success()
 	var beacons: int = (r["beacons"] as PackedInt32Array).size()
@@ -414,12 +424,16 @@ func on_back() -> bool:
 
 # --- Intros ------------------------------------------------------------------------
 
-## The rules on the very first level, and a card the first time shadows or
-## beacons appear.
+## Like Single Shot, every chapter has one new idea: the first time a chapter is
+## played, a card explains it with a live demo. A daily shows the shadow or
+## beacon card if the player has not met those yet.
 func _intro_if_needed() -> void:
 	var key: String = ""
-	if puzzle.id == "meadow-01":
-		key = "basics"
+	var heading: String = ""
+	if daily_key.is_empty():
+		var ch: Dictionary = Catalog.chapter(chapter_idx)
+		key = str(ch.get("lesson", ""))
+		heading = "New in %s" % ch["name"] if chapter_idx > 0 else "How to play"
 	elif not puzzle.beacons.is_empty():
 		key = "beacons"
 	elif not puzzle.shadows.is_empty():
@@ -431,6 +445,7 @@ func _intro_if_needed() -> void:
 			return
 		var o: HowToCard = HowToCard.new()
 		o.pages = [key]
+		o.heading = heading
 		o.closed.connect(_show_ghost_if_tutorial)
 		app.open(o)
 		return
@@ -439,7 +454,7 @@ func _intro_if_needed() -> void:
 
 ## On the very first level, a ghost finger shows how to trace the first word.
 func _show_ghost_if_tutorial() -> void:
-	if puzzle.id == "meadow-01" and state.found_count() == 0 and is_inside_tree():
+	if chapter_idx == 0 and level_n == 1 and daily_key.is_empty() and state.found_count() == 0 and is_inside_tree():
 		var target: int = state.hint_target()
 		if target >= 0:
 			board.show_ghost(puzzle.words[target]["cells"])

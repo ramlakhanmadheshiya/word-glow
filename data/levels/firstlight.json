@@ -1,0 +1,2196 @@
+{
+	"chapter": "firstlight",
+	"levels": [
+		{
+			"id": "firstlight-01",
+			"theme": "body",
+			"grid": [
+				"TOE",
+				"HIP",
+				"ARM"
+			],
+			"words": [
+				{
+					"w": "TOE",
+					"p": [
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"w": "HIP",
+					"p": [
+						3,
+						4,
+						5
+					]
+				},
+				{
+					"w": "ARM",
+					"p": [
+						6,
+						7,
+						8
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-02",
+			"theme": "wild_animals",
+			"grid": [
+				"FOX",
+				"APE",
+				"ELK"
+			],
+			"words": [
+				{
+					"w": "FOX",
+					"p": [
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"w": "APE",
+					"p": [
+						3,
+						4,
+						5
+					]
+				},
+				{
+					"w": "ELK",
+					"p": [
+						6,
+						7,
+						8
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-03",
+			"theme": "vehicles",
+			"grid": [
+				"CVJ",
+				"AAE",
+				"RNT"
+			],
+			"words": [
+				{
+					"w": "CAR",
+					"p": [
+						0,
+						3,
+						6
+					]
+				},
+				{
+					"w": "VAN",
+					"p": [
+						1,
+						4,
+						7
+					]
+				},
+				{
+					"w": "JET",
+					"p": [
+						2,
+						5,
+						8
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-04",
+			"theme": "pets",
+			"grid": [
+				"PCD",
+				"UAO",
+				"PTG"
+			],
+			"words": [
+				{
+					"w": "PUP",
+					"p": [
+						0,
+						3,
+						6
+					]
+				},
+				{
+					"w": "CAT",
+					"p": [
+						1,
+						4,
+						7
+					]
+				},
+				{
+					"w": "DOG",
+					"p": [
+						2,
+						5,
+						8
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-05",
+			"theme": "family",
+			"grid": [
+				"MDS",
+				"OAO",
+				"MDN"
+			],
+			"words": [
+				{
+					"w": "MOM",
+					"p": [
+						0,
+						3,
+						6
+					]
+				},
+				{
+					"w": "DAD",
+					"p": [
+						1,
+						4,
+						7
+					]
+				},
+				{
+					"w": "SON",
+					"p": [
+						2,
+						5,
+						8
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-06",
+			"theme": "hobbies",
+			"grid": [
+				"SBH",
+				"IAI",
+				"NKK",
+				"GEE"
+			],
+			"words": [
+				{
+					"w": "SING",
+					"p": [
+						0,
+						3,
+						6,
+						9
+					]
+				},
+				{
+					"w": "BAKE",
+					"p": [
+						1,
+						4,
+						7,
+						10
+					]
+				},
+				{
+					"w": "HIKE",
+					"p": [
+						2,
+						5,
+						8,
+						11
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-07",
+			"theme": "sports",
+			"grid": [
+				"SDJ",
+				"WIU",
+				"IVD",
+				"MEO"
+			],
+			"words": [
+				{
+					"w": "SWIM",
+					"p": [
+						0,
+						3,
+						6,
+						9
+					]
+				},
+				{
+					"w": "DIVE",
+					"p": [
+						1,
+						4,
+						7,
+						10
+					]
+				},
+				{
+					"w": "JUDO",
+					"p": [
+						2,
+						5,
+						8,
+						11
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-08",
+			"theme": "colors",
+			"grid": [
+				"GGN",
+				"ORA",
+				"LAV",
+				"DYY"
+			],
+			"words": [
+				{
+					"w": "GOLD",
+					"p": [
+						0,
+						3,
+						6,
+						9
+					]
+				},
+				{
+					"w": "GRAY",
+					"p": [
+						1,
+						4,
+						7,
+						10
+					]
+				},
+				{
+					"w": "NAVY",
+					"p": [
+						2,
+						5,
+						8,
+						11
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-09",
+			"theme": "house",
+			"grid": [
+				"HLS",
+				"AAH",
+				"LME",
+				"LPD"
+			],
+			"words": [
+				{
+					"w": "HALL",
+					"p": [
+						0,
+						3,
+						6,
+						9
+					]
+				},
+				{
+					"w": "LAMP",
+					"p": [
+						1,
+						4,
+						7,
+						10
+					]
+				},
+				{
+					"w": "SHED",
+					"p": [
+						2,
+						5,
+						8,
+						11
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-10",
+			"theme": "bakery",
+			"grid": [
+				"TLR",
+				"AOO",
+				"RAL",
+				"TFL"
+			],
+			"words": [
+				{
+					"w": "TART",
+					"p": [
+						0,
+						3,
+						6,
+						9
+					]
+				},
+				{
+					"w": "LOAF",
+					"p": [
+						1,
+						4,
+						7,
+						10
+					]
+				},
+				{
+					"w": "ROLL",
+					"p": [
+						2,
+						5,
+						8,
+						11
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-11",
+			"theme": "summer",
+			"grid": [
+				"SSS",
+				"WUA",
+				"IRN",
+				"MFD"
+			],
+			"words": [
+				{
+					"w": "SWIM",
+					"p": [
+						0,
+						3,
+						6,
+						9
+					]
+				},
+				{
+					"w": "SURF",
+					"p": [
+						1,
+						4,
+						7,
+						10
+					]
+				},
+				{
+					"w": "SAND",
+					"p": [
+						2,
+						5,
+						8,
+						11
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-12",
+			"theme": "feelings",
+			"grid": [
+				"RAGE",
+				"HOPE",
+				"LOVE",
+				"FEAR"
+			],
+			"words": [
+				{
+					"w": "RAGE",
+					"p": [
+						0,
+						1,
+						2,
+						3
+					]
+				},
+				{
+					"w": "HOPE",
+					"p": [
+						4,
+						5,
+						6,
+						7
+					]
+				},
+				{
+					"w": "LOVE",
+					"p": [
+						8,
+						9,
+						10,
+						11
+					]
+				},
+				{
+					"w": "FEAR",
+					"p": [
+						12,
+						13,
+						14,
+						15
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-13",
+			"theme": "shapes",
+			"grid": [
+				"LKCS",
+				"IIOT",
+				"NTNA",
+				"EEER"
+			],
+			"words": [
+				{
+					"w": "LINE",
+					"p": [
+						0,
+						4,
+						8,
+						12
+					]
+				},
+				{
+					"w": "KITE",
+					"p": [
+						1,
+						5,
+						9,
+						13
+					]
+				},
+				{
+					"w": "CONE",
+					"p": [
+						2,
+						6,
+						10,
+						14
+					]
+				},
+				{
+					"w": "STAR",
+					"p": [
+						3,
+						7,
+						11,
+						15
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-14",
+			"theme": "music",
+			"grid": [
+				"HLTS",
+				"AUUO",
+				"RTNN",
+				"PEEG"
+			],
+			"words": [
+				{
+					"w": "HARP",
+					"p": [
+						0,
+						4,
+						8,
+						12
+					]
+				},
+				{
+					"w": "LUTE",
+					"p": [
+						1,
+						5,
+						9,
+						13
+					]
+				},
+				{
+					"w": "TUNE",
+					"p": [
+						2,
+						6,
+						10,
+						14
+					]
+				},
+				{
+					"w": "SONG",
+					"p": [
+						3,
+						7,
+						11,
+						15
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-15",
+			"theme": "light",
+			"grid": [
+				"HDLW",
+				"AAAI",
+				"LWMC",
+				"ONPK"
+			],
+			"words": [
+				{
+					"w": "HALO",
+					"p": [
+						0,
+						4,
+						8,
+						12
+					]
+				},
+				{
+					"w": "DAWN",
+					"p": [
+						1,
+						5,
+						9,
+						13
+					]
+				},
+				{
+					"w": "LAMP",
+					"p": [
+						2,
+						6,
+						10,
+						14
+					]
+				},
+				{
+					"w": "WICK",
+					"p": [
+						3,
+						7,
+						11,
+						15
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-16",
+			"theme": "time",
+			"grid": [
+				"DDWN",
+				"AUEO",
+				"WSEO",
+				"NKKN"
+			],
+			"words": [
+				{
+					"w": "DAWN",
+					"p": [
+						0,
+						4,
+						8,
+						12
+					]
+				},
+				{
+					"w": "DUSK",
+					"p": [
+						1,
+						5,
+						9,
+						13
+					]
+				},
+				{
+					"w": "WEEK",
+					"p": [
+						2,
+						6,
+						10,
+						14
+					]
+				},
+				{
+					"w": "NOON",
+					"p": [
+						3,
+						7,
+						11,
+						15
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-17",
+			"theme": "tech",
+			"grid": [
+				"CHIP",
+				"DISK",
+				"CODE",
+				"DATA",
+				"BYTE"
+			],
+			"words": [
+				{
+					"w": "CHIP",
+					"p": [
+						0,
+						1,
+						2,
+						3
+					]
+				},
+				{
+					"w": "DISK",
+					"p": [
+						4,
+						5,
+						6,
+						7
+					]
+				},
+				{
+					"w": "CODE",
+					"p": [
+						8,
+						9,
+						10,
+						11
+					]
+				},
+				{
+					"w": "DATA",
+					"p": [
+						12,
+						13,
+						14,
+						15
+					]
+				},
+				{
+					"w": "BYTE",
+					"p": [
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-18",
+			"theme": "toys",
+			"grid": [
+				"BDYD",
+				"AIOO",
+				"LCYL",
+				"LEOL",
+				"KITE"
+			],
+			"words": [
+				{
+					"w": "BALL",
+					"p": [
+						0,
+						4,
+						8,
+						12
+					]
+				},
+				{
+					"w": "DICE",
+					"p": [
+						1,
+						5,
+						9,
+						13
+					]
+				},
+				{
+					"w": "YOYO",
+					"p": [
+						2,
+						6,
+						10,
+						14
+					]
+				},
+				{
+					"w": "DOLL",
+					"p": [
+						3,
+						7,
+						11,
+						15
+					]
+				},
+				{
+					"w": "KITE",
+					"p": [
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-19",
+			"theme": "clothes",
+			"grid": [
+				"VCSB",
+				"EOOO",
+				"SACO",
+				"TTKT",
+				"BELT"
+			],
+			"words": [
+				{
+					"w": "VEST",
+					"p": [
+						0,
+						4,
+						8,
+						12
+					]
+				},
+				{
+					"w": "COAT",
+					"p": [
+						1,
+						5,
+						9,
+						13
+					]
+				},
+				{
+					"w": "SOCK",
+					"p": [
+						2,
+						6,
+						10,
+						14
+					]
+				},
+				{
+					"w": "BOOT",
+					"p": [
+						3,
+						7,
+						11,
+						15
+					]
+				},
+				{
+					"w": "BELT",
+					"p": [
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-20",
+			"theme": "myths",
+			"grid": [
+				"PDTG",
+				"IWRE",
+				"XAON",
+				"IRLI",
+				"EFLE"
+			],
+			"words": [
+				{
+					"w": "PIXIE",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "DWARF",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "TROLL",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "GENIE",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-21",
+			"theme": "space",
+			"grid": [
+				"OVLE",
+				"REUA",
+				"BNNR",
+				"IUAT",
+				"TSRH"
+			],
+			"words": [
+				{
+					"w": "ORBIT",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "VENUS",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "LUNAR",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "EARTH",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-22",
+			"theme": "desserts",
+			"grid": [
+				"JDFC",
+				"EOUA",
+				"LNDN",
+				"LUGD",
+				"YTEY"
+			],
+			"words": [
+				{
+					"w": "JELLY",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "DONUT",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "FUDGE",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "CANDY",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-23",
+			"theme": "furniture",
+			"grid": [
+				"BTCS",
+				"EAOT",
+				"NBUO",
+				"CLCO",
+				"HEHL"
+			],
+			"words": [
+				{
+					"w": "BENCH",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "TABLE",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "COUCH",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "STOOL",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-24",
+			"theme": "numbers",
+			"grid": [
+				"TFSS",
+				"HIIE",
+				"RFXV",
+				"ETTE",
+				"EYYN"
+			],
+			"words": [
+				{
+					"w": "THREE",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "FIFTY",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "SIXTY",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "SEVEN",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-25",
+			"theme": "mountains",
+			"grid": [
+				"SCCC",
+				"LLAR",
+				"OIIA",
+				"PFRG",
+				"EFNS"
+			],
+			"words": [
+				{
+					"w": "SLOPE",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "CLIFF",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "CAIRN",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "CRAGS",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-26",
+			"theme": "flowers",
+			"grid": [
+				"LPPP",
+				"IAOE",
+				"LNPO",
+				"ASPN",
+				"CYYY"
+			],
+			"words": [
+				{
+					"w": "LILAC",
+					"p": [
+						0,
+						4,
+						8,
+						12,
+						16
+					]
+				},
+				{
+					"w": "PANSY",
+					"p": [
+						1,
+						5,
+						9,
+						13,
+						17
+					]
+				},
+				{
+					"w": "POPPY",
+					"p": [
+						2,
+						6,
+						10,
+						14,
+						18
+					]
+				},
+				{
+					"w": "PEONY",
+					"p": [
+						3,
+						7,
+						11,
+						15,
+						19
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-27",
+			"theme": "rainforest",
+			"grid": [
+				"HUMID",
+				"SLOTH",
+				"GECKO",
+				"LIANA",
+				"TAPIR"
+			],
+			"words": [
+				{
+					"w": "HUMID",
+					"p": [
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				},
+				{
+					"w": "SLOTH",
+					"p": [
+						5,
+						6,
+						7,
+						8,
+						9
+					]
+				},
+				{
+					"w": "GECKO",
+					"p": [
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				},
+				{
+					"w": "LIANA",
+					"p": [
+						15,
+						16,
+						17,
+						18,
+						19
+					]
+				},
+				{
+					"w": "TAPIR",
+					"p": [
+						20,
+						21,
+						22,
+						23,
+						24
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-28",
+			"theme": "travel",
+			"grid": [
+				"RPFTH",
+				"OLERO",
+				"UARAT",
+				"TNRIE",
+				"EEYNL"
+			],
+			"words": [
+				{
+					"w": "ROUTE",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20
+					]
+				},
+				{
+					"w": "PLANE",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21
+					]
+				},
+				{
+					"w": "FERRY",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22
+					]
+				},
+				{
+					"w": "TRAIN",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23
+					]
+				},
+				{
+					"w": "HOTEL",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-29",
+			"theme": "spices",
+			"grid": [
+				"TCCCB",
+				"HLUHA",
+				"YORIS",
+				"MVRVI",
+				"EEYEL"
+			],
+			"words": [
+				{
+					"w": "THYME",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20
+					]
+				},
+				{
+					"w": "CLOVE",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21
+					]
+				},
+				{
+					"w": "CURRY",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22
+					]
+				},
+				{
+					"w": "CHIVE",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23
+					]
+				},
+				{
+					"w": "BASIL",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-30",
+			"theme": "garden",
+			"grid": [
+				"TPPHD",
+				"UEOEA",
+				"LTPDI",
+				"IAPGS",
+				"PLYEY"
+			],
+			"words": [
+				{
+					"w": "TULIP",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20
+					]
+				},
+				{
+					"w": "PETAL",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21
+					]
+				},
+				{
+					"w": "POPPY",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22
+					]
+				},
+				{
+					"w": "HEDGE",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23
+					]
+				},
+				{
+					"w": "DAISY",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-31",
+			"theme": "winter",
+			"grid": [
+				"SSCFC",
+				"CKORH",
+				"AACOI",
+				"RTOSL",
+				"FEATL"
+			],
+			"words": [
+				{
+					"w": "SCARF",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20
+					]
+				},
+				{
+					"w": "SKATE",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21
+					]
+				},
+				{
+					"w": "COCOA",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22
+					]
+				},
+				{
+					"w": "FROST",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23
+					]
+				},
+				{
+					"w": "CHILL",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-32",
+			"theme": "cooking",
+			"grid": [
+				"SLICE",
+				"BLEND",
+				"WHISK",
+				"STEAM",
+				"ROAST",
+				"MINCE"
+			],
+			"words": [
+				{
+					"w": "SLICE",
+					"p": [
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				},
+				{
+					"w": "BLEND",
+					"p": [
+						5,
+						6,
+						7,
+						8,
+						9
+					]
+				},
+				{
+					"w": "WHISK",
+					"p": [
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				},
+				{
+					"w": "STEAM",
+					"p": [
+						15,
+						16,
+						17,
+						18,
+						19
+					]
+				},
+				{
+					"w": "ROAST",
+					"p": [
+						20,
+						21,
+						22,
+						23,
+						24
+					]
+				},
+				{
+					"w": "MINCE",
+					"p": [
+						25,
+						26,
+						27,
+						28,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-33",
+			"theme": "weather",
+			"grid": [
+				"SUNNY",
+				"SFCHS",
+				"LRLUT",
+				"EOOMO",
+				"ESUIR",
+				"TTDDM"
+			],
+			"words": [
+				{
+					"w": "SUNNY",
+					"p": [
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				},
+				{
+					"w": "SLEET",
+					"p": [
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "FROST",
+					"p": [
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "CLOUD",
+					"p": [
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "HUMID",
+					"p": [
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "STORM",
+					"p": [
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-34",
+			"theme": "landscape",
+			"grid": [
+				"DVCMF",
+				"EAAEO",
+				"SLNAR",
+				"ELYDE",
+				"REOOS",
+				"TYNWT"
+			],
+			"words": [
+				{
+					"w": "DESERT",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "VALLEY",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "CANYON",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "MEADOW",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "FOREST",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-35",
+			"theme": "science",
+			"grid": [
+				"EPFCM",
+				"NROAA",
+				"EOSRG",
+				"RTSBN",
+				"GOIOE",
+				"YNLNT"
+			],
+			"words": [
+				{
+					"w": "ENERGY",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "PROTON",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "FOSSIL",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "CARBON",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "MAGNET",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-36",
+			"theme": "insects",
+			"grid": [
+				"MEHCL",
+				"AAOIO",
+				"NRRCC",
+				"TWNAU",
+				"IIEDS",
+				"SGTAT"
+			],
+			"words": [
+				{
+					"w": "MANTIS",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "EARWIG",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "HORNET",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "CICADA",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "LOCUST",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-37",
+			"theme": "city",
+			"grid": [
+				"SMAOS",
+				"TUVFQ",
+				"RSEFU",
+				"EENIA",
+				"EUUCR",
+				"TMEEE"
+			],
+			"words": [
+				{
+					"w": "STREET",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "MUSEUM",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "AVENUE",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "OFFICE",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "SQUARE",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-38",
+			"theme": "gems",
+			"grid": [
+				"CNGCB",
+				"OIAOR",
+				"PCRBO",
+				"PKNAN",
+				"EEELZ",
+				"RLTTE"
+			],
+			"words": [
+				{
+					"w": "COPPER",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "NICKEL",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "GARNET",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "COBALT",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "BRONZE",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-39",
+			"theme": "vegetables",
+			"grid": [
+				"TGCGS",
+				"OAAIQ",
+				"MRRNU",
+				"ALRGA",
+				"TIOES",
+				"OCTRH"
+			],
+			"words": [
+				{
+					"w": "TOMATO",
+					"p": [
+						0,
+						5,
+						10,
+						15,
+						20,
+						25
+					]
+				},
+				{
+					"w": "GARLIC",
+					"p": [
+						1,
+						6,
+						11,
+						16,
+						21,
+						26
+					]
+				},
+				{
+					"w": "CARROT",
+					"p": [
+						2,
+						7,
+						12,
+						17,
+						22,
+						27
+					]
+				},
+				{
+					"w": "GINGER",
+					"p": [
+						3,
+						8,
+						13,
+						18,
+						23,
+						28
+					]
+				},
+				{
+					"w": "SQUASH",
+					"p": [
+						4,
+						9,
+						14,
+						19,
+						24,
+						29
+					]
+				}
+			],
+			"listed": true
+		},
+		{
+			"id": "firstlight-40",
+			"theme": "fruit",
+			"grid": [
+				"LYCHEE",
+				"BANANA",
+				"PAPAYA",
+				"QUINCE",
+				"CHERRY",
+				"ORANGE"
+			],
+			"words": [
+				{
+					"w": "LYCHEE",
+					"p": [
+						0,
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				},
+				{
+					"w": "BANANA",
+					"p": [
+						6,
+						7,
+						8,
+						9,
+						10,
+						11
+					]
+				},
+				{
+					"w": "PAPAYA",
+					"p": [
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				},
+				{
+					"w": "QUINCE",
+					"p": [
+						18,
+						19,
+						20,
+						21,
+						22,
+						23
+					]
+				},
+				{
+					"w": "CHERRY",
+					"p": [
+						24,
+						25,
+						26,
+						27,
+						28,
+						29
+					]
+				},
+				{
+					"w": "ORANGE",
+					"p": [
+						30,
+						31,
+						32,
+						33,
+						34,
+						35
+					]
+				}
+			],
+			"listed": true
+		}
+	]
+}

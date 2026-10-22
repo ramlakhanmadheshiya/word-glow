@@ -6,11 +6,19 @@ extends RefCounted
 var id: String = ""
 var theme_id: String = ""
 var theme_name: String = ""
+## Every theme in the grid (one, or two in two-theme chapters); theme_id is the first.
+var theme_ids: PackedStringArray = PackedStringArray()
+var theme_names: PackedStringArray = PackedStringArray()
+## The answers are written out above the grid (instead of empty slots).
+var listed: bool = false
+## The theme name stays hidden until a word from that theme is found.
+var mystery: bool = false
 var rows: int = 0
 var cols: int = 0
 ## One uppercase letter per cell.
 var letters: PackedStringArray = PackedStringArray()
-## Each entry: {"word": String, "cells": PackedInt32Array} in reading order.
+## Each entry: {"word": String, "cells": PackedInt32Array, "theme": int} in reading
+## order; "theme" indexes theme_ids.
 var words: Array[Dictionary] = []
 ## Cells that start dark (letter hidden until a neighbouring word is found).
 var shadows: PackedInt32Array = PackedInt32Array()
@@ -22,7 +30,15 @@ static func from_dict(d: Dictionary, theme_names: Dictionary = {}) -> Puzzle:
 	var p: Puzzle = Puzzle.new()
 	p.id = str(d.get("id", ""))
 	p.theme_id = str(d.get("theme", ""))
-	p.theme_name = str(theme_names.get(p.theme_id, p.theme_id.capitalize()))
+	p.theme_ids = PackedStringArray([p.theme_id])
+	for t: Variant in d.get("themes", []):
+		if not p.theme_ids.has(str(t)):
+			p.theme_ids.append(str(t))
+	for t: String in p.theme_ids:
+		p.theme_names.append(str(theme_names.get(t, t.capitalize())))
+	p.theme_name = " & ".join(p.theme_names)
+	p.listed = bool(d.get("listed", false))
+	p.mystery = bool(d.get("mystery", false))
 	var grid: Array = d.get("grid", [])
 	p.rows = grid.size()
 	p.cols = str(grid[0]).length() if p.rows > 0 else 0
@@ -34,7 +50,7 @@ static func from_dict(d: Dictionary, theme_names: Dictionary = {}) -> Puzzle:
 		var cells: PackedInt32Array = PackedInt32Array()
 		for c: Variant in (w as Dictionary).get("p", []):
 			cells.append(int(c))
-		p.words.append({"word": str((w as Dictionary).get("w", "")), "cells": cells})
+		p.words.append({"word": str((w as Dictionary).get("w", "")), "cells": cells, "theme": int((w as Dictionary).get("t", 0))})
 	for c: Variant in d.get("shadows", []):
 		p.shadows.append(int(c))
 	for c: Variant in d.get("beacons", []):
@@ -51,13 +67,45 @@ func to_dict() -> Dictionary:
 		grid.append(s)
 	var ws: Array = []
 	for w: Dictionary in words:
-		ws.append({"w": w["word"], "p": Array(w["cells"])})
+		var e: Dictionary = {"w": w["word"], "p": Array(w["cells"])}
+		if theme_ids.size() > 1:
+			e["t"] = int(w.get("theme", 0))
+		ws.append(e)
 	var d: Dictionary = {"id": id, "theme": theme_id, "grid": grid, "words": ws}
+	if theme_ids.size() > 1:
+		d["themes"] = Array(theme_ids)
+	if listed:
+		d["listed"] = true
+	if mystery:
+		d["mystery"] = true
 	if not shadows.is_empty():
 		d["shadows"] = Array(shadows)
 	if not beacons.is_empty():
 		d["beacons"] = Array(beacons)
 	return d
+
+
+## The theme title as the player sees it: in a mystery level each theme name
+## shows only once one of its words is found (`found` is LevelState.found).
+func shown_theme(found: PackedByteArray) -> String:
+	if not mystery:
+		return theme_name
+	var parts: PackedStringArray = PackedStringArray()
+	for t: int in theme_names.size():
+		parts.append(shown_theme_part(t, found))
+	if parts.size() == 1 and parts[0] == "???":
+		return "Mystery theme"
+	return " & ".join(parts)
+
+
+## One theme's name, or "???" while it is still a mystery.
+func shown_theme_part(t: int, found: PackedByteArray) -> String:
+	if not mystery:
+		return theme_names[t]
+	for i: int in words.size():
+		if int(words[i].get("theme", 0)) == t and i < found.size() and found[i] != 0:
+			return theme_names[t]
+	return "???"
 
 
 func cell_count() -> int:

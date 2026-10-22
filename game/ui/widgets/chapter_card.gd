@@ -1,7 +1,7 @@
 class_name ChapterCard
 extends Button
-## A chapter on the chapter list, painted in its own colours: number, name,
-## tagline, stars and progress, or what opens it when locked.
+## A chapter on the chapter list, painted in its own colours: number and new
+## idea, name, tagline, stars and progress, or what opens it when locked.
 
 var chapter: Dictionary
 var index: int = 0
@@ -52,7 +52,7 @@ func _draw() -> void:
 	var ink: Color = Style.INK if unlocked else Color(Style.INK, 0.45)
 	var cap: FontVariation = (UIKit.font(700) as FontVariation).duplicate()
 	cap.spacing_glyph = 3
-	draw_string(cap, Vector2(pad, 44), "CHAPTER %d" % (index + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(accent, 0.95 if unlocked else 0.45))
+	draw_string(cap, Vector2(pad, 44), ("CHAPTER %d  ·  %s" % [index + 1, str(chapter.get("concept", ""))]).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(accent, 0.95 if unlocked else 0.45))
 	draw_string(UIKit.font(600), Vector2(pad, 92), str(chapter["name"]), HORIZONTAL_ALIGNMENT_LEFT, size.x - 200, 40, ink)
 	var tag: String = str(chapter["tagline"]) if unlocked else lock_text
 	draw_string(UIKit.font(400), Vector2(pad, 126), tag, HORIZONTAL_ALIGNMENT_LEFT, size.x - 200, 21, Color(Style.MUTED, 0.9 if unlocked else 0.65))

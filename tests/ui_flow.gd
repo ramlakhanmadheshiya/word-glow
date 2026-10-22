@@ -38,6 +38,7 @@ func _ready() -> void:
 	await _daily()
 	await _restart_app()
 	await _chapter_key_unlock()
+	await _chapter_ideas()
 	await _extras()
 	await _reset_progress()
 	_wipe()
@@ -92,7 +93,7 @@ func _banner_space() -> void:
 		t.ok(_find(app.screen, n) != null, "home has %s" % n)
 	t.ok(_find(app.screen, "Logo") == null, "home has no logo image")
 	var where: Label = _find(app.screen, "NextLevel") as Label
-	t.eq(where.text, "Meadow · Level 1", "home shows only the chapter and level")
+	t.eq(where.text, "First Light · Level 1", "home shows only the chapter and level")
 
 
 func _menus() -> void:
@@ -104,11 +105,14 @@ func _menus() -> void:
 	for c: Node in list.get_children():
 		if c is ChapterCard:
 			cards += 1
-	t.eq(cards, 16, "16 chapter cards")
-	_press(list, "Chapter_harbor")
+	t.eq(cards, 8, "8 chapter cards")
+	for c: Node in list.get_children():
+		if c is ChapterCard:
+			t.ok(not str((c as ChapterCard).chapter.get("concept", "")).is_empty(), "%s names its idea" % c.name)
+	_press(list, "Chapter_meadow")
 	await _wait(0.6)
 	t.eq(app.screen_name, "chapters", "a locked chapter does not open")
-	_press(list, "Chapter_meadow")
+	_press(list, "Chapter_firstlight")
 	await _wait(0.6)
 	t.eq(app.screen_name, "levels", "an open chapter shows its levels")
 	var grid: Node = _find(app.screen, "Grid")
@@ -118,6 +122,11 @@ func _menus() -> void:
 		if not tile.open:
 			locked += 1
 	t.eq(locked, 39, "39 locked levels are visible")
+	_press(app.screen, "HowItWorks")
+	await _wait(0.5)
+	t.ok(app.top_overlay() is HowToCard, "How it works explains the chapter's idea")
+	app.top_overlay().close()
+	await _wait(0.4)
 	t.ok((_find(app.screen, "Legend") as Label).text.contains("39 locked"), "the hero card counts locked levels")
 	app.handle_back()
 	await _wait(0.6)
@@ -136,7 +145,7 @@ func _first_level() -> void:
 	app.top_overlay().close()
 	await _wait(0.5)
 	var play: Node = _play()
-	t.eq(play.puzzle.id, "meadow-01", "it is Meadow 1")
+	t.eq(play.puzzle.id, "firstlight-01", "it is First Light 1")
 	for n: String in ["LevelsButton", "LetterHint", "WordHint", "Restart", "SettingsButton", "Back"]:
 		t.ok(_find(play, n) != null, "the game screen has %s" % n)
 	var wrong: PackedInt32Array = _wrong_path(play.state)
@@ -157,7 +166,7 @@ func _first_level() -> void:
 	var card: Overlay = app.top_overlay()
 	t.ok(card is ResultCard, "the result card appears")
 	t.eq((_find(card, "ResultTitle") as Label).text, "Nicely done", "2-star title")
-	t.eq(Profile.stars_for("meadow-01"), 2, "2 stars recorded")
+	t.eq(Profile.stars_for("firstlight-01"), 2, "2 stars recorded")
 	t.ok(Profile.coins() >= coins0 + Economy.LEVEL_REWARD + 2 * Economy.STAR_REWARD, "clear reward paid")
 	_press(card, "Again")
 	await _wait(0.8)
@@ -165,11 +174,11 @@ func _first_level() -> void:
 	t.eq(play.state.stars(), 3, "Again starts fresh with 3 stars on offer")
 	await _solve(play)
 	await _wait(2.6)
-	t.eq(Profile.stars_for("meadow-01"), 3, "a perfect replay records 3 stars")
+	t.eq(Profile.stars_for("firstlight-01"), 3, "a perfect replay records 3 stars")
 	t.eq((_find(app.top_overlay(), "ResultTitle") as Label).text, "Perfect!", "3-star title")
 	_press(app.top_overlay(), "Next")
 	await _wait(0.9)
-	t.eq(_play().puzzle.id, "meadow-02", "Next opens level 2")
+	t.eq(_play().puzzle.id, "firstlight-02", "Next opens level 2")
 
 
 func _locked_and_keys() -> void:
@@ -188,7 +197,7 @@ func _locked_and_keys() -> void:
 	_press(app.top_overlay(), "UseKey")
 	await _wait(0.9)
 	t.eq(app.screen_name, "play", "a key opens the level and plays it")
-	t.eq(_play().puzzle.id, "meadow-09", "it is level 9")
+	t.eq(_play().puzzle.id, "firstlight-09", "it is level 9")
 	t.eq(Profile.keys(), 0, "the key is spent")
 
 
@@ -235,7 +244,7 @@ func _restart_button() -> void:
 	await _wait(0.9)
 	t.eq(_play().state.found_count(), 0, "Restart clears found words")
 	t.eq(_play().state.stars(), 3, "Restart puts 3 stars back on offer")
-	t.ok(Profile.saved_progress("meadow-09").is_empty(), "Restart clears saved progress")
+	t.ok(Profile.saved_progress("firstlight-09").is_empty(), "Restart clears saved progress")
 
 
 func _shop() -> void:
@@ -380,7 +389,7 @@ func _restart_app() -> void:
 	Save.load_data()
 	await _boot()
 	t.eq(Profile.coins(), coins, "coins survive a restart")
-	t.eq(Profile.stars_for("meadow-01"), 3, "stars survive a restart")
+	t.eq(Profile.stars_for("firstlight-01"), 3, "stars survive a restart")
 	t.ok(Profile.is_supporter(), "purchases survive a restart")
 	t.eq(float(Profile.setting("music_volume")), 0.4, "settings survive a restart")
 
@@ -418,21 +427,50 @@ func _reset_progress() -> void:
 	reset.pressed.emit()
 	await _wait(1.0)
 	t.eq(Profile.stat("levels"), 0, "the second tap erases progress")
-	t.eq(Profile.stars_for("meadow-01"), 0, "stars are erased")
+	t.eq(Profile.stars_for("firstlight-01"), 0, "stars are erased")
 	t.ok(not Profile.daily_done(Catalog.today_key()), "the daily is reset")
 	t.ok(Profile.is_supporter(), "packs are kept")
 	t.eq(Profile.keys(), keys, "keys are kept")
 	t.eq(float(Profile.setting("music_volume")), 0.4, "settings are kept")
 	t.eq(app.screen_name, "home", "after a reset, home")
-	t.eq((_find(app.screen, "NextLevel") as Label).text, "Meadow · Level 1", "Play starts again from Meadow 1")
+	t.eq((_find(app.screen, "NextLevel") as Label).text, "First Light · Level 1", "Play starts again from First Light 1")
 	t.ok(app.top_overlay() == null, "no card is left open")
+
+
+## Each chapter's idea in play: the first level of a chapter opens its idea
+## card, listed levels write the words out, and a mystery theme shows once a
+## word is found.
+func _chapter_ideas() -> void:
+	Profile.mark_seen("intro_listed")
+	app.go("play", {"chapter": 6, "level": 1})
+	await _wait(1.2)
+	var card: Overlay = app.top_overlay()
+	t.ok(card is HowToCard, "a new chapter opens with its idea card")
+	if card is HowToCard:
+		t.eq((card as HowToCard).pages, ["mystery"], "Moonwell explains the mystery theme")
+		card.close()
+	await _wait(0.5)
+	var play: Node = _play()
+	t.ok(play.puzzle.mystery, "Moonwell levels have a mystery theme")
+	var title: Label = _find(play, "Title") as Label
+	t.eq(title.text, "Mystery theme", "the theme starts hidden")
+	var order: PackedInt32Array = LanternRules.solve_order(play.puzzle)
+	play.board.traced.emit(play.puzzle.words[order[0]]["cells"])
+	await _wait(0.3)
+	t.eq(title.text, play.puzzle.theme_name, "finding a word reveals the theme")
+	app.go("play", {"chapter": 0, "level": 2})
+	await _wait(1.0)
+	t.ok(app.top_overlay() == null, "an idea card shows only once")
+	t.ok(_play().puzzle.listed, "First Light writes the words out")
+	app.go("home")
+	await _wait(0.6)
 
 
 ## A locked chapter opened with a chapter key starts at its level 1.
 func _chapter_key_unlock() -> void:
 	app.go("chapters")
 	await _wait(0.7)
-	_press(_find(app.screen, "List"), "Chapter_bamboo")
+	_press(_find(app.screen, "List"), "Chapter_bazaar")
 	await _wait(0.5)
 	var card: Overlay = app.top_overlay()
 	t.ok(card is LockedChapterCard, "a locked chapter offers a chapter key")
@@ -440,7 +478,7 @@ func _chapter_key_unlock() -> void:
 	card.close()
 	await _wait(0.3)
 	Profile.add_chapter_keys(1)
-	_press(_find(app.screen, "List"), "Chapter_bamboo")
+	_press(_find(app.screen, "List"), "Chapter_bazaar")
 	await _wait(0.5)
 	_press(app.top_overlay(), "UseChapterKey")
 	await _wait(0.9)

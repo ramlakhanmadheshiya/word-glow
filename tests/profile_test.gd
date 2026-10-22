@@ -25,6 +25,7 @@ func _ready() -> void:
 	_restart_keeps_progress()
 	_corrupt_save_recovers()
 	_migrates_v1_saves()
+	_migrates_v2_saves()
 	_migrates_diamond_keys()
 	_streak_achievements()
 	_glyphs()
@@ -70,16 +71,16 @@ func _coins_and_free_sparks() -> void:
 
 func _stars_and_rewards() -> void:
 	var before: int = Profile.coins()
-	var r: Dictionary = Profile.complete_level("meadow-01", _state("meadow-01", 2))
+	var r: Dictionary = Profile.complete_level("firstlight-01", _state("firstlight-01", 2))
 	t.eq(r["stars"], 2, "two extra moves: 2 stars")
 	t.eq(r["coins"], Economy.LEVEL_REWARD + 2 * Economy.STAR_REWARD, "first clear pays the level and each star")
 	t.eq(Profile.coins(), before + r["coins"], "coins added")
-	var better: Dictionary = Profile.complete_level("meadow-01", _state("meadow-01"))
+	var better: Dictionary = Profile.complete_level("firstlight-01", _state("firstlight-01"))
 	t.eq(better["stars"], 3, "perfect replay: 3 stars")
 	t.eq(better["coins"], Economy.STAR_REWARD, "improving pays only the new star")
-	var worse: Dictionary = Profile.complete_level("meadow-01", _state("meadow-01", 9))
+	var worse: Dictionary = Profile.complete_level("firstlight-01", _state("firstlight-01", 9))
 	t.eq(worse["coins"], 0, "a worse replay pays nothing")
-	t.eq(Profile.stars_for("meadow-01"), 3, "the best stars are kept")
+	t.eq(Profile.stars_for("firstlight-01"), 3, "the best stars are kept")
 	t.eq(Profile.stat("stars"), 3, "star stat counts each star once")
 	t.eq(Profile.stat("levels"), 1, "levels stat counted once")
 	t.eq(Profile.stat("perfect"), 1, "perfect clears counted once")
@@ -89,12 +90,12 @@ func _stars_and_rewards() -> void:
 func _unlocks_keys_and_chapters() -> void:
 	t.ok(Profile.level_unlocked(0, 2), "level 2 opens after level 1")
 	t.ok(not Profile.level_unlocked(0, 3), "level 3 stays locked")
-	t.ok(not Profile.use_key("meadow-05"), "no keys, no key unlock")
+	t.ok(not Profile.use_key("firstlight-05"), "no keys, no key unlock")
 	Profile.add_keys(2)
-	t.ok(Profile.use_key("meadow-05"), "a key opens a locked level")
+	t.ok(Profile.use_key("firstlight-05"), "a key opens a locked level")
 	t.ok(Profile.level_unlocked(0, 5), "the keyed level is open")
 	t.ok(not Profile.level_unlocked(0, 4), "levels before it stay locked")
-	t.ok(not Profile.use_key("meadow-05"), "a key is not spent twice on one level")
+	t.ok(not Profile.use_key("firstlight-05"), "a key is not spent twice on one level")
 	t.eq(Profile.keys(), 1, "one key left")
 	t.eq(Profile.next_level(), [0, 2] as Array[int], "Play continues at the first open level")
 	t.ok(not Profile.chapter_unlocked(1), "chapter 2 starts locked")
@@ -103,7 +104,7 @@ func _unlocks_keys_and_chapters() -> void:
 	var opened: bool = false
 	var done: bool = false
 	for n: int in range(2, 41):
-		var r: Dictionary = Profile.complete_level(Catalog.level_id("meadow", n), _state(Catalog.level_id("meadow", n)))
+		var r: Dictionary = Profile.complete_level(Catalog.level_id("firstlight", n), _state(Catalog.level_id("firstlight", n)))
 		paid += int(r["coins"])
 		if n == Catalog.unlock_clears:
 			opened = r["chapter_unlocked"]
@@ -114,17 +115,17 @@ func _unlocks_keys_and_chapters() -> void:
 	t.eq(paid, 39 * (Economy.LEVEL_REWARD + 3 * Economy.STAR_REWARD) + Economy.CHAPTER_BONUS, "exact coins for the chapter, bonus included")
 	t.eq(Profile.coins(), before + paid, "coins match")
 	t.eq(Profile.chapter_stars(0), 120, "120 stars in a perfect chapter")
-	t.ok(not Profile.complete_level("meadow-40", _state("meadow-40"))["chapter_done"], "the chapter bonus is never paid twice")
-	t.eq(Profile.stat("ch_meadow"), 1, "chapter completion recorded")
+	t.ok(not Profile.complete_level("firstlight-40", _state("firstlight-40"))["chapter_done"], "the chapter bonus is never paid twice")
+	t.eq(Profile.stat("ch_firstlight"), 1, "chapter completion recorded")
 	t.eq(Profile.next_level(), [1, 1] as Array[int], "Play moves to the next chapter")
 
 
 ## Chapter keys: earned once per chapter for level 40, open a locked chapter
 ## at level 1 only, limited free ones from videos, and sold in packs.
 func _chapter_keys() -> void:
-	# Meadow was fully cleared above, so its level 40 has already paid a chapter key.
+	# First Light was fully cleared above, so its level 40 has already paid a chapter key.
 	t.eq(Profile.chapter_keys(), 1, "clearing level 40 earned a chapter key")
-	Profile.complete_level("meadow-40", _state("meadow-40"))
+	Profile.complete_level("firstlight-40", _state("firstlight-40"))
 	t.eq(Profile.chapter_keys(), 1, "replaying level 40 pays no second chapter key")
 	t.ok(not Profile.chapter_unlocked(5), "chapter 6 is locked")
 	t.ok(not Profile.use_chapter_key(1), "a chapter key is not spent on an open chapter")
@@ -160,15 +161,15 @@ func _achievements_pay_once() -> void:
 	var got: Array[Dictionary] = Profile.check_achievements()
 	var ids: Array = got.map(func(a: Dictionary) -> String: return a["id"])
 	t.ok(ids.has("first_light"), "First Light unlocked")
-	t.ok(ids.has("chapter_meadow"), "the chapter achievement unlocked")
+	t.ok(ids.has("chapter_firstlight"), "the chapter achievement unlocked")
 	t.ok(ids.has("stars_50"), "the star achievement unlocked")
-	t.ok(not ids.has("chapter_harbor"), "other chapters not yet")
+	t.ok(not ids.has("chapter_meadow"), "other chapters not yet")
 	var paid: int = 0
 	for a: Dictionary in got:
 		paid += int(a["reward"])
 	t.eq(Profile.coins(), before + paid, "achievement rewards paid")
 	t.eq(Profile.check_achievements().size(), 0, "achievements unlock only once")
-	t.eq(Achievements.all().size(), Achievements.BASE.size() + 16, "one achievement per chapter")
+	t.eq(Achievements.all().size(), Achievements.BASE.size() + 8, "one achievement per chapter")
 
 
 func _video_rewards() -> void:
@@ -254,22 +255,22 @@ func _reset_keeps_purchases() -> void:
 
 
 func _restart_keeps_progress() -> void:
-	Profile.complete_level("meadow-01", _state("meadow-01", 1))
-	var p: Puzzle = Catalog.puzzle_by_id("meadow-02")
+	Profile.complete_level("firstlight-01", _state("firstlight-01", 1))
+	var p: Puzzle = Catalog.puzzle_by_id("firstlight-02")
 	var s: LevelState = LevelState.new(p)
 	s.submit(p.words[LanternRules.solve_order(p)[0]]["cells"])
-	Profile.store_progress("meadow-02", s)
+	Profile.store_progress("firstlight-02", s)
 	Profile.set_setting("music_volume", 0.25)
 	var coins: int = Profile.coins()
 	Save.flush()
 	Save.data = {}
 	Save.load_data()
 	t.eq(Profile.coins(), coins, "coins survive a restart")
-	t.eq(Profile.stars_for("meadow-01"), 2, "stars survive a restart")
+	t.eq(Profile.stars_for("firstlight-01"), 2, "stars survive a restart")
 	t.eq(float(Profile.setting("music_volume")), 0.25, "volume survives a restart")
 	t.ok(Profile.is_supporter(), "purchases survive a restart")
 	var s2: LevelState = LevelState.new(p)
-	s2.restore(Profile.saved_progress("meadow-02"))
+	s2.restore(Profile.saved_progress("firstlight-02"))
 	t.eq(s2.found_count(), 1, "a half-played level resumes")
 
 
@@ -294,18 +295,18 @@ func _corrupt_save_recovers() -> void:
 
 func _migrates_v1_saves() -> void:
 	var f: FileAccess = FileAccess.open(TEST_SAVE, FileAccess.WRITE)
-	f.store_string(JSON.stringify({"version": 1, "coins": 777, "cleared": {"meadow-01": {"flawless": true}},
+	f.store_string(JSON.stringify({"version": 1, "coins": 777, "cleared": {"firstlight-01": {"flawless": true}},
 		"settings": {"music": false, "sfx": true, "haptics": false}, "stats": {"levels": 9, "words": 50, "worlds": 2}}))
 	f.close()
 	Save.load_data()
 	t.eq(Profile.coins(), 777, "v1 coins kept")
-	t.ok(not Profile.is_cleared("meadow-01"), "v1 level progress dropped (the levels changed)")
+	t.ok(not Profile.is_cleared("firstlight-01"), "v1 level progress dropped (the levels changed)")
 	t.eq(float(Profile.setting("music_volume")), 0.0, "v1 music off becomes volume 0")
 	t.ok(float(Profile.setting("sound_volume")) > 0.0, "v1 sound on keeps a volume")
 	t.ok(not bool(Profile.setting("haptics")), "v1 vibration setting kept")
 	t.eq(Profile.stat("words"), 50, "v1 word stats kept")
 	t.eq(Profile.stat("levels"), 0, "v1 level stats reset")
-	t.eq(int(Save.data["version"]), 2, "saved as version 2")
+	t.eq(int(Save.data["version"]), 3, "saved as version 3")
 
 
 ## Every character the UI can show (including every fallback price) must be in
@@ -328,6 +329,29 @@ func _glyphs() -> void:
 				ok = true
 				break
 		t.ok(ok, "the fonts can draw '%s' (U+%04X)" % [text[i], code])
+
+
+## Version 2 saves had 16 chapters: level progress starts over on the new
+## chapters, keys spent on old levels and chapters come back, the rest is kept.
+func _migrates_v2_saves() -> void:
+	var f: FileAccess = FileAccess.open(TEST_SAVE, FileAccess.WRITE)
+	f.store_string(JSON.stringify({"version": 2, "coins": 420, "keys": 1, "chapter_keys": 0,
+		"cleared": {"meadow-01": {"stars": 3}}, "progress": {"bamboo-03": {"found": [0]}}, "unlocked": {"meadow-07": true, "comet-02": true},
+		"chapters_opened": {"glacier": true}, "last_level": "bamboo-03", "owned": {"supporter": true},
+		"stats": {"levels": 30, "stars": 80, "perfect": 12, "words": 300}, "seen": {"intro_shadows": true, "rate_prompt": true}}))
+	f.close()
+	Save.load_data()
+	t.eq(Profile.coins(), 420, "v2 coins kept")
+	t.ok(not Profile.is_cleared("meadow-01"), "v2 level progress starts over (the chapters changed)")
+	t.ok(Profile.saved_progress("bamboo-03").is_empty(), "v2 half-played levels dropped")
+	t.eq(Profile.keys(), 3, "level keys spent on old levels come back")
+	t.eq(Profile.chapter_keys(), 1, "chapter keys spent on old chapters come back")
+	t.ok(not Profile.chapter_unlocked(1), "only chapter 1 is open")
+	t.eq(Profile.stat("levels"), 0, "v2 level stats reset")
+	t.eq(Profile.stat("words"), 300, "v2 word stats kept")
+	t.ok(not Profile.seen("intro_shadows"), "the chapter idea cards show again")
+	t.ok(Profile.seen("rate_prompt"), "other seen flags kept")
+	t.eq(int(Save.data["version"]), 3, "saved as version 3")
 
 
 ## Saves from builds that called chapter keys "diamond keys" keep them.

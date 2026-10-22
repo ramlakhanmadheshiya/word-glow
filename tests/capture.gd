@@ -83,6 +83,28 @@ func _ready() -> void:
 	await _wait(0.4)
 	_close_intro()
 	await _wait(0.3)
+	# Each chapter's idea: listed words, two themes, a mystery theme.
+	for spot: Array in [[0, 1, 0, "play_listed_first"], [0, 14, 2, "play_listed"], [1, 12, 2, "play_bends"], [5, 10, 2, "play_two_themes"], [6, 3, 0, "play_mystery"]]:
+		app.go("play", {"chapter": spot[0], "level": spot[1]})
+		await _wait(1.0)
+		_close_intro()
+		await _wait(0.4)
+		var ps: Node = app.screen
+		var po: PackedInt32Array = LanternRules.solve_order(ps.puzzle)
+		for k: int in int(spot[2]):
+			ps.board.traced.emit(ps.puzzle.words[po[k]]["cells"])
+			await _wait(0.3)
+		await _wait(1.4)
+		await _shot(str(spot[3]))
+	for page: String in ["listed", "bends", "hidden", "two_themes", "mystery", "finale"]:
+		var card: HowToCard = HowToCard.new()
+		card.pages = [page]
+		card.heading = "New idea"
+		app.open(card)
+		await _wait(0.9)
+		await _shot("howto_" + page)
+		card.close()
+		await _wait(0.35)
 	# Out of coins in a level.
 	app.go("play", {"chapter": 0, "level": 3})
 	await _wait(0.9)
@@ -181,7 +203,7 @@ func _picker(mode: String) -> PickerCard:
 
 
 ## A believable mid-game save: four chapters done with mixed stars, the fifth
-## half way, some keys and coins.
+## half way, some keys and coins. (Later chapters are opened directly.)
 func _seed_progress() -> void:
 	for ci: int in 5:
 		var id: String = Catalog.chapter(ci)["id"]
@@ -196,7 +218,7 @@ func _seed_progress() -> void:
 	Save.data["stats"]["words"] = 1104
 	Save.data["daily"]["streak"] = 3
 	Save.data["daily"]["last_date"] = Catalog.date_key_from_day(Catalog.day_number(Catalog.today_key()) - 1)
-	Save.data["seen"] = {"intro_basics": true, "intro_shadows": true, "intro_beacons": true}
+	Save.data["seen"] = {"intro_listed": true, "intro_bends": true, "intro_hidden": true, "intro_shadows": true, "intro_beacons": true}
 	Save.data["last_level"] = "canyon-22"
 	Profile.check_achievements()
 

@@ -166,17 +166,22 @@ static func problems(p: Puzzle, vocabulary: Dictionary) -> PackedStringArray:
 	var seen_words: Dictionary = {}
 	var covered: PackedInt32Array = PackedInt32Array()
 	covered.resize(p.cell_count())
-	var allowed: Array = vocabulary.get(p.theme_id, [])
-	if allowed.is_empty():
-		errs.append("unknown theme '%s'" % p.theme_id)
+	var ids: PackedStringArray = p.theme_ids if not p.theme_ids.is_empty() else PackedStringArray([p.theme_id])
+	for t: String in ids:
+		if (vocabulary.get(t, []) as Array).is_empty():
+			errs.append("unknown theme '%s'" % t)
+	var per_theme: Dictionary = {}
 	for w: Dictionary in p.words:
 		var word: String = w["word"]
 		var cells: PackedInt32Array = w["cells"]
 		if seen_words.has(word):
 			errs.append("duplicate answer %s" % word)
 		seen_words[word] = true
-		if not allowed.has(word):
-			errs.append("%s is not in theme %s" % [word, p.theme_id])
+		var t: int = int(w.get("theme", 0))
+		var tid: String = ids[t] if t >= 0 and t < ids.size() else ""
+		if not (vocabulary.get(tid, []) as Array).has(word):
+			errs.append("%s is not in theme %s" % [word, tid])
+		per_theme[t] = int(per_theme.get(t, 0)) + 1
 		if cells.size() != word.length():
 			errs.append("%s has %d cells" % [word, cells.size()])
 			continue
@@ -195,6 +200,9 @@ static func problems(p: Puzzle, vocabulary: Dictionary) -> PackedStringArray:
 	for c: int in p.cell_count():
 		if covered[c] != 1:
 			errs.append("cell %d is covered %d times" % [c, covered[c]])
+	for t: int in ids.size():
+		if int(per_theme.get(t, 0)) < 2:
+			errs.append("theme %s has fewer than two words" % ids[t])
 	for c: int in p.beacons:
 		if p.shadows.has(c):
 			errs.append("beacon %d starts in shadow" % c)

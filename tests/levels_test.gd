@@ -3,6 +3,8 @@ extends SceneTree
 ## - theme words are real-looking, unique, A-Z, 3+ letters;
 ## - each level is structurally valid (full coverage, adjacency, words from its theme,
 ##   no duplicate answers, each answer traceable in only one place, solvable with shadows);
+## - each level uses its chapter's idea and no idea from a later chapter (listed
+##   words, straight words, two themes, a mystery theme, shadows, beacons);
 ## - every level can be played to completion through the real game logic;
 ## - difficulty follows the chapter curve: easy (1-5), easy-medium (6-10),
 ##   medium (11-20), medium-hard (21-30), hard (31-39), extreme (40).
@@ -11,7 +13,7 @@ extends SceneTree
 
 
 ## The letters of the 2026-10-15 daily, as built by this version of the generator.
-const PINNED_DAILY: String = "ELKAHCTORLARTCNECDUBEEAECOITBGENNOBA"
+const PINNED_DAILY: String = "ORELECNYSPIPICGANUOHLRAMNAIHCPDRCNIK"
 
 
 func _init() -> void:
@@ -24,7 +26,7 @@ func _init() -> void:
 	var ids: Dictionary = {}
 	var per: int = int(plan["levels_per_chapter"])
 	var chapters: Array = plan["chapters"]
-	t.eq(chapters.size(), 16, "16 chapters")
+	t.eq(chapters.size(), 8, "8 chapters")
 	t.eq(per, 40, "40 levels per chapter")
 	var tiers: Array = plan["difficulty"]["tiers"]
 	for ci: int in chapters.size():
@@ -40,10 +42,7 @@ func _init() -> void:
 			t.eq(p.id, "%s-%02d" % [ch["id"], i + 1], "level id order")
 			t.ok(p.cell_count() >= prev_area, "%s: grid never shrinks within a chapter" % p.id)
 			t.ok(p.theme_id != prev_theme, "%s: theme differs from the previous level" % p.id)
-			if ci + 1 < int(plan["difficulty"]["shadows_from_chapter"]):
-				t.ok(p.shadows.is_empty(), "%s: no shadows before chapter %d" % [p.id, plan["difficulty"]["shadows_from_chapter"]])
-			if ci + 1 < int(plan["difficulty"]["beacons_from_chapter"]):
-				t.ok(p.beacons.is_empty(), "%s: no beacons before chapter %d" % [p.id, plan["difficulty"]["beacons_from_chapter"]])
+			_check_idea(t, p, ch)
 			prev_area = p.cell_count()
 			prev_theme = p.theme_id
 			scores.append(PuzzleGenerator.difficulty(p))
@@ -62,6 +61,23 @@ func _init() -> void:
 			prev_mean = sum / n
 	_check_daily(t, themes, plan, vocab, names)
 	quit(t.report())
+
+
+## Every level shows its chapter's idea, and only the ideas that chapter allows.
+func _check_idea(t: Check, p: Puzzle, ch: Dictionary) -> void:
+	t.eq(p.listed, bool(ch.get("listed", false)), "%s: words listed only in listed chapters" % p.id)
+	t.eq(p.mystery, bool(ch.get("mystery", false)), "%s: mystery theme only in mystery chapters" % p.id)
+	t.eq(p.theme_ids.size(), int(ch.get("themes", 1)), "%s: number of themes" % p.id)
+	t.eq(not p.shadows.is_empty(), float(ch.get("shadows", 0.0)) > 0.0, "%s: shadows exactly in shadow chapters" % p.id)
+	t.eq(not p.beacons.is_empty(), int(ch.get("beacons", 0)) > 0, "%s: beacons exactly in beacon chapters" % p.id)
+	if bool(ch.get("straight", false)):
+		for w: Dictionary in p.words:
+			var cells: PackedInt32Array = w["cells"]
+			var step: int = cells[1] - cells[0]
+			var ok: bool = step == 1 or step == p.cols
+			for k: int in range(2, cells.size()):
+				ok = ok and cells[k] - cells[k - 1] == step
+			t.ok(ok, "%s: %s runs straight, left to right or top to bottom" % [p.id, w["word"]])
 
 
 ## Daily puzzles are built on the phone from the date. Check a full year: every

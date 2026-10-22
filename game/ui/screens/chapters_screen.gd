@@ -1,5 +1,6 @@
 extends Screen
-## All 16 chapters as a calm vertical list, each card in its own colours.
+## All 8 chapters as a calm vertical list, each card in its own colours and
+## naming the idea that chapter adds.
 
 var _first: Control
 

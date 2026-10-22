@@ -1,6 +1,6 @@
 # Word Lantern
 
-*A calm word-light puzzle.* Every tile in the grid belongs to one hidden word on the level's theme. Drag through neighbouring letters to find each word, and it lights up like a string of paper lanterns. Light every tile to clear the level.
+*A calm word-light puzzle.* Every tile in the grid belongs to one word on the level's theme. Drag through neighbouring letters to find each word, and it lights up like a string of paper lanterns. Light every tile to clear the level.
 
 Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the web). Portrait-first; works with touch, mouse and keyboard.
 
@@ -9,26 +9,27 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 
 ## The game
 
-- **Fill-the-grid word finding.** Each level is a theme (*Fruit*, *Weather*, *Castle*…) and a grid covered completely by its hidden words, traced up, down, left or right. The slots above the grid show each word's length.
+- **Fill-the-grid word finding.** Each level is a theme (*Fruit*, *Weather*, *Castle*…) and a grid covered completely by its words, traced up, down, left or right. The slots above the grid show each word (or only its length, from chapter 3).
 - **Every answer fits in exactly one place.** The level checker rejects any level where a word could be spelled along another path.
-- **Shadow tiles** (from chapter 3) hide their letters until a word next to them is found. **Beacons** (from chapter 5) light their whole row and column.
-- **16 chapters × 40 levels = 640 levels.** Each chapter has its own colours and follows the same curve:
+- **8 chapters × 40 levels = 320 levels, one new idea per chapter** (like Single Shot). The first time a chapter is played, a "New in …" card explains its idea with a live demo; *How it works* on the chapter's level screen shows it again. The idea and its settings live in `data/chapters.json`:
 
-  | Levels | Difficulty | Grid (early → late chapters) | Words |
+  | # | Chapter | Idea | Grid |
   |---|---|---|---|
-  | 1–5 | Easy | 4×4 → 5×4 (chapter 1 starts on 3×3) | 3–5 letters |
-  | 6–10 | Easy–medium | 5×4 → 5×5 | 3–6 |
-  | 11–20 | Medium | 5×5 → 6×5 | 4–6 |
-  | 21–30 | Medium–hard | 6×5 → 6×6 | 4–7 |
-  | 31–39 | Hard | 6×6 → 7×6 | 5–7 |
-  | 40 | Extreme | 8×7, long words only | 6–8 |
+  | 1 | First Light | **Word list**: the words are written out; each runs straight, left to right or top to bottom | 3×3 → 6×6 |
+  | 2 | Meadow | **Bends**: still listed, but words turn corners and may read backwards | 3×3 → 7×6 |
+  | 3 | Harbor | **Hidden words**: only each word's length is shown | 4×3 → 7×7 |
+  | 4 | Orchard | **Shadows**: dark tiles hide their letters until a word next to them is found | 4×4 → 8×7 |
+  | 5 | Canyon | **Beacons**: a beacon lights its whole row and column (with shadows) | 5×4 → 8×7 |
+  | 6 | Bazaar | **Two themes** share each grid; each theme's slots sit on their own labelled row | 5×4 → 8×7 |
+  | 7 | Moonwell | **Mystery theme**: hidden until one of its words is found (with shadows) | 5×5 → 8×7 |
+  | 8 | Eclipse | **Everything**: two mystery themes, shadows and beacons | 5×5 → 8×7 |
 
-  Later chapters sit higher on the curve (bigger grids sooner, longer words, more shadows and beacons). `tests/levels_test.gd` checks that every tier is harder on average than the one before and that level 40 is the hardest level of its chapter.
+  Within every chapter: levels 1–5 easy, 6–10 easy–medium, 11–20 medium, 21–30 medium–hard, 31–39 hard, 40 extreme (long words only). `tests/levels_test.gd` checks that every level uses its chapter's idea and no other, every level is harder than the one before, and every tier is harder on average than the one before.
 - **Three stars.** A perfect solve (no wrong words, no hints) earns ★★★; up to 3 extra moves earns ★★; more earns ★. A MOVES / STARS strip over the board shows what is still on offer, like Single Shot's TRY / STARS.
 - **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. A **chapter key** opens a whole locked chapter at once (its level 1; the rest open by playing); you earn one by clearing level 40 of any chapter, can buy them (1 or 3), or get one a day from a video. Locked levels are still shown on the level grid.
-- **Smooth difficulty:** every level is a little harder than the one before. The generator builds several candidates per level and keeps the easiest one that is still harder than the previous level, scoring grid size, word length, shadows, waves of light, twisty words and backwards words; grids grow one step at a time from 3×3 to 8×7.
-- **Daily lantern:** built on the phone from the date (`PuzzleGenerator.daily`), with no server and no stored pool, so it never runs out and needs no updates. Everyone gets the same puzzle on the same date: the date seeds the generator, the theme rotates through every theme before repeating (never twice in a row), and difficulty follows the week (Monday gentlest, Sunday hardest). It is checked by the same solver as the levels, and a test builds a full year of dailies and pins one puzzle so an accidental generator change is caught.
-- **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily lantern, and 32 achievements in all.
+- **Smooth difficulty:** every level is a little harder than the one before. The generator builds several candidates per level and keeps the easiest one that is still harder than the previous level, scoring grid size, word length, shadows, waves of light, twisty words, backwards words, words running down, and look-alike first letters; grids grow one step at a time through the chapter's range.
+- **Daily lantern:** hidden words with shadows and beacons (Canyon's rules), built on the phone from the date (`PuzzleGenerator.daily`), with no server and no stored pool, so it never runs out and needs no updates. Everyone gets the same puzzle on the same date: the date seeds the generator, the theme rotates through every theme before repeating (never twice in a row), and difficulty follows the week (Monday gentlest, Sunday hardest). It is checked by the same solver as the levels, and a test builds a full year of dailies and pins one puzzle so an accidental generator change is caught.
+- **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily lantern, and 28 achievements in all.
 - **Hints:** *Letter hint* (25 coins) reveals the next letter of a word; the first letter hint each day is free (3 for Supporters). *Word hint* (60 coins) finds a whole word. **Out of coins, the player can watch a rewarded video for the hint.** Hints count as extra moves.
 - **Shop** (Single Shot's model; one-time packs plus consumables, all via Google Play):
 
@@ -49,7 +50,7 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 - **Appearance:** a thin Auto / Dark / Light slider in Settings; Auto follows the phone's dark mode. It applies to the Original colours (Theme-pack themes keep their own). The web build shows no ads (where no video can be shown, an out-of-coins hint is simply free).
 - **Settings:** Music and Sound volume sliders, Vibration, colour theme and lantern style pickers, How to play, Shop, Awards, About, Credits, Ad privacy (when required), and Reset progress (like Single Shot: tap once to arm, again to erase; hidden during a level; keeps settings, packs, keys and bought coins).
 - **While playing,** MOVES / STARS stay visible at the top; the letters being traced and short messages appear on their own line just above the board.
-- **Saving:** everything is saved locally with atomic writes and a backup; half-played levels resume; version-1 saves are migrated.
+- **Saving:** everything is saved locally with atomic writes and a backup; half-played levels resume; older saves are migrated (version-2 saves from the 16-chapter builds keep coins, purchases, settings, dailies and achievements; level progress starts over and spent keys come back).
 
 ### Controls
 
@@ -76,7 +77,7 @@ Debug desktop runs show a test ad banner and simulate purchases, so every flow c
 
 | Suite | What it checks |
 |---|---|
-| `tests/levels_test.gd` | 61 themes of valid words; all 1,370 levels (640 + 730 daily): full coverage, adjacent paths, theme words only, no duplicates, each answer traceable in one place only, solvable with shadows, played through with the real game logic; the difficulty curve of every chapter; mechanics only from their chapters. |
+| `tests/levels_test.gd` | 61 themes of valid words; all 685 levels (320 + 365 daily): full coverage, adjacent paths, words from their own theme, no duplicates, each answer traceable in one place only, solvable with shadows, played through with the real game logic; the difficulty curve of every chapter; each chapter's idea (listed, straight, two themes, mystery, shadows, beacons) in every level and nowhere else. |
 | `tests/logic_test.gd` | Word validation, shadows, beacon beams, hints, stars and moves, save/restore of half-played levels, and broken puzzles the validator must reject. |
 | `tests/profile_test.tscn` | Coins, free letter hints, stars and star rewards, unlocks, keys, chapter bonus, dailies, achievements (once), video reward limits, simulated purchases (packs, coins, keys, tips), trials, reset keeping purchases, restart persistence, corrupt-save recovery, v1 migration. |
 | `tests/ui_flow.tscn` | The real app end to end with the mock ad provider: banner space, chapters, 40-tile level grid with locked levels, a level with a wrong guess (2★), Again for 3★, Next, a locked level opened with a key, free/paid hints, out-of-coins video (watched and skipped), Restart, the shop (coin bag, free coins video, pack trial, theme pick, Supporter removes the banner), volume sliders, Reset hidden in a level, the daily, and an app restart. |
@@ -95,7 +96,7 @@ godot --headless --path . -s res://tools/generate_levels.gd            # everyth
 godot --headless --path . -s res://tools/generate_levels.gd -- canyon  # one chapter
 ```
 
-Levels are generated once from `data/themes.json` and the plan in `data/chapters.json`, and committed. The generator is deterministic (CI regenerates and fails on any difference). For each level it builds a random Hamiltonian path over the grid, cuts it into theme words, rejects layouts where an answer can be traced elsewhere, and places shadows and beacons only where every tile can still be lit, light spreads in waves, and beacons genuinely help.
+Levels are generated once from `data/themes.json` and the plan in `data/chapters.json`, and committed. The generator is deterministic (CI regenerates and fails on any difference). For each level it builds a random Hamiltonian path over the grid (or, in First Light, straight rows and columns), cuts it into theme words (from two themes in Bazaar and Eclipse), rejects layouts where an answer can be traced elsewhere, and places shadows and beacons only where every tile can still be lit, light spreads in waves, and beacons genuinely help.
 
 ## Build & publish
 

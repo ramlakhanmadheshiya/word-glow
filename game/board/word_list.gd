@@ -1,11 +1,14 @@
 class_name WordList
 extends Control
-## The answers as rows of letter slots: empty boxes show each word's length,
-## Spark hints fill in letters, and found words light up in their lantern colour.
+## The answers as rows of letter slots: empty boxes show each word's length (or,
+## in listed levels, the word itself), letter hints fill in letters, and found
+## words light up in their lantern colour. Two-theme levels put each theme's
+## words on their own rows under a small theme label.
 
 var state: LevelState
 var _colors: Dictionary = {}
 var _rects: Array[Rect2] = []     # one per word
+var _labels: Array = []           # [theme index, baseline y] per theme group
 var _box: float = 30.0
 var _pop: Dictionary = {}         # word index -> start time
 var _now: float = 0.0
@@ -37,7 +40,8 @@ func _notification(what: int) -> void:
 		_relayout()
 
 
-## Flows words into centred rows, shrinking the boxes until they fit in 3 rows.
+## Flows words into centred rows, shrinking the boxes until they fit in 3 rows
+## (one more when two themes each start their own row).
 func _relayout() -> void:
 	if state == null or size.x <= 0:
 		return
@@ -45,10 +49,12 @@ func _relayout() -> void:
 	var words: Array[Dictionary] = state.puzzle.words
 	var best: Array[Rect2] = []
 	var box: float = 40.0
+	var max_rows: int = 3 + state.puzzle.theme_ids.size() - 1
 	while box >= 20.0:
 		var rows: Array = _flow(words, box)
 		best = rows[0]
-		if int(rows[1]) <= 3:
+		_labels = rows[2]
+		if int(rows[1]) <= max_rows:
 			break
 		box -= 2.0
 	_box = box
@@ -66,18 +72,31 @@ func _flow(words: Array[Dictionary], box: float) -> Array:
 	var row_gap: float = box * 0.38
 	var rects: Array[Rect2] = []
 	var rows: Array = [[]]
+	var starts: Dictionary = {}       # row index -> theme that starts on it
+	var labelled: bool = state.puzzle.theme_ids.size() > 1
+	if labelled:
+		starts[0] = int(words[0].get("theme", 0)) if not words.is_empty() else 0
 	var x: float = 0.0
 	for i: int in words.size():
 		var n: int = str(words[i]["word"]).length()
 		var w: float = n * box + (n - 1) * gap
-		if x > 0.0 and x + w > size.x:
+		var new_theme: bool = i > 0 and int(words[i].get("theme", 0)) != int(words[i - 1].get("theme", 0))
+		if x > 0.0 and (x + w > size.x or new_theme):
 			rows.append([])
 			x = 0.0
+			if new_theme:
+				starts[rows.size() - 1] = int(words[i].get("theme", 0))
 		rows[rows.size() - 1].append([i, w])
 		x += w + chip_gap
 	rects.resize(words.size())
 	var y: float = 2.0
-	for row: Array in rows:
+	var labels: Array = []
+	var label_h: float = 28.0
+	for ri: int in rows.size():
+		var row: Array = rows[ri]
+		if starts.has(ri):
+			labels.append([int(starts[ri]), y + label_h - 6.0])
+			y += label_h
 		var total: float = -chip_gap
 		for item: Array in row:
 			total += float(item[1]) + chip_gap
@@ -86,7 +105,7 @@ func _flow(words: Array[Dictionary], box: float) -> Array:
 			rects[int(item[0])] = Rect2(rx, y, float(item[1]), box)
 			rx += float(item[1]) + chip_gap
 		y += box + row_gap
-	return [rects, rows.size()]
+	return [rects, rows.size(), labels]
 
 
 func _process(delta: float) -> void:
@@ -102,6 +121,11 @@ func _draw() -> void:
 	var fs: int = int(_box * 0.62)
 	var gap: float = _box * 0.12
 	var sparks: Dictionary = state.sparks
+	var small: Font = UIKit.font(700)
+	for lab: Array in _labels:
+		var text: String = state.puzzle.shown_theme_part(int(lab[0]), state.found).to_upper()
+		var tw: float = small.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
+		draw_string(small, Vector2((size.x - tw) / 2.0, float(lab[1])), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Style.MUTED)
 	for i: int in state.puzzle.words.size():
 		var word: String = state.puzzle.words[i]["word"]
 		var r: Rect2 = _rects[i]
@@ -127,6 +151,9 @@ func _draw() -> void:
 			elif k < shown:
 				text = word[k]
 				tc = Style.GOLD
+			elif state.puzzle.listed:
+				text = word[k]
+				tc = Color(Style.INK, 0.85)
 			if not text.is_empty():
 				var w: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 				var base: float = br.get_center().y + (font.get_ascent(fs) - font.get_descent(fs)) / 2.0
