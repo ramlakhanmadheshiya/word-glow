@@ -80,8 +80,8 @@ func _boot() -> void:
 	var art: LanternArt = LanternArt.new(240)
 	art.lit = 0.0
 	col.add_child(art)
-	col.add_child(UIKit.label("Word Lantern", Style.SIZE_H1, Style.INK, 600))
-	col.add_child(UIKit.caption("Lighting the lanterns"))
+	col.add_child(UIKit.label("Word Glow", Style.SIZE_H1, Style.INK, 600))
+	col.add_child(UIKit.caption("Lighting up the words"))
 	_screen_host.add_child(loading)
 	var tw: Tween = create_tween()
 	tw.tween_property(art, "lit", 1.0, 0.8).set_trans(Tween.TRANS_SINE)

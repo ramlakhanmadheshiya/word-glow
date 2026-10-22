@@ -333,6 +333,13 @@ static func toggle_row(text: String, icon_name: String, value: bool, on_change: 
 	return row
 
 
+## The small "no refunds" note shown under every way to buy something.
+static func no_refunds() -> Label:
+	var l: Label = para(Store.NO_REFUNDS, Style.SIZE_CAPTION, Style.MUTED)
+	l.name = "NoRefunds"
+	return l
+
+
 ## A labelled 0..1 volume slider (Music, Sound). Plays a tick while dragging
 ## so you hear the level.
 static func slider_row(text: String, icon_name: String, value: float, on_change: Callable, accent: Color = Style.AMBER) -> HBoxContainer:

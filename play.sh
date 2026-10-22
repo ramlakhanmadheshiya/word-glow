@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch Word Lantern directly (no Godot editor window).
+# Launch Word Glow directly (no Godot editor window).
 set -e
 cd "$(dirname "$0")"
 GODOT="${GODOT:-$(command -v godot || echo /Applications/Godot.app/Contents/MacOS/Godot)}"

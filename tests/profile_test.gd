@@ -206,7 +206,14 @@ func _store_purchases() -> void:
 	t.eq(Profile.keys(), keys + Store.COMPLETE_KEYS + 5, "keys bought")
 	Store.buy("tip_50")
 	t.eq(Profile.tips_given(), 1, "a tip is counted")
-	t.eq(Store.all_ids().size(), 4 + 10 + 5 + 10 + 100, "product catalogue size")
+	var tips: Array = Store.tip_ids()
+	t.eq(tips.size(), 190, "190 tip amounts")
+	t.eq(tips[0], "tip_10", "the smallest tip is ₹10")
+	t.eq(tips[tips.size() - 1], "tip_10000", "the largest tip is ₹10,000")
+	t.ok(tips.has("tip_1000") and tips.has("tip_1100") and not tips.has("tip_1010"), "steps of 10 up to ₹1,000, then 100")
+	for id: String in tips:
+		t.ok(Store.all_ids().has(id), "Google Play is asked the price of %s" % id)
+	t.eq(Store.all_ids().size(), 4 + 10 + 5 + 10 + 190, "product catalogue size")
 	t.ok(Store.chapter_key_ids().size() == Store.CHAPTER_KEY_MAX and Store.CHAPTER_KEY_MAX == 5, "chapter keys are sold 1 to 5 at a time")
 	var coin_ids: Array = Store.COIN_PACKS.keys()
 	for want: String in ["coins_100", "coins_250", "coins_500", "coins_750", "coins_1000", "coins_1500", "coins_2000", "coins_300", "coins_2500", "coins_6000"]:

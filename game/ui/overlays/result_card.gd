@@ -21,7 +21,7 @@ func build() -> void:
 	var daily: bool = not play.daily_key.is_empty()
 	var stars: int = int(reward.get("stars", play.state.stars()))
 	var acc: Color = play.accent()
-	var where: String = "Daily lantern" if daily else "%s · Level %d" % [Catalog.chapter(play.chapter_idx)["name"], play.level_n]
+	var where: String = "Daily puzzle" if daily else "%s · Level %d" % [Catalog.chapter(play.chapter_idx)["name"], play.level_n]
 	body.add_child(UIKit.caption(where, acc))
 	var title: Label = UIKit.label(TITLES[clampi(stars, 1, 3)], Style.SIZE_H1 + 6, Style.INK, 600)
 	title.name = "ResultTitle"
@@ -94,7 +94,7 @@ func _share_card() -> ShareCardOverlay:
 	o.info = {
 		"puzzle": play.puzzle, "state": play.state, "stars": int(reward.get("stars", play.state.stars())),
 		"title": TITLES[clampi(int(reward.get("stars", 1)), 1, 3)], "verdict": _verdict(),
-		"chapter": "Daily lantern" if not play.daily_key.is_empty() else str(Catalog.chapter(play.chapter_idx)["name"]),
+		"chapter": "Daily puzzle" if not play.daily_key.is_empty() else str(Catalog.chapter(play.chapter_idx)["name"]),
 		"number": play.level_n, "daily": play.daily_key, "accent": play.accent(), "sky": play.sky(),
 	}
 	return o

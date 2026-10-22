@@ -1,14 +1,14 @@
 extends Node
 ## Sharing and saving the result card.
 ## - Android: the system share sheet with the picture attached (through the app's
-##   FileProvider), and "Save" writes it to Pictures/Word Lantern.
+##   FileProvider), and "Save" writes it to Pictures/Word Glow.
 ## - Web: the browser's share sheet where it can share files, else a download.
 ## - Desktop: saves to the Pictures folder and shows it.
 ## Every path falls back to copying the link, so sharing never dead-ends.
 
 signal finished(ok: bool, message: String)
 
-const URL: String = "https://theramlakhan.com/word-lantern/"
+const URL: String = "https://theramlakhan.com/word-glow/"
 const DIR: String = "user://share"
 
 
@@ -18,13 +18,13 @@ func _ready() -> void:
 
 func message_for(info: Dictionary) -> String:
 	var where: String = "today's daily puzzle" if not str(info.get("daily", "")).is_empty() else "%s, level %d" % [info["chapter"], int(info["number"])]
-	return "Word Lantern · I lit every word in %s (%s, %d/3 stars). Can you find them all? %s" % [where, str(info["title"]), int(info["stars"]), URL]
+	return "Word Glow · I lit every word in %s (%s, %d/3 stars). Can you find them all? %s" % [where, str(info["title"]), int(info["stars"]), URL]
 
 
 func file_name(info: Dictionary) -> String:
 	if not str(info.get("daily", "")).is_empty():
-		return "word-lantern-daily-%s.png" % info["daily"]
-	return "word-lantern-%s-%02d.png" % [str(info["chapter"]).to_lower(), int(info["number"])]
+		return "word-glow-daily-%s.png" % info["daily"]
+	return "word-glow-%s-%02d.png" % [str(info["chapter"]).to_lower(), int(info["number"])]
 
 
 ## Writes the picture to the app's share folder; returns the absolute path.
@@ -60,7 +60,7 @@ func save(img: Image, info: Dictionary) -> void:
 	if OS.has_feature("android"):
 		var path: String = _write(img, name)
 		if _android_save(path, name):
-			finished.emit(true, "Saved to Pictures › Word Lantern")
+			finished.emit(true, "Saved to Pictures › Word Glow")
 		else:
 			# Older Android: hand it to the share sheet ("Save to device" lives there).
 			finished.emit(_android_share(path, message_for(info)), "")
@@ -131,7 +131,7 @@ func _android_share(path: String, text: String) -> bool:
 	return true
 
 
-## Android 10+: insert into MediaStore under Pictures/Word Lantern.
+## Android 10+: insert into MediaStore under Pictures/Word Glow.
 func _android_save(path: String, name: String) -> bool:
 	var plugin: Object = _plugin()
 	if plugin != null and not path.is_empty():
@@ -151,7 +151,7 @@ func _android_save(path: String, name: String) -> bool:
 	var values: Object = values_class.call("ContentValues")
 	values.call("put", "_display_name", name)
 	values.call("put", "mime_type", "image/png")
-	values.call("put", "relative_path", "Pictures/Word Lantern")
+	values.call("put", "relative_path", "Pictures/Word Glow")
 	var resolver: Object = activity.call("getContentResolver")
 	var uri: Object = resolver.call("insert", media.get("EXTERNAL_CONTENT_URI"), values)
 	if uri == null:

@@ -13,12 +13,12 @@ signal price_updated(product: String, price: String)
 ## Google Play answers.
 const PRODUCTS: Dictionary = {
 	"complete_pack": {"name": "Complete pack", "tier": 3, "blurb": "Everything below, plus 1,000 coins",
-		"perks": ["No banner ads", "3 free letter hints every day", "11 colour themes", "6 lantern styles", "1,000 coins and 5 level keys", "Yours to keep after one purchase"]},
+		"perks": ["No banner ads", "3 free letter hints every day", "11 colour themes", "6 glow styles", "1,000 coins and 5 level keys", "Yours to keep after one purchase"]},
 	"supporter_pack": {"name": "Supporter pack", "tier": 2, "blurb": "No ads, and 3 free letter hints a day",
 		"perks": ["No banner ads or videos between levels", "3 free letter hints every day", "Helps new chapters get made"]},
 	"theme_pack": {"name": "Theme pack", "tier": 1, "blurb": "Paper, Daylight, Ocean, Sakura and 7 more", "trial": true,
 		"perks": ["11 colour themes for the whole app", "Pick one any time in Settings", "Yours to keep after one purchase"]},
-	"style_pack": {"name": "Lantern styles", "tier": 1, "blurb": "Neon, Glass, Ember and 3 more", "trial": true,
+	"style_pack": {"name": "Glow styles", "tier": 1, "blurb": "Neon, Glass, Ember and 3 more", "trial": true,
 		"perks": ["6 new looks for tiles and lit words", "Pick one any time in Settings", "Yours to keep after one purchase"]},
 }
 ## Coin bags: consumable, smallest first; bigger bags give more coins per rupee.
@@ -59,12 +59,18 @@ const KEY_UNIT: Dictionary = {
 	"ID": ["Rp ", 7500.0, 0], "PK": ["Rs ", 129.0, 0], "BD": ["৳", 49.0, 0], "NP": ["Rs ", 59.0, 0],
 	"PH": ["₱", 25.0, 0], "TR": ["₺", 15.99, 2], "MX": ["MX$", 9.0, 0],
 }
-## Tip jar: consumable, opens nothing. Each amount is its own product,
-## tip_10 ... tip_1000 (rupees; Google Play converts elsewhere).
+## Tip jar: consumable, opens nothing. ₹10 to ₹1,000 in steps of 10, then steps
+## of 100 up to ₹10,000 (Google Play sells fixed prices, so each amount is its
+## own product, tip_10 ... tip_10000, priced in rupees and converted by Play for
+## other countries; players only ever see their own currency).
 const TIP_PRESETS: Array = [20, 50, 100, 200]
 const TIP_MIN: int = 10
-const TIP_MAX: int = 1000
+const TIP_MAX: int = 10000
 const TIP_STEP: int = 10
+const TIP_BIG_FROM: int = 1000
+const TIP_BIG_STEP: int = 100
+## Shown under every way to buy something.
+const NO_REFUNDS: String = "Purchases are made through Google Play. Sorry, we can't refund or undo a purchase."
 
 ## Fallback prices by tier, per region, kept in line with the Play Console.
 ## Tiers: 0 = $0.99, 1 = $1.99, 2 = $2.99, 3 = $5.99, 4 = $9.99, 5 = $19.99.
@@ -103,7 +109,7 @@ func _ready() -> void:
 		prices["chapter_keys_%d" % n] = chapter_keys_price(n)
 	for n: int in range(1, KEY_MAX + 1):
 		prices["keys_%d" % n] = keys_price(n)
-	for n: int in range(TIP_MIN, TIP_MAX + 1, TIP_STEP):
+	for n: int in tip_amounts():
 		prices["tip_%d" % n] = tip_price(n)
 	# Only create the client where the native plugin exists (Android builds).
 	if Engine.has_singleton("GodotGooglePlayBilling"):
@@ -121,8 +127,15 @@ static func key_ids() -> Array:
 
 static func tip_ids() -> Array:
 	var out: Array = []
-	for n: int in range(TIP_MIN, TIP_MAX + 1, TIP_STEP):
+	for n: int in tip_amounts():
 		out.append("tip_%d" % n)
+	return out
+
+
+## Every amount sold as a tip, in rupees, smallest first.
+static func tip_amounts() -> Array:
+	var out: Array = range(TIP_MIN, TIP_BIG_FROM + 1, TIP_STEP)
+	out.append_array(range(TIP_BIG_FROM + TIP_BIG_STEP, TIP_MAX + 1, TIP_BIG_STEP))
 	return out
 
 
@@ -290,7 +303,7 @@ func _thanks(product: String) -> String:
 	if is_chapter_keys(product):
 		var n: int = chapter_key_count(product)
 		return "%d chapter %s added" % [n, "key" if n == 1 else "keys"]
-	return "Thank you for supporting Word Lantern!"
+	return "Thank you for supporting Word Glow!"
 
 
 func _grant(product: String) -> void:

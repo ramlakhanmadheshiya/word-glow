@@ -2,7 +2,7 @@ class_name AboutCard
 extends Overlay
 ## What the game is, who made it, and links to the website, help and privacy pages.
 
-const SITE: String = "https://theramlakhan.com/word-lantern/"
+const SITE: String = "https://theramlakhan.com/word-glow/"
 const AUTHOR_SITE: String = "https://theramlakhan.com/"
 
 
@@ -21,10 +21,10 @@ func build() -> void:
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	body.add_child(icon)
-	body.add_child(UIKit.label("Word Lantern", Style.SIZE_H1, Style.INK, 600))
+	body.add_child(UIKit.label("Word Glow", Style.SIZE_H1, Style.INK, 600))
 	var version: String = str(ProjectSettings.get_setting("application/config/version", "1.0.0"))
 	body.add_child(UIKit.caption("A calm word-light puzzle · version %s" % version))
-	body.add_child(UIKit.para("Trace words through a grid of paper tiles until every lantern glows. 320 levels across 8 chapters, each with its own new idea, from easy to extreme, plus a new daily lantern every day. Every level is checked by a solver, so each answer fits in exactly one place.", Style.SIZE_SMALL + 1, Style.INK))
+	body.add_child(UIKit.para("Trace words through a grid of paper tiles until every tile glows. 320 levels across 8 chapters, each with its own new idea, from easy to extreme, plus a new daily puzzle every day. Every level is checked by a solver, so each answer fits in exactly one place.", Style.SIZE_SMALL + 1, Style.INK))
 	body.add_child(UIKit.gap(6))
 	body.add_child(UIKit.caption("Made by"))
 	var me: Button = UIKit.button("Ramlakhan Madheshiya", "ghost", Style.AMBER, 76, 30)

@@ -17,7 +17,7 @@ func _process(_delta: float) -> void:
 
 func build() -> void:
 	name = "Picker"
-	add_title("Colours" if mode == "themes" else "Lantern styles")
+	add_title("Colours" if mode == "themes" else "Glow styles")
 	_product = "theme_pack" if mode == "themes" else "style_pack"
 	var owned: bool = Profile.owns(_product)
 	var current: String = Look.theme_id() if mode == "themes" else Look.style_id()

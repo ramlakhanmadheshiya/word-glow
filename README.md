@@ -1,10 +1,10 @@
-# Word Lantern
+# Word Glow
 
-*A calm word-light puzzle.* Every tile in the grid belongs to one word on the level's theme. Drag through neighbouring letters to find each word, and it lights up like a string of paper lanterns. Light every tile to clear the level.
+*A calm word-light puzzle.* Every tile in the grid belongs to one word on the level's theme. Drag through neighbouring letters to find each word, and it lights up like a string of lights. Light every tile to clear the level.
 
 Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the web). Portrait-first; works with touch, mouse and keyboard.
 
-**Play / download:** https://theramlakhan.com/word-lantern/ (browser version and Android APK)
+**Play / download:** https://theramlakhan.com/word-glow/ (browser version and Android APK)
 **Made by:** [Ramlakhan Madheshiya](https://theramlakhan.com), with Claude as AI co-developer.
 
 ## The game
@@ -28,8 +28,8 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
 - **Three stars.** A perfect solve (no wrong words, no hints) earns ★★★; up to 3 extra moves earns ★★; more earns ★. A MOVES / STARS strip over the board shows what is still on offer, like Single Shot's TRY / STARS.
 - **Progress:** levels open one at a time; clearing 15 levels in a chapter opens the next. A level key opens any locked level early. A **chapter key** opens a whole locked chapter at once (its level 1; the rest open by playing); you earn one by clearing level 40 of any chapter, can buy them (1 or 3), or get one a day from a video. Locked levels are still shown on the level grid.
 - **Smooth difficulty:** every level is a little harder than the one before. The generator builds several candidates per level and keeps the easiest one that is still harder than the previous level, scoring grid size, word length, shadows, waves of light, twisty words, backwards words, words running down, and look-alike first letters; grids grow one step at a time through the chapter's range.
-- **Daily lantern:** hidden words with shadows and beacons (Canyon's rules), built on the phone from the date (`PuzzleGenerator.daily`), with no server and no stored pool, so it never runs out and needs no updates. Everyone gets the same puzzle on the same date: the date seeds the generator, the theme rotates through every theme before repeating (never twice in a row), and difficulty follows the week (Monday gentlest, Sunday hardest). It is checked by the same solver as the levels, and a test builds a full year of dailies and pins one puzzle so an accidental generator change is caught.
-- **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily lantern, and 28 achievements in all.
+- **Daily puzzle:** hidden words with shadows and beacons (Canyon's rules), built on the phone from the date (`PuzzleGenerator.daily`), with no server and no stored pool, so it never runs out and needs no updates. Everyone gets the same puzzle on the same date: the date seeds the generator, the theme rotates through every theme before repeating (never twice in a row), and difficulty follows the week (Monday gentlest, Sunday hardest). It is checked by the same solver as the levels, and a test builds a full year of dailies and pins one puzzle so an accidental generator change is caught.
+- **Rewards** (each paid once): +5 coins for a first clear, +5 for every new star, +100 and an achievement for finishing a chapter, +30 (plus a streak bonus) for the daily puzzle, and 28 achievements in all.
 - **Hints:** *Letter hint* (25 coins) reveals the next letter of a word; the first letter hint each day is free (3 for Supporters). *Word hint* (60 coins) finds a whole word. **Out of coins, the player can watch a rewarded video for the hint.** Hints count as extra moves.
 - **Shop** (Single Shot's model; one-time packs plus consumables, all via Google Play):
 
@@ -39,16 +39,18 @@ Made with Godot 4.7.2 (GDScript, Compatibility renderer, so it also runs on the 
   | Supporter pack | No banner ads, 3 free letter hints a day |
   | Theme pack | 11 colour themes (9 dark, 2 light) that recolour the whole app: sky, cards, buttons, panels and tiles (1-hour trial from a video) |
   | Chapter keys | 1 or 3; each opens a whole locked chapter; plus one free from a video a day |
-  | Lantern styles | 6 styles for lit words and tiles (1-hour trial from a video) |
+  | Glow styles | 6 styles for lit words and tiles (1-hour trial from a video) |
   | Coin bags | 300 / 1,000 / 2,500 / 6,000 coins; plus free coins from a video (5 a day) |
   | Level keys | 1–10 keys, 10% off for 5+; plus a free key from a video (5 a day) |
-  | Tip jar | Say thanks; unlocks nothing |
+  | Tip jar | Say thanks; unlocks nothing. Any amount from ₹10 to ₹10,000 (presets, or − / + and a slider), always shown as Google Play's price in the player's own currency |
+
+  Every price comes from Google Play, so players see their own currency (rupees in India, dollars in the USA, Canadian dollars in Canada…); until Play answers, a regional estimate from the device locale is shown. The shop and every buy card say: *"Purchases are made through Google Play. Sorry, we can't refund or undo a purchase."*
 
   Product ids and Play Console setup: [`store/PLAY_PRODUCTS.md`](store/PLAY_PRODUCTS.md). Debug desktop builds simulate purchases; the web build explains that purchases are in the Android app.
 - **Ads (Android):** a banner at the bottom of every screen, with its space reserved before the ad loads so the layout never jumps; it loads a fresh ad when the player changes screens (at most every 30 s, per AdMob policy). A short video plays after every 5th cleared level. Rewarded videos only when the player asks (a hint when out of coins, free coins, a level or chapter key, a pack trial). Supporters see no banners and no videos between levels.
 - **Sharing:** after a clear, Share makes a 1080×1350 picture of the solved puzzle (stars, theme, link and QR code) and opens the phone's share sheet; Save puts it in the gallery; Copy link copies the message. Like Single Shot, Android uses a small plugin (`plugins_src/wordlantern_share`, built by CI).
 - **Appearance:** a thin Auto / Dark / Light slider in Settings; Auto follows the phone's dark mode. It applies to the Original colours (Theme-pack themes keep their own). The web build shows no ads (where no video can be shown, an out-of-coins hint is simply free).
-- **Settings:** Music and Sound volume sliders, Vibration, colour theme and lantern style pickers, How to play, Shop, Awards, About, Credits, Ad privacy (when required), and Reset progress (like Single Shot: tap once to arm, again to erase; hidden during a level; keeps settings, packs, keys and bought coins).
+- **Settings:** Music and Sound volume sliders, Vibration, colour theme and glow style pickers, How to play, Shop, Awards, About, Credits, Ad privacy (when required), and Reset progress (like Single Shot: tap once to arm, again to erase; hidden during a level; keeps settings, packs, keys and bought coins).
 - **While playing,** MOVES / STARS stay visible at the top; the letters being traced and short messages appear on their own line just above the board.
 - **Saving:** everything is saved locally with atomic writes and a backup; half-played levels resume; older saves are migrated (version-2 saves from the 16-chapter builds keep coins, purchases, settings, dailies and achievements; level progress starts over and spent keys come back).
 
@@ -100,7 +102,7 @@ Levels are generated once from `data/themes.json` and the plan in `data/chapters
 
 ## Build & publish
 
-Every push to `main` runs `.github/workflows/build.yml`: tests, the reproducibility check, a web export, a signed Android APK (Gradle build with the AdMob and Play Billing plugins), publishing to `gh-pages` (served at `https://theramlakhan.com/word-lantern/` with `play/`, `help/`, `privacy/` and `word-lantern.apk`), and an `.aab` artifact for Google Play.
+Every push to `main` runs `.github/workflows/build.yml`: tests, the reproducibility check, a web export, a signed Android APK (Gradle build with the AdMob and Play Billing plugins), publishing to `gh-pages` (served at `https://theramlakhan.com/word-glow/` with `play/`, `help/`, `privacy/` and `word-glow.apk`), and an `.aab` artifact for Google Play.
 
 Repository secrets:
 
@@ -117,7 +119,7 @@ Repository secrets:
 | `game/autoload/` | `save.gd` (versioned JSON save), `catalog.gd` (chapters, tiers, levels, daily), `profile.gd` (coins, stars, unlocks, keys, purchases, trials, streaks, achievements, settings), `store.gd` (catalogue and Play Billing), `audio.gd`, `haptics.gd` |
 | `game/ads/` | `ad_manager.gd` (banner and rewarded policy) and providers: AdMob (Android) and a mock (debug desktop, tests) |
 | `game/board/` | `board_view.gd` (grid, drag input, animations), `word_list.gd` |
-| `game/ui/` | `app.gd` (screens, Back chain, overlays, toasts, loading/error states), `screen.gd` (header, banner space), `overlay.gd`, `ui_kit.gd`, `style.gd`, `look.gd` (themes and lantern styles), `screens/` (home, chapters, levels, play, shop), `overlays/` (settings, result, product, picker, keys, tips, locked, how-to, about, credits, achievements, messages), `widgets/` |
+| `game/ui/` | `app.gd` (screens, Back chain, overlays, toasts, loading/error states), `screen.gd` (header, banner space), `overlay.gd`, `ui_kit.gd`, `style.gd`, `look.gd` (themes and glow styles), `screens/` (home, chapters, levels, play, shop), `overlays/` (settings, result, product, picker, keys, tips, locked, how-to, about, credits, achievements, messages), `widgets/` |
 | `data/` | `themes.json`, `chapters.json`, `levels/` |
 | `addons/` | Godot AdMob plugin (Poing Studios, MIT) and Godot Google Play Billing (MIT) |
 | `store/` | Play Console product list |
@@ -130,9 +132,9 @@ Repository secrets:
 | Engine: [Godot Engine](https://godotengine.org) 4.7.2 | Godot contributors | MIT |
 | Font: [Outfit](https://github.com/google/fonts/tree/main/ofl/outfit) | Google Fonts | SIL OFL 1.1, `assets/fonts/OFL.txt` |
 | UI icons: [Lucide](https://lucide.dev) | lucide-static 0.460.0 | ISC, `assets/icons/LICENSE.txt` |
-| Game icons and the app icon | Drawn for Word Lantern | Released with the project |
+| Game icons and the app icon | Drawn for Word Glow | Released with the project |
 | Music and sound effects | Generated by `tools/synth_audio.py`, no samples | Released with the project (CC0) |
-| Theme word lists and levels | Curated for Word Lantern | Released with the project |
+| Theme word lists and levels | Curated for Word Glow | Released with the project |
 | [Godot AdMob Plugin](https://github.com/poingstudios/godot-admob-plugin) | Poing Studios | MIT, `addons/admob/LICENSE` |
 | [Godot Google Play Billing](https://github.com/godot-sdk-integrations/godot-google-play-billing) | Godot contributors | MIT, `addons/GodotGooglePlayBilling/LICENSE` |
 

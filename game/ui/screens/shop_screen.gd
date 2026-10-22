@@ -17,7 +17,7 @@ func build() -> void:
 	var list: VBoxContainer = UIKit.vbox(16)
 	list.name = "List"
 	scroll.set_content(list)
-	list.add_child(UIKit.para("Every level in Word Lantern opens by playing.\nThese are extras, and they help me make more.", Style.SIZE_SMALL, Style.MUTED))
+	list.add_child(UIKit.para("Every level in Word Glow opens by playing.\nThese are extras, and they help me make more.", Style.SIZE_SMALL, Style.MUTED))
 	for id: String in Store.PRODUCTS:
 		var row: Button = _product_row(id)
 		list.add_child(row)
@@ -43,6 +43,7 @@ func build() -> void:
 	)
 	list.add_child(restore)
 	list.add_child(UIKit.para("One-time purchases through Google Play. No subscriptions.", Style.SIZE_CAPTION))
+	list.add_child(UIKit.no_refunds())
 	list.add_child(UIKit.gap(20))
 	Store.restore_finished.connect(func(_ok: bool, msg: String) -> void: _show_status(msg))
 	Store.purchase_finished.connect(func(ok: bool, msg: String, _id: String) -> void:

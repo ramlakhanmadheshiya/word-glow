@@ -9,7 +9,7 @@ var _video: Button
 func build() -> void:
 	name = "CoinsShop"
 	add_title("Coins")
-	body.add_child(UIKit.para("Coins pay for letter hints and word hints. You also earn them from levels, stars, chapters, the daily lantern and achievements.", Style.SIZE_SMALL))
+	body.add_child(UIKit.para("Coins pay for letter hints and word hints. You also earn them from levels, stars, chapters, the daily puzzle and achievements.", Style.SIZE_SMALL))
 	var list: VBoxContainer = UIKit.vbox(12)
 	list.name = "CoinPacks"
 	body.add_child(list)
@@ -22,6 +22,7 @@ func build() -> void:
 	_status = UIKit.para("", Style.SIZE_SMALL, Style.MUTED)
 	_status.name = "Status"
 	body.add_child(_status)
+	body.add_child(UIKit.no_refunds())
 	Store.purchase_finished.connect(func(ok: bool, msg: String, _id: String) -> void:
 		if is_inside_tree():
 			_status.text = msg

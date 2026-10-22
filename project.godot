@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Word Lantern"
+config/name="Word Glow"
 config/description="A calm word-light puzzle."
 config/version="1.0.0"
 run/main_scene="res://game/scenes/main.tscn"

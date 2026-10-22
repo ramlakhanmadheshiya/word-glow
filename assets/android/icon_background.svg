@@ -1,7 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
 <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2B2F7A"/><stop offset="1" stop-color="#120F35"/></linearGradient>
-<radialGradient id="halo" cx=".5" cy=".52" r=".5"><stop offset="0" stop-color="#FFB547" stop-opacity=".55"/><stop offset=".6" stop-color="#FF7A45" stop-opacity=".12"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>
-<linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC24D"/><stop offset="1" stop-color="#FF6A3D"/></linearGradient>
-<linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#FCEBCB"/></linearGradient>
+<radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFB547" stop-opacity=".6"/><stop offset=".55" stop-color="#FF7A45" stop-opacity=".16"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>
+<linearGradient id="lit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD36B"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient>
+<linearGradient id="shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".45"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
 <clipPath id="c"><rect width="1024" height="1024" rx="228"/></clipPath>
-</defs><rect width="1024" height="1024" fill="url(#bg)"/></svg>
+</defs>
+<rect width="1024" height="1024" fill="url(#bg)"/>
+<circle cx="512" cy="512" r="470" fill="url(#halo)"/>
+<path d="M850 168 l12 30 30 12 -30 12 -12 30 -12 -30 -30 -12 30 -12z" fill="#FFE3A6" opacity=".9"/>
+<path d="M170 820 l9 22 22 9 -22 9 -9 22 -9 -22 -22 -9 22 -9z" fill="#FFE3A6" opacity=".7"/>
+<path d="M160 190 l7 17 17 7 -17 7 -7 17 -7 -17 -17 -7 17 -7z" fill="#FFE3A6" opacity=".55"/>
+</svg>

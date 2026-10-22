@@ -7,7 +7,7 @@ extends RefCounted
 const BASE: Array[Dictionary] = [
 	{"id": "first_light", "title": "First Light", "desc": "Clear your first level", "stat": "levels", "goal": 1, "reward": 20, "icon": "lantern"},
 	{"id": "lamplighter", "title": "Lamplighter", "desc": "Clear 50 levels", "stat": "levels", "goal": 50, "reward": 60, "icon": "lantern"},
-	{"id": "keeper", "title": "Keeper of Lanterns", "desc": "Clear 200 levels", "stat": "levels", "goal": 200, "reward": 200, "icon": "lantern"},
+	{"id": "keeper", "title": "Keeper of Light", "desc": "Clear 200 levels", "stat": "levels", "goal": 200, "reward": 200, "icon": "lantern"},
 	{"id": "all_lit", "title": "Every Light Lit", "desc": "Clear all 320 levels", "stat": "levels", "goal": 320, "reward": 1000, "icon": "trophy"},
 	{"id": "stars_50", "title": "Starlit", "desc": "Earn 50 stars", "stat": "stars", "goal": 50, "reward": 40, "icon": "star"},
 	{"id": "stars_300", "title": "Constellation", "desc": "Earn 300 stars", "stat": "stars", "goal": 300, "reward": 150, "icon": "star"},
@@ -17,14 +17,14 @@ const BASE: Array[Dictionary] = [
 	{"id": "perfect_100", "title": "Bright Mind", "desc": "Clear 100 levels perfectly", "stat": "perfect", "goal": 100, "reward": 200, "icon": "star-filled"},
 	{"id": "word_500", "title": "Wordsmith", "desc": "Find 500 words", "stat": "words", "goal": 500, "reward": 80, "icon": "book"},
 	{"id": "word_2500", "title": "Lexicon", "desc": "Find 2,500 words", "stat": "words", "goal": 2500, "reward": 300, "icon": "book"},
-	{"id": "daily_1", "title": "Night Watch", "desc": "Finish a daily lantern", "stat": "dailies", "goal": 1, "reward": 20, "icon": "calendar"},
+	{"id": "daily_1", "title": "Night Watch", "desc": "Finish a daily puzzle", "stat": "dailies", "goal": 1, "reward": 20, "icon": "calendar"},
 	# Daily streaks count days in a row: missing a day starts the count again.
 	{"id": "streak_3", "title": "Three Nights", "desc": "Play the daily puzzle 3 days in a row", "stat": "best_streak", "goal": 3, "reward": 40, "icon": "flame"},
 	{"id": "streak_7", "title": "A Week of Light", "desc": "Play the daily puzzle 7 days in a row", "stat": "best_streak", "goal": 7, "reward": 100, "icon": "flame"},
 	{"id": "streak_10", "title": "Ten Bright Days", "desc": "Play the daily puzzle 10 days in a row", "stat": "best_streak", "goal": 10, "reward": 150, "icon": "flame"},
 	{"id": "streak_14", "title": "Two Weeks Glowing", "desc": "Play the daily puzzle 14 days in a row", "stat": "best_streak", "goal": 14, "reward": 250, "icon": "flame"},
 	{"id": "streak_21", "title": "Three Weeks Strong", "desc": "Play the daily puzzle 21 days in a row", "stat": "best_streak", "goal": 21, "reward": 400, "icon": "flame"},
-	{"id": "streak_30", "title": "A Month of Lanterns", "desc": "Play the daily puzzle 30 days in a row", "stat": "best_streak", "goal": 30, "reward": 600, "icon": "flame"},
+	{"id": "streak_30", "title": "A Month of Glow", "desc": "Play the daily puzzle 30 days in a row", "stat": "best_streak", "goal": 30, "reward": 600, "icon": "flame"},
 	{"id": "beacon_25", "title": "Beacon Keeper", "desc": "Light 25 beacons", "stat": "beacons", "goal": 25, "reward": 60, "icon": "flame"},
 ]
 

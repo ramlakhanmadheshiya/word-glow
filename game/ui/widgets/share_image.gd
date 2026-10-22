@@ -6,7 +6,7 @@ extends Control
 ## feeds show best).
 
 const SIZE: Vector2i = Vector2i(1080, 1350)
-const SITE: String = "theramlakhan.com/word-lantern"
+const SITE: String = "theramlakhan.com/word-glow"
 
 var info: Dictionary = {}
 
@@ -46,7 +46,7 @@ func _ready() -> void:
 	icon.position = Vector2(72, 60)
 	icon.size = Vector2(104, 104)
 	add_child(icon)
-	_label("Word Lantern", 56, Style.INK, 700, Vector2(196, 74), Vector2(520, 76))
+	_label("Word Glow", 56, Style.INK, 700, Vector2(196, 74), Vector2(520, 76))
 	var daily: bool = not str(info.get("daily", "")).is_empty()
 	_label("Daily puzzle" if daily else "Level %d" % int(info["number"]), 36, accent, 800, Vector2(560, 66), Vector2(448, 50), HORIZONTAL_ALIGNMENT_RIGHT)
 	_label(str(info["chapter"]) if not daily else str(info["daily"]), 30, Style.MUTED, 600, Vector2(560, 116), Vector2(448, 44), HORIZONTAL_ALIGNMENT_RIGHT)

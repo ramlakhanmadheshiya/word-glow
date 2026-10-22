@@ -37,7 +37,7 @@ func build() -> void:
 		body.add_child(UIKit.caption("Best value · save %d%%" % Store.complete_saving(), Style.AMBER))
 	body.add_child(UIKit.label(str(info["name"]), Style.SIZE_H1, Style.INK, 600))
 	if product == "supporter_pack":
-		body.add_child(UIKit.para("Word Lantern is made by one person. One purchase helps make the next chapter.", Style.SIZE_SMALL))
+		body.add_child(UIKit.para("Word Glow is made by one person. One purchase helps make the next chapter.", Style.SIZE_SMALL))
 	var perks: VBoxContainer = UIKit.vbox(12)
 	perks.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	body.add_child(perks)
@@ -61,6 +61,7 @@ func build() -> void:
 		Store.buy(product)
 	)
 	body.add_child(_buy)
+	body.add_child(UIKit.no_refunds())
 	if bool(info.get("trial", false)) and not Profile.bought(product):
 		_trial = UIKit.button("Try it free for 1 hour with a video", "soft", Style.AMBER, 84, 23, "art:watch")
 		_trial.name = "Trial"

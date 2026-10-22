@@ -32,7 +32,7 @@ func build() -> void:
 	body.add_child(top)
 
 	var title_box: VBoxContainer = UIKit.vbox(2)
-	var title: Label = UIKit.label("Word Lantern", 78, Style.INK, 700)
+	var title: Label = UIKit.label("Word Glow", 78, Style.INK, 700)
 	title.name = "Title"
 	title.add_theme_color_override("font_shadow_color", Color(Style.AMBER, 0.35))
 	title.add_theme_constant_override("shadow_offset_y", 0)
@@ -65,7 +65,7 @@ func build() -> void:
 	play.resized.connect(func() -> void: play.pivot_offset = play.size / 2)
 	play.button_down.connect(func() -> void: pulse.kill())
 	# Where Play continues: just the chapter and the level.
-	var where: Label = UIKit.label("Every lantern is lit" if all_done else "%s · Level %d" % [ch.get("name", ""), next[1]], Style.SIZE_SMALL + 1, Style.MUTED, 600)
+	var where: Label = UIKit.label("Every word is lit" if all_done else "%s · Level %d" % [ch.get("name", ""), next[1]], Style.SIZE_SMALL + 1, Style.MUTED, 600)
 	where.name = "NextLevel"
 	column.add_child(where)
 	var row: HBoxContainer = UIKit.hbox(16)
@@ -96,7 +96,7 @@ func _daily_card() -> PanelContainer:
 	row.add_child(UIKit.art_rect("calendar", 60))
 	var mid: VBoxContainer = UIKit.vbox(2)
 	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mid.add_child(UIKit.label("Daily lantern", Style.SIZE_BODY, Style.INK, 700, HORIZONTAL_ALIGNMENT_LEFT))
+	mid.add_child(UIKit.label("Daily puzzle", Style.SIZE_BODY, Style.INK, 700, HORIZONTAL_ALIGNMENT_LEFT))
 	_daily_status = UIKit.label("", Style.SIZE_CAPTION + 1, Style.MUTED, 500, HORIZONTAL_ALIGNMENT_LEFT)
 	_daily_status.name = "DailyStatus"
 	_daily_status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS

@@ -323,9 +323,9 @@ func _settings() -> void:
 	music.value = 0.4
 	t.eq(float(Profile.setting("music_volume")), 0.4, "moving the slider sets the volume")
 	t.ok(_find(card, "Reset") != null, "Reset progress is offered from home")
-	_press(card, "PickLanterns")
+	_press(card, "PickGlow")
 	await _wait(0.5)
-	t.ok(app.top_overlay() is PickerCard, "the lantern style picker opens")
+	t.ok(app.top_overlay() is PickerCard, "the glow style picker opens")
 	app.top_overlay().close()
 	await _wait(0.4)
 	# Settings > Credits > close: back on Settings, not closed.
@@ -533,21 +533,33 @@ func _extras() -> void:
 	await _wait(1.0)
 	t.ok(Style.DARK, "Dark brings the night look back")
 	app.close_overlays()
-	# Tip jar: type any amount; − / + step by 10.
+	# Tip jar: ₹10 to ₹10,000, always shown as the player's own price.
 	app.go("shop")
 	await _wait(0.7)
+	t.ok(_find(app.screen, "NoRefunds") != null, "the shop says purchases can't be refunded")
 	_press(app.screen, "TipJar")
 	await _wait(0.5)
-	var tip: Overlay = app.top_overlay()
-	var amount: LineEdit = _find(tip, "TipAmount") as LineEdit
-	amount.text = "347"
-	amount.text_changed.emit("347")
-	t.eq((_find(tip, "TipCustom") as Button).text, "Tip %s" % Store.price("tip_350"), "a typed amount rounds to the nearest 10")
+	var tip: TipCard = app.top_overlay() as TipCard
+	var price: Label = _find(tip, "TipPrice") as Label
+	t.eq(tip.amount(), 500, "the picker starts on the ₹500 tip")
+	t.eq(price.text, Store.price("tip_500"), "it shows the local price, not rupees")
+	t.eq((_find(tip, "TipCustom") as Button).text, "Tip %s" % Store.price("tip_500"), "the button names the local price")
 	_press(tip, "TipPlus")
-	t.eq(amount.text, "360", "+ adds 10")
+	t.eq(tip.amount(), 510, "+ goes to the next amount")
 	_press(tip, "TipMinus")
 	_press(tip, "TipMinus")
-	t.eq(amount.text, "340", "− takes off 10")
+	t.eq(tip.amount(), 490, "− goes to the amount before")
+	var tip_slider: HSlider = _find(tip, "TipSlider") as HSlider
+	tip_slider.value = tip_slider.max_value
+	t.eq(tip.amount(), 10000, "the slider reaches ₹10,000")
+	t.eq(price.text, Store.price("tip_10000"), "the label follows the slider")
+	tip_slider.value = 0
+	t.eq(tip.amount(), 10, "and goes down to ₹10")
+	t.ok(_find(tip, "NoRefunds") != null, "the tip jar says purchases can't be refunded")
+	Store.prices["tip_10"] = "CA$0.19"
+	Store.price_updated.emit("tip_10", "CA$0.19")
+	t.eq(price.text, "CA$0.19", "Google Play's price replaces the fallback")
+	Store.prices["tip_10"] = Store.tip_price(10)
 	tip.close()
 	await _wait(0.3)
 	# Chapter keys: 1 to 5 at a time.
@@ -570,7 +582,7 @@ func _extras() -> void:
 	t.ok(share is ShareCardOverlay, "the result card can share the puzzle")
 	for n: String in ["ShareNow", "Save", "CopyLink"]:
 		t.ok(_find(share, n) != null, "sharing offers %s" % n)
-	t.ok(ShareService.message_for(share.info).contains("theramlakhan.com/word-lantern"), "the share message links to the game")
+	t.ok(ShareService.message_for(share.info).contains("theramlakhan.com/word-glow"), "the share message links to the game")
 	share.close()
 	await _wait(0.4)
 	t.ok(app.top_overlay() is ResultCard, "closing Share returns to the result")

@@ -35,7 +35,7 @@ func build() -> void:
 	body.add_child(UIKit.gap(6))
 	var looks: HBoxContainer = UIKit.hbox(14)
 	looks.add_child(_look_button("Colours", Look.theme_name(Look.theme_id()), "palette", "themes"))
-	looks.add_child(_look_button("Lanterns", Look.style_name(Look.style_id()), "lantern", "styles"))
+	looks.add_child(_look_button("Glow", Look.style_name(Look.style_id()), "lantern", "styles"))
 	body.add_child(looks)
 	body.add_child(UIKit.gap(6))
 	var grid: GridContainer = GridContainer.new()
@@ -80,7 +80,7 @@ func build() -> void:
 		)
 		body.add_child(reset)
 	var version: String = str(ProjectSettings.get_setting("application/config/version", "1.0.0"))
-	body.add_child(UIKit.caption("Word Lantern %s · made with Godot" % version, Style.MUTED, 16))
+	body.add_child(UIKit.caption("Word Glow %s · made with Godot" % version, Style.MUTED, 16))
 	if _confirm_reset == false and app.screen != null and not app.screen.in_game():
 		body.add_child(UIKit.para("Reset keeps your settings, packs, keys and bought coins.", Style.SIZE_CAPTION))
 

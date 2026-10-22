@@ -2,7 +2,7 @@ name: Build & publish
 
 # Tests the game, exports a web build and a signed Android APK, then publishes
 # both with the landing, help and privacy pages to the gh-pages branch
-# (served at https://theramlakhan.com/word-lantern/).
+# (served at https://theramlakhan.com/word-glow/).
 
 on:
   push:
@@ -82,7 +82,7 @@ jobs:
             echo "::warning::No release keystore secret; signing with a throwaway key."
             KEYSTORE_PASSWORD=android; KEYSTORE_ALIAS=word-lantern
             keytool -genkeypair -keystore "$ks" -storepass android -keypass android -alias word-lantern \
-              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Word Lantern"
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Word Glow"
           fi
           {
             echo "GODOT_ANDROID_KEYSTORE_RELEASE_PATH=$ks"
@@ -167,19 +167,19 @@ jobs:
         run: |
           mkdir -p build/android
           # Installs Godot's Gradle template, then the AdMob/Billing plugins patch it.
-          godot --headless --path . --install-android-build-template --export-release "Android" build/android/word-lantern.apk
-          test -s build/android/word-lantern.apk
+          godot --headless --path . --install-android-build-template --export-release "Android" build/android/word-glow.apk
+          test -s build/android/word-glow.apk
           ls -lh build/android
 
       - name: Ship to Brainnova Studio
-        # APK, web pack, help and privacy go to theramlakhan.com/BrainnovaStudio/games/word-lantern/.
-        # Also writes ./stubs: the old theramlakhan.com/word-lantern/ addresses, redirecting.
+        # APK, web pack, help and privacy go to theramlakhan.com/BrainnovaStudio/games/word-glow/.
+        # Also writes ./stubs: the old theramlakhan.com/word-glow/ addresses, redirecting.
         env:
           STUDIO_DEPLOY_KEY: ${{ secrets.STUDIO_DEPLOY_KEY }}
-        run: curl -fsSL https://raw.githubusercontent.com/ramlakhanmadheshiya/BrainnovaStudio/main/tools/ship.sh | bash -s -- word-lantern "1.0.${{ github.run_number }}"
+        run: curl -fsSL https://raw.githubusercontent.com/ramlakhanmadheshiya/BrainnovaStudio/main/tools/ship.sh | bash -s -- word-glow "1.0.${{ github.run_number }}"
 
       - name: Old addresses (gh-pages)
-        # theramlakhan.com/word-lantern/... now redirects to Brainnova Studio.
+        # theramlakhan.com/word-glow/... now redirects to Brainnova Studio.
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -191,16 +191,16 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: word-lantern-apk
-          path: build/android/word-lantern.apk
+          name: word-glow-apk
+          path: build/android/word-glow.apk
 
       - name: Export Android App Bundle (for Google Play)
         run: |
-          godot --headless --path . --export-release "Android AAB" build/android/word-lantern.aab
-          test -s build/android/word-lantern.aab
+          godot --headless --path . --export-release "Android AAB" build/android/word-glow.aab
+          test -s build/android/word-glow.aab
 
       - name: Upload App Bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: word-lantern-aab
-          path: build/android/word-lantern.aab
+          name: word-glow-aab
+          path: build/android/word-glow.aab
